@@ -65,9 +65,10 @@ La page s'ouvre sur **https://cerveau.nourmeet.com**, protégée par un mot de p
 
 1. **Choisir le mot de passe** (12 caractères ou plus), sur le serveur :
    ```bash
-   docker compose run --rm cerveau node src/mot-de-passe.js
+   read -rs -p "Mot de passe : " MDP; echo; printf '%s' "$MDP" | docker compose run --rm -T cerveau node src/mot-de-passe.js >> .env; unset MDP
+   docker compose up -d
    ```
-   Coller la ligne `MOT_DE_PASSE_EMPREINTE=…` qu'il affiche dans `.env`. Le mot de passe lui-même n'est enregistré nulle part.
+   Le mot de passe ne s'affiche pas et n'est enregistré nulle part : seule son empreinte (`MOT_DE_PASSE_EMPREINTE=…`) est ajoutée à `.env`. Pour en changer, supprimer cette ligne de `.env` et recommencer.
 2. **Nom de domaine** : chez OVH, ajouter un enregistrement `A` pour `cerveau.nourmeet.com` vers l'adresse IP du serveur (la même que `n8n.nourmeet.com`).
 3. **Réseau de Caddy** : `docker network ls`, repérer le réseau du projet nour-meet (souvent `nour-meet_default`) et le mettre dans `RESEAU_CADDY` dans `.env`.
 4. **Caddy** : ajouter ce bloc au `Caddyfile` (dépôt nour-meet, `infra/Caddyfile`), puis recharger Caddy :
