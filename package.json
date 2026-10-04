@@ -1,0 +1,13 @@
+{
+  "name": "cerveau-central",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cerveau central : surveille les projets de louis, alerte sur Telegram et affiche leur état.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node src/index.js",
+    "verifier": "node src/index.js --une-fois",
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,338 @@
+{
+  "parJour": 2,
+  "pauseJours": 14,
+  "projets": [
+    {
+      "id": "nour-meet",
+      "nom": "Nūr Meet",
+      "questions": [
+        {
+          "id": "nm-humeur",
+          "texte": "Sur 5, à quel point Nūr Meet avance comme tu veux en ce moment ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "nm-restos-reponses",
+          "texte": "Combien de restaurateurs t'ont répondu ces derniers jours ?",
+          "type": "nombre"
+        },
+        {
+          "id": "nm-objection",
+          "texte": "Quelle est la raison la plus fréquente pour laquelle un restaurateur dit non ?",
+          "type": "texte"
+        },
+        {
+          "id": "nm-carrousel",
+          "texte": "Quel carrousel ou quelle vidéo récente t'a le plus plu, et pourquoi ?",
+          "type": "texte"
+        },
+        {
+          "id": "nm-bloque",
+          "texte": "Qu'est-ce qui te bloque le plus sur Nūr Meet aujourd'hui ?",
+          "type": "choix",
+          "choix": [
+            "Trouver des restaurateurs",
+            "Les convaincre",
+            "Le contenu réseaux",
+            "La technique",
+            "Le temps",
+            "Rien"
+          ]
+        },
+        {
+          "id": "nm-retour-client",
+          "texte": "As-tu eu un retour d'un membre ou d'un restaurateur ? Lequel ?",
+          "type": "texte"
+        },
+        {
+          "id": "nm-temps",
+          "texte": "Combien d'heures as-tu passé sur Nūr Meet cette semaine ?",
+          "type": "nombre"
+        },
+        {
+          "id": "nm-idee",
+          "texte": "Une idée que tu n'as pas encore eu le temps de tester pour Nūr Meet ?",
+          "type": "texte"
+        }
+      ]
+    },
+    {
+      "id": "leviaro",
+      "nom": "Leviaro",
+      "questions": [
+        {
+          "id": "lv-humeur",
+          "texte": "Sur 5, à quel point Leviaro avance comme tu veux en ce moment ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "lv-prospects",
+          "texte": "Combien de prospects Leviaro t'ont répondu ces derniers jours ?",
+          "type": "nombre"
+        },
+        {
+          "id": "lv-cible",
+          "texte": "Quel type de client répond le mieux à tes mails ?",
+          "type": "texte"
+        },
+        {
+          "id": "lv-offre",
+          "texte": "Ton offre Leviaro est-elle claire pour un client en une phrase ? Écris cette phrase.",
+          "type": "texte"
+        },
+        {
+          "id": "lv-bloque",
+          "texte": "Qu'est-ce qui te bloque le plus sur Leviaro aujourd'hui ?",
+          "type": "choix",
+          "choix": [
+            "Trouver des clients",
+            "Les convaincre",
+            "Le prix",
+            "Livrer le travail",
+            "Le temps",
+            "Rien"
+          ]
+        },
+        {
+          "id": "lv-rdv",
+          "texte": "As-tu eu un rendez-vous ou un appel client cette semaine ? Comment ça s'est passé ?",
+          "type": "texte"
+        },
+        {
+          "id": "lv-idee",
+          "texte": "Une idée que tu n'as pas encore eu le temps de tester pour Leviaro ?",
+          "type": "texte"
+        }
+      ]
+    },
+    {
+      "id": "extrait-politique",
+      "nom": "L'Extrait politique",
+      "questions": [
+        {
+          "id": "ep-humeur",
+          "texte": "Sur 5, es-tu content des vidéos publiées hier ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "ep-meilleure",
+          "texte": "Quelle vidéo récente a le mieux marché, et pourquoi selon toi ?",
+          "type": "texte"
+        },
+        {
+          "id": "ep-refus",
+          "texte": "Pourquoi as-tu refusé des extraits sur Telegram dernièrement ?",
+          "type": "choix",
+          "choix": [
+            "Sujet peu intéressant",
+            "Mauvais découpage",
+            "Déjà traité",
+            "Trop polémique",
+            "Qualité son/image",
+            "Je n'en ai pas refusé"
+          ]
+        },
+        {
+          "id": "ep-sujet",
+          "texte": "Quel sujet d'actualité aurais-tu voulu voir traité et qui ne l'a pas été ?",
+          "type": "texte"
+        },
+        {
+          "id": "ep-temps",
+          "texte": "Combien de minutes par jour passes-tu à trier les extraits ?",
+          "type": "nombre"
+        },
+        {
+          "id": "ep-commentaires",
+          "texte": "Que disent les commentaires en ce moment ?",
+          "type": "texte"
+        },
+        {
+          "id": "ep-idee",
+          "texte": "Une idée de format ou de chaîne à ajouter ?",
+          "type": "texte"
+        }
+      ]
+    },
+    {
+      "id": "histoires-vraies",
+      "nom": "Petites histoires vraies",
+      "questions": [
+        {
+          "id": "hv-humeur",
+          "texte": "Sur 5, es-tu content de Petites histoires vraies en ce moment ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "hv-meilleure",
+          "texte": "Quelle histoire a le mieux marché récemment, et pourquoi selon toi ?",
+          "type": "texte"
+        },
+        {
+          "id": "hv-format",
+          "texte": "Qu'est-ce qui marche le mieux en ce moment ?",
+          "type": "choix",
+          "choix": [
+            "Vidéos courtes réseaux",
+            "Longues vidéos YouTube",
+            "Les deux pareil",
+            "Je ne sais pas"
+          ]
+        },
+        {
+          "id": "hv-sujets",
+          "texte": "Quel type d'histoire aimerais-tu faire plus souvent ?",
+          "type": "texte"
+        },
+        {
+          "id": "hv-bloque",
+          "texte": "Qu'est-ce qui te bloque le plus sur ce projet ?",
+          "type": "choix",
+          "choix": [
+            "Trouver des histoires",
+            "La production",
+            "La visibilité",
+            "Le temps",
+            "Rien"
+          ]
+        },
+        {
+          "id": "hv-idee",
+          "texte": "Une idée que tu n'as pas encore testée pour ce projet ?",
+          "type": "texte"
+        }
+      ]
+    },
+    {
+      "id": "impacteur-prospection",
+      "nom": "Prospection Impacteur Afrique / Frexit",
+      "questions": [
+        {
+          "id": "ip-humeur",
+          "texte": "Sur 5, es-tu content des invités trouvés ces derniers temps ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "ip-acceptes",
+          "texte": "Combien d'auteurs ont accepté une interview ces derniers jours ?",
+          "type": "nombre"
+        },
+        {
+          "id": "ip-refus",
+          "texte": "Pourquoi les auteurs refusent-ils le plus souvent ?",
+          "type": "choix",
+          "choix": [
+            "Pas de réponse",
+            "Pas le temps",
+            "Chaîne trop petite",
+            "Sujet qui ne leur parle pas",
+            "Je ne sais pas"
+          ]
+        },
+        {
+          "id": "ip-profil",
+          "texte": "Quel profil d'invité aimerais-tu avoir et que tu n'arrives pas à contacter ?",
+          "type": "texte"
+        },
+        {
+          "id": "ip-meilleur",
+          "texte": "Quelle interview récente a le mieux marché, et pourquoi ?",
+          "type": "texte"
+        },
+        {
+          "id": "ip-idee",
+          "texte": "Une idée pour mieux convaincre les invités ?",
+          "type": "texte"
+        }
+      ]
+    },
+    {
+      "id": "impacteur-recurrent",
+      "nom": "Mails récurrents Impacteur Afrique",
+      "questions": [
+        {
+          "id": "ir-humeur",
+          "texte": "Sur 5, es-tu content des relations avec tes invités récurrents ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "ir-reponses",
+          "texte": "Combien d'invités récurrents ont répondu ces derniers jours ?",
+          "type": "nombre"
+        },
+        {
+          "id": "ir-ton",
+          "texte": "Le ton des mails récurrents te convient-il ? Qu'est-ce que tu changerais ?",
+          "type": "texte"
+        },
+        {
+          "id": "ir-frequence",
+          "texte": "La fréquence des mails est-elle bonne ?",
+          "type": "choix",
+          "choix": [
+            "Trop souvent",
+            "Bien",
+            "Pas assez",
+            "Je ne sais pas"
+          ]
+        },
+        {
+          "id": "ir-idee",
+          "texte": "Une idée pour garder tes invités fidèles ?",
+          "type": "texte"
+        }
+      ]
+    },
+    {
+      "id": "cambodge",
+      "nom": "Emploi au Cambodge",
+      "questions": [
+        {
+          "id": "kh-humeur",
+          "texte": "Sur 5, comment avance ta recherche d'emploi au Cambodge ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "kh-reponses",
+          "texte": "Combien d'employeurs t'ont répondu ces derniers jours ?",
+          "type": "nombre"
+        },
+        {
+          "id": "kh-poste",
+          "texte": "Quel poste vises-tu en priorité en ce moment ?",
+          "type": "texte"
+        },
+        {
+          "id": "kh-bloque",
+          "texte": "Qu'est-ce qui te freine le plus ?",
+          "type": "choix",
+          "choix": [
+            "Peu d'offres",
+            "Pas de réponses",
+            "Le CV",
+            "Le visa ou la logistique",
+            "Le temps",
+            "Rien"
+          ]
+        },
+        {
+          "id": "kh-echeance",
+          "texte": "Pour quand aimerais-tu avoir trouvé ?",
+          "type": "texte"
+        },
+        {
+          "id": "kh-idee",
+          "texte": "Une piste que tu n'as pas encore explorée ?",
+          "type": "texte"
+        }
+      ]
+    }
+  ]
+}
