@@ -91,12 +91,11 @@ export function enregistrerReponses(config, historique, champs, maintenant = new
   return n;
 }
 
-// Rappel du matin : une fois par jour, après l'heure choisie, s'il reste des questions.
-export function rappelAEnvoyer(config, historique, { heure = 9, maintenant = new Date() } = {}) {
+// Résumé du matin : une fois par jour, après l'heure choisie.
+// Renvoie le nombre de questions qui attendent, ou null si ce n'est pas le moment.
+export function matinARappeler(config, historique, { heure = 9, maintenant = new Date() } = {}) {
   const jour = jourParis(maintenant);
   if (heureParis(maintenant) < heure || historique.rappels.includes(jour)) return null;
-  const n = enAttente(config, historique, jour);
   historique.rappels = [jour, ...historique.rappels].slice(0, 30);
-  if (!n) return null;
-  return `🧠 <b>Questions du jour</b>\n${n} petite(s) question(s) sur tes projets t'attendent sur ta page, onglet « Questions du jour ». Deux minutes suffisent.`;
+  return enAttente(config, historique, jour);
 }

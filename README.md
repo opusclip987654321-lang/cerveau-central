@@ -4,7 +4,13 @@ Surveille les projets de louis, le prévient sur Telegram quand quelque chose ca
 
 C'est l'**étape 2** du cahier des charges : « Est-ce que tout tourne ? ». Le cerveau **ne corrige rien** : il observe et prévient.
 
-## Ce qu'il vérifie, toutes les 3 heures
+## Ce qu'il fait
+
+- Vérifie toutes les 3 heures que tout tourne, et prévient sur Telegram.
+- Envoie chaque matin un résumé sur Telegram : état des projets, incidents des dernières 24 h, questions du jour.
+- Pose 3 questions par jour et par projet sur la page.
+
+## Ce qu'il vérifie
 
 | Projet | Vérifications |
 |---|---|
@@ -25,9 +31,9 @@ Règles des alertes :
 
 ## Questions du jour
 
-Chaque jour, l'onglet « Questions du jour » pose 2 questions par projet (les 7 projets) : une note sur 5 chaque jour, pour suivre la tendance, et une question qui change. Une question déjà posée revient au plus tôt 14 jours plus tard. On répond à ce qu'on veut, le reste peut rester vide.
+Chaque jour, l'onglet « Questions du jour » pose 3 questions par projet (les 7 projets) : une note sur 5 chaque jour, pour suivre la tendance, et deux questions qui changent. Une question déjà posée revient au plus tôt 7 jours plus tard. On répond à ce qu'on veut, le reste peut rester vide.
 
-Un rappel Telegram part le matin (9 h par défaut, `QUESTIONS_HEURE`) s'il reste des questions. Les réponses sont gardées dans `data/reponses.json` ; l'analyse quotidienne par l'IA (étape suivante) s'en servira pour repérer les axes de progrès de chaque projet.
+Le résumé Telegram du matin (9 h par défaut, `RESUME_HEURE`) rappelle combien de questions attendent. Les réponses sont gardées dans `data/reponses.json` ; l'analyse quotidienne par l'IA (étape suivante) s'en servira pour repérer les axes de progrès de chaque projet.
 
 Les questions se modifient dans [`config/questions.json`](config/questions.json) (types : `note`, `nombre`, `choix`, `texte`).
 
@@ -53,15 +59,32 @@ Mettre à jour plus tard :
 cd /opt/cerveau-central && git pull && docker compose up -d --build
 ```
 
-## Ouvrir la page d'état depuis ton ordinateur
+## Ouvrir la page depuis ton Mac
 
-La page n'est pas sur Internet : elle n'écoute que sur le serveur lui-même. On l'ouvre par un tunnel SSH :
+La page s'ouvre sur **https://cerveau.nourmeet.com**, protégée par un mot de passe. Après 5 mauvais essais, l'adresse est bloquée 15 minutes. Une fois connecté, le navigateur s'en souvient 30 jours.
+
+1. **Choisir le mot de passe** (12 caractères ou plus), sur le serveur :
+   ```bash
+   docker compose run --rm cerveau node src/mot-de-passe.js
+   ```
+   Coller la ligne `MOT_DE_PASSE_EMPREINTE=…` qu'il affiche dans `.env`. Le mot de passe lui-même n'est enregistré nulle part.
+2. **Nom de domaine** : chez OVH, ajouter un enregistrement `A` pour `cerveau.nourmeet.com` vers l'adresse IP du serveur (la même que `n8n.nourmeet.com`).
+3. **Réseau de Caddy** : `docker network ls`, repérer le réseau du projet nour-meet (souvent `nour-meet_default`) et le mettre dans `RESEAU_CADDY` dans `.env`.
+4. **Caddy** : ajouter ce bloc au `Caddyfile` (dépôt nour-meet, `infra/Caddyfile`), puis recharger Caddy :
+   ```
+   cerveau.nourmeet.com {
+   	reverse_proxy cerveau-central:8090
+   }
+   ```
+5. `docker compose up -d --build`
+
+Sans `MOT_DE_PASSE_EMPREINTE`, la page n'a pas de mot de passe : ne pas ajouter le bloc Caddy dans ce cas, et l'ouvrir seulement par tunnel SSH :
 
 ```bash
 ssh -L 8090:127.0.0.1:8090 utilisateur@ip-du-vps
 ```
 
-Laisser cette fenêtre ouverte, puis ouvrir <http://localhost:8090> dans le navigateur.
+puis <http://localhost:8090>.
 
 ## Brancher Telegram
 

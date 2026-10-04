@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node src/index.js",
     "verifier": "node src/index.js --une-fois",
+    "mot-de-passe": "node src/mot-de-passe.js",
     "test": "node --test"
   }
 }
