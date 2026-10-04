@@ -6,13 +6,22 @@ services:
     env_file: .env
     environment:
       HOTE: 0.0.0.0
-    # La page n'est joignable que depuis le serveur lui-même (127.0.0.1) :
-    # louis l'ouvre depuis son ordinateur par un tunnel SSH, jamais depuis Internet.
+    # Joignable depuis le serveur lui-même (tunnel SSH) et par Caddy, qui le publie
+    # sur cerveau.nourmeet.com derrière le mot de passe. Jamais exposé directement.
     ports:
       - "127.0.0.1:8090:8090"
     volumes:
       - cerveau-data:/app/data
       - ./config:/app/config:ro
+    networks:
+      - default
+      - caddy
 
 volumes:
   cerveau-data:
+
+networks:
+  # Le réseau Docker où tourne Caddy (celui du projet nour-meet). Voir README.
+  caddy:
+    external: true
+    name: ${RESEAU_CADDY:-nour-meet_default}
