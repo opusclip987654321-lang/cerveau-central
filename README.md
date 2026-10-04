@@ -4,7 +4,7 @@ Surveille les projets de louis, le prévient sur Telegram quand quelque chose ca
 
 C'est l'**étape 2** du cahier des charges : « Est-ce que tout tourne ? ». Le cerveau **ne corrige rien** : il observe et prévient.
 
-## Ce qu'il vérifie, toutes les 15 minutes
+## Ce qu'il vérifie, toutes les 3 heures
 
 | Projet | Vérifications |
 |---|---|
@@ -22,6 +22,14 @@ Règles des alertes :
 - 🟢 **rétabli** : avec la durée de la panne.
 - Un site qui rate une fois est revérifié 30 secondes plus tard avant d'alerter (pas de fausse alerte pour un raté passager).
 - Une seule alerte par panne : pas de répétition tant qu'elle dure.
+
+## Questions du jour
+
+Chaque jour, l'onglet « Questions du jour » pose 2 questions par projet (les 7 projets) : une note sur 5 chaque jour, pour suivre la tendance, et une question qui change. Une question déjà posée revient au plus tôt 14 jours plus tard. On répond à ce qu'on veut, le reste peut rester vide.
+
+Un rappel Telegram part le matin (9 h par défaut, `QUESTIONS_HEURE`) s'il reste des questions. Les réponses sont gardées dans `data/reponses.json` ; l'analyse quotidienne par l'IA (étape suivante) s'en servira pour repérer les axes de progrès de chaque projet.
+
+Les questions se modifient dans [`config/questions.json`](config/questions.json) (types : `note`, `nombre`, `choix`, `texte`).
 
 ## Installer sur le VPS
 
