@@ -1,0 +1,18 @@
+services:
+  cerveau:
+    build: .
+    container_name: cerveau-central
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOTE: 0.0.0.0
+    # La page n'est joignable que depuis le serveur lui-même (127.0.0.1) :
+    # louis l'ouvre depuis son ordinateur par un tunnel SSH, jamais depuis Internet.
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - cerveau-data:/app/data
+      - ./config:/app/config:ro
+
+volumes:
+  cerveau-data:

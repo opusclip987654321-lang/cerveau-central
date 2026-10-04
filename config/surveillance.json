@@ -1,0 +1,51 @@
+{
+  "projets": [
+    {
+      "id": "nour-meet",
+      "nom": "Nūr Meet",
+      "verifications": [
+        { "type": "site", "nom": "Site nourmeet.com", "url": "https://nourmeet.com" },
+        { "type": "site", "nom": "API (base de données comprise)", "url": "https://api.nourmeet.com/health/ready", "json": { "status": "ok" } },
+        { "type": "certificat", "nom": "Certificat nourmeet.com", "hote": "nourmeet.com" },
+        { "type": "certificat", "nom": "Certificat api.nourmeet.com", "hote": "api.nourmeet.com" }
+      ]
+    },
+    {
+      "id": "leviaro",
+      "nom": "Leviaro",
+      "verifications": [
+        { "type": "site", "nom": "Site leviaro.fr", "url": "https://leviaro.fr" },
+        { "type": "site", "nom": "Admin admin.leviaro.fr", "url": "https://admin.leviaro.fr", "statuts": [200, 301, 302, 401, 403] },
+        { "type": "certificat", "nom": "Certificat leviaro.fr", "hote": "leviaro.fr" },
+        { "type": "certificat", "nom": "Certificat admin.leviaro.fr", "hote": "admin.leviaro.fr" }
+      ]
+    },
+    {
+      "id": "n8n",
+      "nom": "n8n (automatisations)",
+      "verifications": [
+        { "type": "site", "nom": "n8n.nourmeet.com", "url": "https://n8n.nourmeet.com/healthz", "json": { "status": "ok" } },
+        { "type": "certificat", "nom": "Certificat n8n.nourmeet.com", "hote": "n8n.nourmeet.com" },
+        { "type": "n8n" }
+      ]
+    },
+    {
+      "id": "serveur",
+      "nom": "Serveur OVH",
+      "verifications": [
+        { "type": "disque", "nom": "Espace disque", "chemin": "/" },
+        { "type": "memoire", "nom": "Mémoire" },
+        { "type": "charge", "nom": "Charge du processeur" }
+      ]
+    }
+  ],
+  "seuils": {
+    "lenteurMs": 4000,
+    "certificatJoursAttention": 14,
+    "certificatJoursCritique": 3,
+    "disqueAttention": 85,
+    "disqueCritique": 95,
+    "memoireAttention": 90,
+    "chargeParCoeurAttention": 2
+  }
+}
