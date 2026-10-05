@@ -43,6 +43,28 @@ L'onglet **Argent** liste les abonnements et recharges (pré-remplis avec le ré
 
 On peut y **déposer ses factures** (PDF ou photo). Si `ANTHROPIC_API_KEY` est dans `.env`, le cerveau les lit avec Claude Sonnet 5.5 (environ 1 centime par facture), les rapproche de la liste et montre ce qui est à jour, ce qui manque et les montants différents. La dépense IA est plafonnée par mois (`PLAFOND_IA_DOLLARS`, 10 $ par défaut). Les factures restent sur le serveur, dans le volume `data/factures`.
 
+## Serveurs
+
+L'onglet **Serveurs** montre chaque VPS (liste dans `config/serveurs.json`) : place sur le disque, mémoire, processeur, quels projets tournent dessus et ce qu'ils prennent, la date estimée où le disque sera plein, et des conseils (nettoyage possible, conteneur arrêté, déplacer un projet vers le VPS le moins rempli). Le cerveau ne touche à rien : il propose, louis décide.
+
+Chaque VPS envoie un relevé par heure avec `scripts/releve.sh` (lecture seule : `df`, `docker ps`, `docker stats`, `du`). Installation, une fois par VPS :
+
+```sh
+# 1. Sur le VPS Nūr, une seule fois : créer le jeton et l'ajouter au .env du cerveau
+cd ~/cerveau-central && echo "RELEVE_JETON=$(openssl rand -hex 24)" >> .env && docker compose up -d --build
+
+# 2. Sur chaque VPS : réglages (SERVEUR = vps-nour ou vps-youtube ; même jeton qu'au 1.)
+#    sur le VPS Nūr, CERVEAU_URL peut être http://127.0.0.1:8090
+mkdir -p ~/cerveau-releve && curl -fsSL https://raw.githubusercontent.com/opusclip987654321-lang/cerveau-central/main/scripts/releve.sh -o ~/cerveau-releve/releve.sh && chmod +x ~/cerveau-releve/releve.sh
+nano ~/.cerveau-releve && chmod 600 ~/.cerveau-releve
+
+# 3. Tester, puis lancer chaque heure
+~/cerveau-releve/releve.sh
+(crontab -l 2>/dev/null; echo "7 * * * * $HOME/cerveau-releve/releve.sh >/dev/null 2>&1") | crontab -
+```
+
+Si un VPS n'envoie plus rien pendant 3 h, une alerte Telegram part.
+
 ## Installer sur le VPS
 
 Prérequis : Docker (déjà présent sur le serveur).

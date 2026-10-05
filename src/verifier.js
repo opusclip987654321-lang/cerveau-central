@@ -3,6 +3,7 @@ import { verifierSite } from './checks/http.js';
 import { verifierCertificat } from './checks/tls.js';
 import { verifierDisque, verifierMemoire, verifierCharge } from './checks/serveur.js';
 import { verifierN8n } from './checks/n8n.js';
+import { verifierReleve } from './checks/releve.js';
 import { chargerEtat, sauverEtat, changement } from './etat.js';
 import { redigerAlerte } from './alertes.js';
 
@@ -13,6 +14,7 @@ const VERIFICATEURS = {
   memoire: verifierMemoire,
   charge: verifierCharge,
   n8n: verifierN8n,
+  releve: verifierReleve,
 };
 
 export const cle = (projet, verif, i) => `${projet.id}/${verif.nom ?? verif.type}#${i}`;
@@ -24,6 +26,7 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {} 
     n8n: { ...options.n8n, depuis: etat.derniereVerification },
     site: options.site,
     certificat: options.certificat,
+    releve: options.releve,
   };
 
   const taches = config.projets.flatMap((projet) =>
