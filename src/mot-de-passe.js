@@ -1,32 +1,15 @@
-// Choisir le mot de passe de la page : `npm run mot-de-passe`.
-// Affiche la ligne à copier dans .env ; le mot de passe lui-même n'est enregistré nulle part.
-import { createInterface } from 'node:readline';
+// Choisir le mot de passe de la page. Sur le serveur :
+//   read -rs -p "Mot de passe : " MDP; echo; printf '%s' "$MDP" | docker compose run --rm -T cerveau node src/mot-de-passe.js >> .env; unset MDP
+// Le mot de passe est lu sur l'entrée standard (jamais affiché) et seule son empreinte
+// est écrite, sous la forme MOT_DE_PASSE_EMPREINTE=… ; le mot de passe n'est enregistré nulle part.
 import { empreinte } from './acces.js';
 
-const rl = createInterface({ input: process.stdin, output: process.stdout });
-// Le mot de passe tapé ne s'affiche pas à l'écran.
-let masque = false;
-rl._writeToOutput = (texte) => process.stdout.write(masque ? (texte.includes('\n') ? '\n' : '') : texte);
-const demander = (q) =>
-  new Promise((r) => {
-    masque = false;
-    process.stdout.write(q);
-    masque = true;
-    rl.question('', (reponse) => {
-      masque = false;
-      process.stdout.write('\n');
-      r(reponse);
-    });
-  });
-const mdp = await demander('Nouveau mot de passe (12 caractères ou plus) : ');
+let mdp = '';
+for await (const morceau of process.stdin) mdp += morceau;
+mdp = mdp.replace(/\r?\n$/, '');
+
 if (mdp.length < 12) {
-  console.error('Trop court : choisis au moins 12 caractères.');
+  console.error('Trop court : choisis au moins 12 caractères. Rien n’a été écrit.');
   process.exit(1);
 }
-const encore = await demander('Encore une fois : ');
-rl.close();
-if (encore !== mdp) {
-  console.error('Les deux ne sont pas pareils, recommence.');
-  process.exit(1);
-}
-console.log(`\nCopie cette ligne dans .env :\nMOT_DE_PASSE_EMPREINTE=${empreinte(mdp)}\n`);
+console.log(`MOT_DE_PASSE_EMPREINTE=${empreinte(mdp)}`);
