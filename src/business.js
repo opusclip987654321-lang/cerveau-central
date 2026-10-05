@@ -209,7 +209,37 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
   });
 
   // Leviaro et Cambodge : pas encore de source, seulement les notes.
-  carte('leviaro', { titre: 'Prospects contactés', dates: evenements(journal, 'leviaro', ['mail']), unite: 'prospect contacté', branche: false, manque: ['prospects de leviaro.db'] });
+  // Leviaro : sa base (leviaro-agent), lue chaque heure.
+  const lv = business.sources?.leviaro;
+  if (lv) {
+    const premiers = lv.envois.filter((m) => m.etape === 0).map((m) => m.jour);
+    const relances = lv.envois.filter((m) => m.etape > 0).map((m) => m.jour);
+    const reponses = lv.reponses.map((r) => r.jour);
+    const aTraiter = lv.reponses.filter((r) => !r.traitee).length;
+    const echecsPeriode = somme(parJour(periode, lv.echecs));
+    const aDecider = [];
+    if (aTraiter) aDecider.push(`${nombre(aTraiter)} réponse(s) de prospect pas encore traitée(s).`);
+    if (lv.aValider) aDecider.push(`${nombre(lv.aValider)} mail(s) attendent ta validation.`);
+    if (lv.recommandations) aDecider.push(`${nombre(lv.recommandations)} recommandation(s) de l'agent à accepter ou refuser.`);
+    if (echecsPeriode) aDecider.push(`${nombre(echecsPeriode)} mail(s) en échec définitif cette période : vérifier les adresses.`);
+    const c = carte('leviaro', {
+      titre: 'Prospects contactés',
+      dates: premiers,
+      unite: 'prospect contacté',
+      joursMax: reglages.leviaro?.joursMax,
+      souci: echecsPeriode > 0,
+      aDecider,
+      extra: [
+        { titre: 'Réponses', valeur: somme(parJour(periode, reponses)), detail: `${pct(reponses.length, premiers.length) ?? 0} % de réponse depuis le début (${nombre(reponses.length)} sur ${nombre(premiers.length)})` },
+        { titre: 'Relances envoyées', valeur: somme(parJour(periode, relances)) },
+        { titre: 'Entreprises trouvées', valeur: somme(parJour(periode, lv.entreprises)), detail: `${nombre(lv.enDiscussion)} en discussion · coût IA du mois ${lv.coutMois.toLocaleString('fr-FR')} €` },
+      ],
+      manque: ['clients signés'],
+    });
+    c.secondaire = { titre: 'Réponses', serie: parJour(periode, reponses) };
+  } else {
+    carte('leviaro', { titre: 'Prospects contactés', dates: evenements(journal, 'leviaro', ['mail']), unite: 'prospect contacté', branche: false, manque: ['prospects de leviaro.db'] });
+  }
   carte('cambodge', { titre: 'Candidatures envoyées', dates: evenements(journal, 'cambodge', ['mail']), unite: 'candidature', joursMax: 7, branche: false, manque: ['candidatures'] });
 
   return { periode, cartes, maj: pr?.maj ?? null };

@@ -162,6 +162,7 @@ npm start              # la page d'état sur http://127.0.0.1:8090
 
 En tête du Journal : une carte par projet avec sa pastille (🟢 ça avance, 🟠 souci ou objectif pas atteint, 🔴 plus rien depuis trop longtemps, ⚪ pas encore branché), les chiffres de la période (7 ou 30 jours), un graphique par jour, ce qu'il y a « à décider » et un objectif hebdomadaire proposé que louis valide d'un clic. Le détail technique des automatisations est replié en bas.
 
+- Leviaro : le cerveau copie chaque heure `leviaro.db` (dossier data de leviaro-agent, monté en lecture seule) et lit les mails envoyés, réponses, entreprises trouvées, validations en attente.
 - Prospection Nūr Meet : lue chaque heure dans les tableaux de données n8n `np_prospects`, `np_envois`, `np_ouvertures` (API publique, clé `N8N_API_KEY`, lecture seule). Copie dans `data/business.json`.
 - L'extrait politique : exécutions réussies des automatisations dont le nom contient « publi » (réglable dans `config/journal.json`, `tableau`).
 - Le matin, Telegram signale les projets en rouge (`joursMax` par projet dans `config/journal.json`).

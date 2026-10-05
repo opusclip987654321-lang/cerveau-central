@@ -26,6 +26,7 @@ import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from '.
 import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
 import { depenseIaDuMois } from './factures.js';
+import { synchroniserLeviaro } from './leviaro.js';
 import { chargerBusiness, sauverBusiness, synchroniserProspection, tableauDeBord, messageSilences, validerObjectif } from './business.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -163,6 +164,11 @@ async function synchroniserJournal() {
     } catch (err) {
       console.error(`Tableau de bord (prospection) : ${err.message}`);
     }
+    try {
+      await avecBusiness((b) => synchroniserLeviaro(b, dossierLeviaro));
+    } catch (err) {
+      console.error(`Tableau de bord (Leviaro) : ${err.message}`);
+    }
   } catch (err) {
     console.error(`Journal : ${err.message}`);
   }
@@ -219,6 +225,8 @@ const instancesN8n = {
 };
 // Dossier data/ de Petites histoires vraies, monté en lecture seule (docker-compose.yml).
 const dossierHistoires = env.HISTOIRES_DOSSIER || '/sources/histoires';
+// Dossier data/ de leviaro-agent (base leviaro.db), monté en lecture seule.
+const dossierLeviaro = env.LEVIARO_DOSSIER || '/sources/leviaro';
 const options = { n8n: instancesN8n, releve: { fichier: fichierServeurs }, histoires: { dossier: dossierHistoires } };
 
 // Secret qui signe les sessions, créé au premier démarrage et gardé dans data/.
