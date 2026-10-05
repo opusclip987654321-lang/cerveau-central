@@ -33,6 +33,8 @@ import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
+import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, depenseBilansDuMois } from './bilan.js';
+import { pageAnalyses } from './page-analyses.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
 import { synchroniserLeviaro } from './leviaro.js';
@@ -57,6 +59,8 @@ const fichierDiscussion = path.join(path.dirname(fichierEtat), 'discussion.json'
 const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
 const fichierIdees = path.join(path.dirname(fichierEtat), 'idees.json');
 const fichierSuivi = path.join(path.dirname(fichierEtat), 'suivi-reponses.json');
+const fichierBilans = path.join(path.dirname(fichierEtat), 'bilans.json');
+const plafondBilans = Number(env.PLAFOND_BILAN_DOLLARS ?? 10);
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -147,6 +151,7 @@ const avecDiscussion = fileDAttente(chargerDiscussion, sauverDiscussion, fichier
 const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
 const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
+const avecBilans = fileDAttente(chargerBilans, sauverBilans, fichierBilans);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -253,6 +258,34 @@ async function rappelDuMatin() {
 }
 
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
+
+// Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
+async function bilanDuLundi() {
+  if (!clientClaude) return;
+  try {
+    const semaine = bilanAFaire(await chargerBilans(fichierBilans), { heure: Number(env.BILAN_HEURE ?? 8) });
+    if (!semaine) return;
+    const contexte = contexteCerveau({
+      etat: await chargerEtat(fichierEtat),
+      argent: await chargerArgent(fichierArgent, fichierArgentDepart),
+      journal: await chargerJournal(fichierJournal),
+      serveurs: await chargerServeurs(fichierServeurs),
+      configServeurs,
+      configJournal,
+      pauses: await chargerPauses(fichierPauses),
+      business: await chargerBusiness(fichierBusiness),
+      reponses: await chargerReponses(fichierReponses),
+    });
+    const entree = await avecBilans((d) => genererBilan(d, { client: clientClaude, contexte, semaine, plafondDollars: plafondBilans }));
+    await envoyer(
+      entree.texte
+        ? `📊 <b>Bilan du lundi</b>\n${entree.texte.slice(0, 3500)}\n\nLe bilan complet est dans l’onglet Analyses du cerveau.`
+        : `📊 Bilan du lundi : ${entree.erreur}`,
+    );
+  } catch (err) {
+    console.error(`Bilan du lundi impossible : ${err.message}`);
+  }
+}
 // Les n8n de louis : n8n.nourmeet.com (Nūr Meet, Impacteur) et n8n.actualitevideo.fr (VPS YouTube).
 const instancesN8n = {
   principal: { url: env.N8N_URL, cle: env.N8N_API_KEY },
@@ -407,6 +440,8 @@ const serveur = http.createServer(async (req, res) => {
             configServeurs,
             configJournal,
             pauses: await chargerPauses(fichierPauses),
+            business: await chargerBusiness(fichierBusiness),
+            reponses: await chargerReponses(fichierReponses),
           });
           const historique = (await chargerDiscussion(fichierDiscussion)).messages.filter((m) => !m.erreur);
           resultat = await repondre(historique, question, { client: clientClaude, contexte });
@@ -506,6 +541,11 @@ const serveur = http.createServer(async (req, res) => {
           message: url.searchParams.get('message') ?? undefined,
         }),
       );
+    }
+    if (req.method === 'GET' && url.pathname === '/analyses') {
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageAnalyses(await chargerBilans(fichierBilans), { aRepondre, plafond: plafondBilans }));
     }
     if (req.method === 'GET' && url.pathname === '/actions') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
@@ -661,3 +701,5 @@ setInterval(synchroniserJournal, 60 * 60_000);
 setInterval(verifier, intervalleMinutes * 60_000);
 rappelDuMatin();
 setInterval(rappelDuMatin, 10 * 60_000);
+bilanDuLundi();
+setInterval(bilanDuLundi, 10 * 60_000);
