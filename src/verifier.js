@@ -4,6 +4,7 @@ import { verifierCertificat } from './checks/tls.js';
 import { verifierDisque, verifierMemoire, verifierCharge } from './checks/serveur.js';
 import { verifierN8n } from './checks/n8n.js';
 import { verifierReleve } from './checks/releve.js';
+import { verifierHistoires } from './histoires.js';
 import { chargerEtat, sauverEtat, changement } from './etat.js';
 import { redigerAlerte } from './alertes.js';
 
@@ -15,6 +16,7 @@ const VERIFICATEURS = {
   charge: verifierCharge,
   n8n: verifierN8n,
   releve: verifierReleve,
+  histoires: verifierHistoires,
 };
 
 export const cle = (projet, verif, i) => `${projet.id}/${verif.nom ?? verif.type}#${i}`;
@@ -27,6 +29,7 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {} 
     site: options.site,
     certificat: options.certificat,
     releve: options.releve,
+    histoires: options.histoires,
   };
 
   const taches = config.projets.flatMap((projet) =>

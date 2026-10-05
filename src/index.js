@@ -14,6 +14,7 @@ import { creerAcces, lireCookie, pageConnexion } from './acces.js';
 import { pageQuestions } from './page-questions.js';
 import { chargerReponses, sauverReponses, enAttente, enregistrerReponses, matinARappeler } from './questions.js';
 import { chargerArgent, sauverArgent, lireLigne, rappelsARenvoyer, messageRappels } from './argent.js';
+import { lireHistoires, synchroniserHistoires } from './histoires.js';
 import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient, corrigerDepuisFactures, annulerCorrection, marquerOrphelinesARelire, messageCorrections } from './factures.js';
 import { pageArgent } from './page-argent.js';
 import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from './serveurs.js';
@@ -127,8 +128,10 @@ async function synchroniserJournal() {
         console.error(`Journal n8n (${instance}) : ${err.message}`);
       }
     }
+    const histoires = await lireHistoires(dossierHistoires);
+    await avecJournal((j) => synchroniserHistoires(j, configJournal, histoires));
   } catch (err) {
-    console.error(`Journal n8n : ${err.message}`);
+    console.error(`Journal : ${err.message}`);
   }
 }
 
@@ -177,7 +180,9 @@ const instancesN8n = {
   principal: { url: env.N8N_URL, cle: env.N8N_API_KEY },
   actualite: { url: env.N8N_ACTUALITE_URL || 'https://n8n.actualitevideo.fr', cle: env.N8N_ACTUALITE_API_KEY },
 };
-const options = { n8n: instancesN8n, releve: { fichier: fichierServeurs } };
+// Dossier data/ de Petites histoires vraies, monté en lecture seule (docker-compose.yml).
+const dossierHistoires = env.HISTOIRES_DOSSIER || '/sources/histoires';
+const options = { n8n: instancesN8n, releve: { fichier: fichierServeurs }, histoires: { dossier: dossierHistoires } };
 
 // Secret qui signe les sessions, créé au premier démarrage et gardé dans data/.
 const fichierSecret = path.join(path.dirname(fichierEtat), 'secret');

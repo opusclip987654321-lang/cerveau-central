@@ -13,6 +13,8 @@ services:
     volumes:
       - cerveau-data:/app/data
       - ./config:/app/config:ro
+      # Petites histoires vraies : le cerveau lit seulement (vidéos publiées, histoires lancées).
+      - /opt/nour-video-agent/data:/sources/histoires:ro
     networks:
       - default
       - caddy
