@@ -106,7 +106,7 @@ nav a.actif { background:var(--carte); border-color:var(--bord); font-weight:600
 </head>
 <body>
 <main>
-<header><h1>🧠 Cerveau central</h1><nav>${lien('etat', '/', 'État')}${lien('questions', '/questions', 'Questions du jour' + badge)}</nav></header>
+<header><h1>🧠 Cerveau central</h1><nav>${lien('etat', '/', 'État')}${lien('questions', '/questions', 'Questions du jour' + badge)}${lien('argent', '/argent', 'Argent')}</nav></header>
 ${contenu}
 </main>
 </body>
