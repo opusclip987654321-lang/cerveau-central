@@ -42,6 +42,10 @@
     {
       "titre": "Une étiquette, une trace",
       "texte": "Seuls les mails étiquetés « Cambodge » comptent : pense à étiqueter les réponses aussi."
+    },
+    {
+      "titre": "Accusés ≠ réponses",
+      "texte": "Les mails automatiques « votre candidature a bien été envoyée » comptent comme des candidatures envoyées, pas comme des réponses. Une réponse, c’est un humain qui t’écrit."
     }
   ],
   "role": {
