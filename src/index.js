@@ -545,7 +545,7 @@ const serveur = http.createServer(async (req, res) => {
         const nom = configJournal.projets.find((p) => p.id === projet)?.nom ?? projet;
         envoyer(`💡 <b>Idée notée</b> (${nom})\n${r.idee.texte.slice(0, 300)}`).catch(() => {});
       }
-      res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Dis-le moi aussi dans notre discussion Claude pour que je m’y mette.')}` });
+      res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Claude vient lire les idées deux fois par jour et te répond dans votre discussion.')}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/idees/statut') {
