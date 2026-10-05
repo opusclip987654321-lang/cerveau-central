@@ -164,7 +164,7 @@ En tête du Journal : une carte par projet avec sa pastille (🟢 ça avance, �
 
 - Leviaro : le cerveau copie chaque heure `leviaro.db` (dossier data de leviaro-agent, monté en lecture seule) et lit les mails envoyés, réponses, entreprises trouvées, validations en attente.
 - Prospection Nūr Meet : lue chaque heure dans les tableaux de données n8n `np_prospects`, `np_envois`, `np_ouvertures` (API publique, clé `N8N_API_KEY`, lecture seule). Copie dans `data/business.json`.
-- L'extrait politique : exécutions réussies des automatisations dont le nom contient « publi » (réglable dans `config/journal.json`, `tableau`).
+- L'extrait politique : vidéos, vues et abonnés lus sur YouTube quand `YOUTUBE_API_KEY` (clé API YouTube Data v3) est dans le .env et que `config/youtube.json` liste les chaînes ; sinon, exécutions des automatisations « publi » de n8n.
 - Le matin, Telegram signale les projets en rouge (`joursMax` par projet dans `config/journal.json`).
 
 ## Pages par projet et idées

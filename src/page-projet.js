@@ -39,6 +39,20 @@ const tonProspect = (s) => (s === 'repondu' ? 'ok' : s === 'propose' ? 'attente'
 // Les sections de détail, selon le projet.
 function sections(id, { business, journal, histoires }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
+  // Les chaînes YouTube du projet, quand elles sont branchées.
+  const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
+  const n = (x) => Number(x ?? 0).toLocaleString('fr-FR');
+  const blocYoutube = chaines.length
+    ? `<section class="bloc"><h3>Chaînes YouTube</h3><ul class="chaines">${chaines
+        .map((c) => `<li><b>${e(c.titre)}</b> · ${n(c.abonnes)} abonnés · ${n(c.vues)} vues · ${n(c.nbVideos)} vidéos</li>`)
+        .join('')}</ul></section>` +
+      table('Dernières vidéos', [{ cle: 'q', titre: 'Publiée le' }, { cle: 't', titre: 'Vidéo' }, { cle: 'v', titre: 'Vues' }, { cle: 'a', titre: '👍' }],
+        chaines
+          .flatMap((c) => c.videos)
+          .sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1))
+          .map((v) => ({ q: date(v.jour), t: `<a href="https://www.youtube.com/watch?v=${e(v.id)}" target="_blank" rel="noopener">${e(v.titre)}</a>`, v: n(v.vues), a: n(v.aimes) })), { visibles: 10 })
+    : '';
+  const fin = (reste) => blocYoutube + reste;
   const blocNotes = table(
     'Noté dans le journal',
     [{ cle: 'q', titre: 'Quand' }, { cle: 't', titre: 'Quoi' }],
@@ -48,7 +62,7 @@ function sections(id, { business, journal, histoires }) {
 
   if (id === 'nour-meet') {
     const pr = business.sources?.prospection;
-    if (!pr) return `<p class="vide">La prospection n’est pas encore lue.</p>${blocNotes}`;
+    if (!pr) return `<p class="vide">La prospection n’est pas encore lue.</p>${fin(blocNotes)}`;
     const envois = pr.envois.filter((x) => x.jour).sort((a, b) => (b.jour > a.jour ? 1 : -1));
     const repondus = pr.prospects.filter((x) => x.reponse).sort((a, b) => (b.reponse > a.reponse ? 1 : -1));
     const aValider = pr.prospects.filter((x) => x.statut === 'propose');
@@ -59,13 +73,13 @@ function sections(id, { business, journal, histoires }) {
         aValider.map((x) => ({ n: e(x.nom ?? '?'), s: etiquette('mail à valider', 'attente') })), { vide: 'Aucun mail à valider.' }),
       table('Derniers mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'o', titre: 'Objet' }, { cle: 's', titre: 'État' }],
         envois.map((x) => ({ q: date(x.jour), n: e(x.nom ?? '?'), o: e(x.objet ?? '—'), s: etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '') }))),
-      blocNotes,
+      fin(blocNotes),
     ].join('');
   }
 
   if (id === 'leviaro') {
     const d = business.sources?.leviaro?.detail;
-    if (!d) return `<p class="vide">Le détail arrive à la prochaine lecture (dans l’heure).</p>${blocNotes}`;
+    if (!d) return `<p class="vide">Le détail arrive à la prochaine lecture (dans l’heure).</p>${fin(blocNotes)}`;
     return [
       table('Réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'c', titre: 'Type' }, { cle: 'x', titre: 'Extrait' }],
         d.reponses.map((r) => ({ q: date(r.recu), n: e(r.entreprise || r.de), c: etiquette(lb('reponse', r.categorie), r.categorie === 'humaine' ? 'ok' : r.categorie === 'opposition' ? 'off' : ''), x: e((r.extrait ?? '').slice(0, 120)) }))),
@@ -73,18 +87,18 @@ function sections(id, { business, journal, histoires }) {
         d.messages.map((m) => ({ q: date(m.envoye ?? m.cree), n: e(m.entreprise), o: e(m.objet ?? '—'), r: m.etape ? `relance ${m.etape}` : 'premier mail', s: etiquette(lb('leviaroMail', m.etat), m.etat === 'envoye' ? 'ok' : m.etat?.startsWith('erreur') || m.etat === 'rejete' ? 'off' : m.etat === 'attente_validation' ? 'attente' : '') }))),
       table('Entreprises prospectées', [{ cle: 'q', titre: 'Trouvée le' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'v', titre: 'Ville' }, { cle: 's', titre: 'Où ça en est' }],
         d.entreprises.map((c) => ({ q: date(c.creee), n: e(c.nom), v: e(c.ville ?? '—'), s: etiquette(lb('leviaroEtat', c.etat), c.etat === 'discussion_active' ? 'ok' : ['exclue', 'cloturee', 'hors_perimetre'].includes(c.etat) ? 'off' : '') }))),
-      blocNotes,
+      fin(blocNotes),
     ].join('');
   }
 
   if (id === 'impacteur') {
     const im = business.sources?.impacteur;
-    if (!im) return `<p class="vide">Le Sheet Impacteur n’est pas encore lu.</p>${blocNotes}`;
+    if (!im) return `<p class="vide">Le Sheet Impacteur n’est pas encore lu.</p>${fin(blocNotes)}`;
     const fiches = [...im.fiches].sort((a, b) => (b.envoi ?? '') > (a.envoi ?? '') ? 1 : -1);
     return [
       table('Invités', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }, { cle: 'q', titre: 'Contacté le' }, { cle: 'o', titre: 'Mail ouvert' }],
         fiches.map((f) => ({ a: e(f.auteur ?? '?'), l: e(f.livre ?? '—'), c: e(f.chaine ?? '—'), s: etiquette(lb('impacteur', f.statut), f.statut === 'ENVOYE' ? 'ok' : f.statut?.startsWith('A_VERIFIER') ? 'attente' : f.statut === 'BLOQUE_ELIGIBILITE' ? 'off' : ''), q: date(f.envoi), o: f.ouvert ? `✓ ${date(f.ouvert)}` : '—' })), { visibles: 12 }),
-      blocNotes,
+      fin(blocNotes),
     ].join('');
   }
 
@@ -98,11 +112,11 @@ function sections(id, { business, journal, histoires }) {
           return { q: p.d ? p.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—', t: lien ? `<a href="${e(lien)}" target="_blank" rel="noopener">${e(p.title ?? p.story_id)}</a>` : e(p.title ?? p.story_id), r: e(reseaux) };
         }), { visibles: 12 }),
       '<p class="vide">Les vues par vidéo ne sont pas encore branchées (il faudra l’accès Facebook/Instagram). Tes vidéos faites à la main se notent avec « Ajouter une note » du Journal.</p>',
-      blocNotes,
+      fin(blocNotes),
     ].join('');
   }
 
-  return blocNotes;
+  return fin(blocNotes);
 }
 
 export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, verifications = [], jour = jourParis(), message, aRepondre = 0 } = {}) {
@@ -161,7 +175,8 @@ ${surveillance}
 .obj button { padding:4px 10px; font-size:13px; }
 .manque { margin:0; font-size:12px; color:var(--doux); font-style:italic; }
 .bloc { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:12px 14px; margin-bottom:14px; overflow-x:auto; }
-.bloc h3 { margin:0 0 8px; font-size:15px; } .bloc h3 small { color:var(--doux); font-weight:400; }
+.bloc h3 { margin:0 0 8px; font-size:15px; }
+.chaines { list-style:none; margin:0; padding:0; } .chaines li { padding:3px 0; font-size:14px; } .bloc h3 small { color:var(--doux); font-weight:400; }
 .bloc table { border-collapse:collapse; width:100%; font-size:13px; }
 .bloc th { text-align:left; color:var(--doux); font-weight:500; padding:4px 10px 4px 0; border-bottom:1px solid var(--bord); white-space:nowrap; }
 .bloc td { padding:5px 10px 5px 0; border-bottom:1px solid var(--bord); vertical-align:top; }
