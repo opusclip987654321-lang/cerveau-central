@@ -38,6 +38,7 @@ test('synchroniserProspection lit tout, page par page, sans les tests ni les dou
       P('contacte', { date_premier_envoi: '2026-10-01T09:00:00Z' }),
       P('repondu', { date_premier_envoi: '2026-09-29T09:00:00Z', date_reponse: '2026-10-02T09:00:00Z' }),
       P('sans_email', { email: null }),
+      P('repondu', { email: 'resa@didon.fr', nom: 'Didon', ville: 'Paris', date_reponse: '2026-10-05T08:00:00Z' }),
       P('test'),
       P('propose'),
     ],
@@ -52,14 +53,21 @@ test('synchroniserProspection lit tout, page par page, sans les tests ni les dou
       { envoi_id: 1, date: '2026-10-02T10:00:00Z' },
       { envoi_id: 2, date: '2026-10-03T10:00:00Z' },
     ],
+    np_reponses: [
+      { email: 'RESA@didon.fr', de: 'Didon <resa@didon.fr>', objet: 'Re: Vos soirées', texte: 'Oui, rappelez-nous.', recu: '2026-10-05T08:30:00Z' },
+      { email: 'inconnu@resto.fr', de: 'Quelqu’un', objet: 'Re', texte: 'Qui êtes-vous ?', recu: '2026-10-04T08:30:00Z' },
+    ],
   });
   const b = { sources: {}, objectifs: {} };
   const r = await synchroniserProspection(b, { appel, maintenant: new Date('2026-10-05T12:00:00Z') });
-  assert.equal(r.prospects, 4);
+  assert.equal(r.prospects, 5);
   const pr = b.sources.prospection;
   assert.deepEqual(pr.envois.map((e) => [e.statut, e.jour]), [['envoye', '2026-10-01'], ['envoye', '2026-09-29'], ['echec', '2026-10-03']]);
   assert.deepEqual(pr.ouvertures.sort(), ['2026-10-01', '2026-10-03']);
   assert.equal(pr.prospects.find((x) => x.statut === 'repondu').reponse, '2026-10-02');
+  // Le texte des réponses est rattaché au bon restaurant via l'adresse, même écrite autrement.
+  assert.deepEqual(pr.reponses.map((x) => [x.nom, x.texte]), [['Didon', 'Oui, rappelez-nous.'], [null, 'Qui êtes-vous ?']]);
+  assert.equal(pr.reponses[0].ville, 'Paris');
 });
 
 test('synchroniserProspection : sans clé on ne fait rien, sans tableau on le dit', async () => {

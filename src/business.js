@@ -53,9 +53,11 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
   const tableaux = (await appel('/api/v1/data-tables?limit=100')).data ?? [];
   const id = (nom) => tableaux.find((t) => t.name === nom)?.id;
   const lire = async (nom) => (id(nom) ? lireTableau(appel, id(nom)) : null);
-  const [prospects, envois, ouvertures] = [await lire('np_prospects'), await lire('np_envois'), await lire('np_ouvertures')];
+  const [prospects, envois, ouvertures, reponses] = [await lire('np_prospects'), await lire('np_envois'), await lire('np_ouvertures'), await lire('np_reponses')];
   if (!prospects) throw new Error('tableau np_prospects introuvable dans n8n');
   const pasTest = (l) => l.statut !== 'test';
+  // Pour retrouver quel restaurant a écrit, à partir de l'adresse de la réponse.
+  const parEmail = new Map(prospects.filter((l) => l.email).map((l) => [String(l.email).toLowerCase(), l]));
   business.sources.prospection = {
     maj: maintenant.toISOString(),
     prospects: prospects.filter(pasTest).map((l) => ({
@@ -71,6 +73,21 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
     envois: (envois ?? []).filter(pasTest).map((l) => ({ nom: l.nom ? String(l.nom).slice(0, 80) : null, objet: l.objet ? String(l.objet).slice(0, 120) : null, statut: l.statut ?? null, jour: jourDe(l.date_decision) ?? jourDe(l.date_proposition) })),
     // Un même mail peut être ouvert plusieurs fois : on garde la première ouverture de chaque envoi.
     ouvertures: [...new Map((ouvertures ?? []).map((l) => [String(l.envoi_id), jourDe(l.date)]).reverse()).values()].filter(Boolean),
+    // Le texte des réponses, gardé par « Nour Meet 4 » dans np_reponses (depuis le 05/10/2026).
+    reponses: (reponses ?? [])
+      .map((l) => {
+        const p = l.email ? parEmail.get(String(l.email).toLowerCase()) : null;
+        return {
+          jour: jourDe(l.recu),
+          nom: p?.nom ? String(p.nom).slice(0, 80) : null,
+          ville: p?.ville ? String(p.ville).slice(0, 40) : null,
+          de: l.de ? String(l.de).slice(0, 120) : null,
+          objet: l.objet ? String(l.objet).slice(0, 150) : null,
+          texte: l.texte ? String(l.texte).slice(0, 2000) : null,
+        };
+      })
+      .sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1))
+      .slice(0, 200),
   };
   return { prospects: business.sources.prospection.prospects.length };
 }
