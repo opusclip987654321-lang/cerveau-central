@@ -18,6 +18,8 @@ import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerC
 import { pageArgent } from './page-argent.js';
 import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from './serveurs.js';
 import { pageServeurs } from './page-serveurs.js';
+import { chargerJournal, sauverJournal, ajouterEvenement, synchroniserN8n, messageHier } from './journal.js';
+import { pageJournal } from './page-journal.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -31,6 +33,7 @@ const dossierFactures = path.join(path.dirname(fichierEtat), 'factures');
 const plafondIa = Number(env.PLAFOND_IA_DOLLARS ?? 10);
 const clientClaude = creerClient(env.ANTHROPIC_API_KEY);
 const fichierServeurs = env.FICHIER_SERVEURS ?? path.join(racine, 'data/serveurs.json');
+const fichierJournal = env.FICHIER_JOURNAL ?? path.join(racine, 'data/journal.json');
 const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
@@ -38,6 +41,7 @@ config.intervalleMinutes = intervalleMinutes;
 const configQuestions = JSON.parse(await readFile(fichierQuestions, 'utf8'));
 const configArgent = JSON.parse(await readFile(fichierArgentDepart, 'utf8'));
 const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serveurs.json'), 'utf8'));
+const configJournal = JSON.parse(await readFile(path.join(racine, 'config/journal.json'), 'utf8'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
 let file = Promise.resolve();
@@ -95,7 +99,29 @@ function avecServeurs(fn) {
   return suite;
 }
 
-// Jeton partagé avec scripts/releve.sh, comparé sans fuite de temps.
+// Journal : même principe.
+let fileJournal = Promise.resolve();
+function avecJournal(fn) {
+  const suite = fileJournal.then(async () => {
+    const journal = await chargerJournal(fichierJournal);
+    const resultat = await fn(journal);
+    await sauverJournal(fichierJournal, journal);
+    return resultat;
+  });
+  fileJournal = suite.catch(() => {});
+  return suite;
+}
+
+// Compte les exécutions n8n de l'heure écoulée pour le journal.
+async function synchroniserJournal() {
+  try {
+    await avecJournal((j) => synchroniserN8n(j, { url: env.N8N_URL, cle: env.N8N_API_KEY }));
+  } catch (err) {
+    console.error(`Journal n8n : ${err.message}`);
+  }
+}
+
+// Jeton partagé avec scripts/releve.sh et les automatisations n8n, comparé sans fuite de temps.
 const empreinteJeton = (t) => createHash('sha256').update(String(t)).digest();
 const jetonReleveValide = (entete) =>
   Boolean(env.RELEVE_JETON) && env.RELEVE_JETON.length >= 20 && timingSafeEqual(empreinteJeton(entete), empreinteJeton(`Bearer ${env.RELEVE_JETON}`));
@@ -125,6 +151,8 @@ async function rappelDuMatin() {
     const n = await avecReponses((h) => matinARappeler(configQuestions, h, { heure: Number(env.RESUME_HEURE ?? env.QUESTIONS_HEURE ?? 9) }));
     if (n === null) return;
     await envoyer(resumeQuotidien(await chargerEtat(fichierEtat), n));
+    const hier = await avecJournal((j) => messageHier(j, configJournal));
+    if (hier) await envoyer(hier);
     const rappels = await avecArgent((d) => rappelsARenvoyer(d, { joursAvant: configArgent.rappelJoursAvant ?? 3 }));
     if (rappels.length) await envoyer(messageRappels(rappels));
   } catch (err) {
@@ -192,6 +220,18 @@ const serveur = http.createServer(async (req, res) => {
       await avecServeurs((d) => enregistrerReleve(d, id, releve));
       res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
       return res.end(`Relevé reçu : ${releve.conteneurs.length} conteneur(s), ${releve.disques.length} disque(s)\n`);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/journal') {
+      if (!jetonReleveValide(req.headers.authorization ?? '')) {
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Jeton invalide');
+      }
+      const corps = await lireJson(req, 50_000);
+      const liste = Array.isArray(corps) ? corps.slice(0, 100) : [corps];
+      const resultats = await avecJournal((j) => liste.map((c) => ajouterEvenement(j, configJournal, c ?? {}, { source: 'n8n' })));
+      const erreurs = resultats.filter((r) => r.erreur).map((r) => r.erreur);
+      res.writeHead(erreurs.length === liste.length ? 400 : 200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ ajoutes: liste.length - erreurs.length, erreurs }));
     }
     if (acces.actif) {
       if (req.method === 'POST' && url.pathname === '/connexion') {
@@ -291,6 +331,23 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(303, { location: '/argent?message=' + encodeURIComponent('Nouvelle lecture en cours') });
       return res.end();
     }
+    if (req.method === 'GET' && url.pathname === '/journal') {
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      const projet = configJournal.projets.some((p) => p.id === url.searchParams.get('projet')) ? url.searchParams.get('projet') : null;
+      const jours = url.searchParams.get('jours') === '30' ? 30 : 7;
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageJournal(configJournal, await chargerJournal(fichierJournal), { projet, jours, aRepondre, message: url.searchParams.get('message') ?? undefined }));
+    }
+    if (req.method === 'POST' && url.pathname === '/journal') {
+      const champs = await lireCorps(req);
+      const { erreur } = await avecJournal((j) => ajouterEvenement(j, configJournal, champs, { source: 'page' }));
+      res.writeHead(303, { location: `/journal?message=${encodeURIComponent(erreur ?? 'Note ajoutée')}` });
+      return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/api/journal') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(await chargerJournal(fichierJournal)));
+    }
     if (req.method === 'GET' && url.pathname === '/serveurs') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
@@ -338,6 +395,8 @@ serveur.listen(port, hote, () =>
 
 verifier();
 lireFacturesEnAttente();
+synchroniserJournal();
+setInterval(synchroniserJournal, 60 * 60_000);
 setInterval(verifier, intervalleMinutes * 60_000);
 rappelDuMatin();
 setInterval(rappelDuMatin, 10 * 60_000);

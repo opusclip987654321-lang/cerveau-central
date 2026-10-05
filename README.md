@@ -37,6 +37,19 @@ Le résumé Telegram du matin (9 h par défaut, `RESUME_HEURE`) rappelle combien
 
 Les questions se modifient dans [`config/questions.json`](config/questions.json) (types : `note`, `nombre`, `choix`, `texte`).
 
+## Journal
+
+L'onglet **Journal** montre, jour par jour et projet par projet, ce qui a été fait : vidéos publiées (avec leur lien), mails envoyés, rendez-vous, notes… et un bilan des 7 derniers jours. Chaque matin, le résumé Telegram ajoute « Hier, projet par projet ».
+
+Trois sources :
+- **n8n, automatiquement** : avec `N8N_API_KEY`, le cerveau compte chaque heure les exécutions réussies et en erreur de chaque automatisation, rangées par projet d'après leur nom (`config/journal.json`).
+- **n8n, précisément** : en fin de workflow, un nœud *HTTP Request* envoie ce qui a été produit :
+  - méthode `POST`, adresse `https://cerveau.nourmeet.com/api/journal` (ou `http://cerveau-central:8090/api/journal` depuis le réseau Docker)
+  - en-tête `Authorization: Bearer <RELEVE_JETON>`
+  - corps JSON : `{"projet": "extrait-politique", "type": "video", "titre": "…", "lien": "https://youtu.be/…", "details": "…"}` (ou une liste de ces objets)
+  - projets : `nour-meet`, `leviaro`, `extrait-politique`, `histoires-vraies`, `impacteur`, `cambodge`, `autre` ; types : `video`, `publication`, `mail`, `rdv`, `client`, `note`, `autre`
+- **À la main** : « Ajouter une note » sur la page.
+
 ## Argent
 
 L'onglet **Argent** liste les abonnements et recharges (pré-remplis avec le récap du 05/10/2026, dans `config/argent.json`, puis modifiables depuis la page) : total du mois, coût fixe, répartition par projet, rappel Telegram 3 jours avant un renouvellement quand sa date est connue.

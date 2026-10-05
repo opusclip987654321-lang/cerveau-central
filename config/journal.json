@@ -1,0 +1,21 @@
+{
+  "_note": "Onglet Journal. « motifs » range chaque automatisation n8n (par son nom) dans un projet ; le premier qui correspond gagne. À ajuster avec les vrais noms des workflows.",
+  "projets": [
+    { "id": "nour-meet", "nom": "Nūr Meet", "motifs": ["n[uū]r", "restaurant", "carrousel"] },
+    { "id": "leviaro", "nom": "Leviaro", "motifs": ["leviaro"] },
+    { "id": "extrait-politique", "nom": "L'extrait politique", "motifs": ["extrait", "actualit", "politique"] },
+    { "id": "histoires-vraies", "nom": "Petites histoires vraies", "motifs": ["histoire"] },
+    { "id": "impacteur", "nom": "Impacteur Afrique / Frexit", "motifs": ["impacteur", "frexit", "afrique", "invit"] },
+    { "id": "cambodge", "nom": "Emploi Cambodge", "motifs": ["cambodge", "emploi"] },
+    { "id": "autre", "nom": "Autres automatisations", "motifs": [] }
+  ],
+  "types": {
+    "video": "🎬",
+    "publication": "📣",
+    "mail": "✉️",
+    "rdv": "📅",
+    "client": "💶",
+    "note": "📝",
+    "autre": "•"
+  }
+}
