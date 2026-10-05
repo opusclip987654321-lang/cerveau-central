@@ -35,6 +35,16 @@ test('genererBilan : écrit, compte le coût, archive ; plafond = mode dégradé
   assert.equal(d.bilans[0].semaine, '2026-11-02');
 });
 
+test('genererBilan : une réponse coupée (max_tokens) est signalée dans le texte', async () => {
+  const d = vide();
+  const client = {
+    beta: { messages: { create: async () => ({ usage: { input_tokens: 1_000, output_tokens: 10 }, stop_reason: 'max_tokens', content: [{ type: 'text', text: 'Bilan interrompu en pleine' }] }) } },
+  };
+  const e1 = await genererBilan(d, { client, contexte: 'x', semaine: '2026-10-05' });
+  assert.match(e1.texte, /Bilan coupé en route/);
+  assert.match(e1.texte, /Refaire le bilan/);
+});
+
 test('page Analyses : bilan affiché avec la règle « rien ne se change tout seul », état vide honnête', () => {
   const avec = { ia: { '2026-10': 0.12 }, bilans: [{ semaine: '2026-10-05', texte: 'Nūr Meet avance.\n\nTrois propositions : …', cout: 0.12, erreur: null }] };
   const html = pageAnalyses(avec, { plafond: 10 });
@@ -45,6 +55,21 @@ test('page Analyses : bilan affiché avec la règle « rien ne se change tout se
   const sans = pageAnalyses(vide(), { plafond: 10 });
   assert.match(sans, /le premier s'écrira lundi matin/);
   assert.match(sans, /class="actif" data-s="[^"]*">Analyses/);
+});
+
+test('page Analyses : le Markdown est mis en forme, pas affiché brut, et le bouton Refaire suit « actif »', () => {
+  const texte = '# Bilan de la semaine\n\n## 1. Projet par projet\n\n**Nūr Meet** : 19 réponses.\n\n- première proposition\n- deuxième proposition\n\nFin <script>.';
+  const d = { ia: {}, bilans: [{ semaine: '2026-10-05', texte, cout: 0.02, erreur: null }] };
+  const html = pageAnalyses(d, { plafond: 10, actif: true });
+  const bilan = html.slice(html.indexOf('<section class="bilan">'), html.indexOf('</section>'));
+  assert.match(bilan, /<h4>Bilan de la semaine<\/h4>/);
+  assert.match(bilan, /<h4>1\. Projet par projet<\/h4>/);
+  assert.match(bilan, /<b>Nūr Meet<\/b> : 19 réponses\./);
+  assert.match(bilan, /<ul><li>première proposition<\/li><li>deuxième proposition<\/li><\/ul>/);
+  assert.ok(!bilan.includes('##') && !bilan.includes('**'), 'plus de symboles Markdown bruts');
+  assert.match(bilan, /Fin &lt;script&gt;\./); // le HTML du texte reste échappé
+  assert.match(html, /Refaire le bilan de cette semaine/);
+  assert.doesNotMatch(pageAnalyses(d, { plafond: 10 }), /Refaire le bilan/); // sans clé IA, pas de bouton
 });
 
 test('contexteCerveau : inclut objectifs validés et réponses aux questions', () => {

@@ -21,7 +21,7 @@ export const depenseBilansDuMois = (donnees, jour = jourParis()) => donnees.ia?.
 const heureParis = (d) => Number(new Date(d).toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'Europe/Paris' }));
 
 // Le lundi de la semaine d'un jour donné (le bilan porte ce jour-là comme identifiant).
-export function lundiDe(jour) {
+export function lundiDe(jour = jourParis()) {
   const d = new Date(`${jour}T12:00:00Z`);
   return jourParis(new Date(d - ((d.getUTCDay() + 6) % 7) * 86_400_000));
 }
@@ -36,6 +36,7 @@ export function bilanAFaire(donnees, { heure = 8, maintenant = new Date() } = {}
 const CONSIGNE = `Tu es le cerveau central de louis : tu surveilles ses projets et tu l'aides à décider.
 Chaque lundi tu écris le bilan de la semaine passée à partir des données ci-dessous.
 Écris en français simple, orienté business (la priorité de louis : l'argent qui rentre). Pas de jargon technique.
+Écris en texte simple, SANS symboles Markdown : pas de #, pas de **, pas de titres décorés. Des phrases, des paragraphes, des numéros « 1. 2. 3. » et des tirets « - » pour les listes, c'est tout.
 Structure, en 400 mots maximum :
 1. La semaine passée, projet par projet : ce qui a avancé, en une ou deux lignes chacun.
 2. Ce qui bloque ou n'avance pas, et ce que ça veut dire pour l'argent.
@@ -51,7 +52,7 @@ export async function genererBilan(donnees, { client, contexte, semaine, plafond
     try {
       const reponse = await client.beta.messages.create({
         model: MODELE,
-        max_tokens: 1500,
+        max_tokens: 8000,
         betas: ['server-side-fallback-2026-07-01'],
         fallbacks: 'default',
         messages: [{ role: 'user', content: `${CONSIGNE}\n\n${contexte}` }],
@@ -59,6 +60,7 @@ export async function genererBilan(donnees, { client, contexte, semaine, plafond
       entree.cout = coutDollars(reponse.usage);
       if (reponse.stop_reason === 'refusal') throw new Error('Claude a refusé d’écrire ce bilan.');
       entree.texte = (reponse.content.find((b) => b.type === 'text')?.text ?? '').trim() || null;
+      if (entree.texte && reponse.stop_reason === 'max_tokens') entree.texte += '\n\n(Bilan coupé en route : utilise « Refaire le bilan » pour le réécrire.)';
       if (!entree.texte) entree.erreur = 'Réponse vide.';
     } catch (err) {
       entree.erreur = `Bilan impossible : ${err.message}`;
