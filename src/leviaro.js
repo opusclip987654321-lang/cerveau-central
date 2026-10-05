@@ -26,6 +26,9 @@ export function extraireLeviaro(db, maintenant = new Date()) {
     aValider: un("select count(*) from messages where status = 'attente_validation'"),
     sansContact: un("select count(*) from companies where state = 'contact_introuvable'"),
     enDiscussion: un("select count(*) from companies where state = 'discussion_active'"),
+    // Trouvées mais pas encore étudiées par l'agent (l'étude coûte de l'IA).
+    aEtudier: un("select count(*) from companies where state = 'decouverte'"),
+    aEtudierDepuis: jour(un("select min(created_at) from companies where state = 'decouverte'") || null),
     recommandations: un("select count(*) from agency_recs where status = 'proposee'"),
     coutMois: Math.round(un(`select coalesce(sum(amount_eur), 0) from costs where status = 'realise' and month = '${mois}'`) * 100) / 100,
     // Le détail pour la page du projet : qui a été prospecté, quels mails, quelles réponses.
@@ -47,6 +50,13 @@ function detailLeviaro(db) {
   }
 }
 
+// Garde, jour par jour, le nombre de fiches en attente d'étude (dernière lecture du jour)
+// pour voir si la file baisse ou s'accumule. 60 jours suffisent.
+export function suivreFile(avant, jourCourant, valeur) {
+  const file = { ...avant, [jourCourant]: valeur };
+  return Object.fromEntries(Object.entries(file).sort(([a], [b]) => a.localeCompare(b)).slice(-60));
+}
+
 // Copie la base (et ses fichiers -wal/-shm) puis la lit : on ne touche jamais l'originale.
 export async function synchroniserLeviaro(business, dossier, { maintenant = new Date() } = {}) {
   const source = path.join(dossier, 'leviaro.db');
@@ -63,7 +73,9 @@ export async function synchroniserLeviaro(business, dossier, { maintenant = new 
     const { DatabaseSync } = await import('node:sqlite');
     const db = new DatabaseSync(path.join(tmp, 'leviaro.db'));
     try {
+      const avant = business.sources.leviaro?.fileEtude ?? {};
       business.sources.leviaro = extraireLeviaro(db, maintenant);
+      business.sources.leviaro.fileEtude = suivreFile(avant, jourDe(maintenant.toISOString()), business.sources.leviaro.aEtudier);
     } finally {
       db.close();
     }
