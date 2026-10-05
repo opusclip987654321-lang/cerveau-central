@@ -108,5 +108,5 @@ test('page Serveurs : serveur branché, serveur pas encore branché, texte écha
   assert.match(html, /Pas encore branché/);
   assert.match(html, /Ce qui tourne dessus/);
   assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/);
-  assert.match(html, /class="actif">Serveurs/);
+  assert.match(html, /class="actif" data-s="[^"]*">Serveurs/);
 });

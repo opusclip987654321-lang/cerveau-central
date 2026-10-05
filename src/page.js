@@ -87,8 +87,9 @@ document.getElementById('verifier').onclick = async (ev) => {
 const frequence = (min) => (min % 60 === 0 ? `${min / 60} h` : `${min} min`);
 
 export function gabarit({ onglet, aRepondre = 0, contenu }) {
-  const lien = (id, href, texte) => `<a href="${href}" class="${onglet === id ? 'actif' : ''}">${texte}</a>`;
   const badge = aRepondre ? ` <span class="badge">${aRepondre}</span>` : '';
+  const TITRES = { etat: 'Surveillance', journal: 'Pilotage', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs', discuter: 'Discuter' };
+  const lien = (id, href, symbole, texte) => `<a href="${href}" class="${onglet === id ? 'actif' : ''}" data-s="${symbole}">${texte}</a>`;
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -97,16 +98,40 @@ export function gabarit({ onglet, aRepondre = 0, contenu }) {
 ${onglet === 'etat' ? '<meta http-equiv="refresh" content="300">' : ''}
 <title>Cerveau central</title>
 <style>
-:root { --fond:#f6f5f2; --carte:#fff; --texte:#1d1d1b; --doux:#6b6a66; --bord:#e4e2dc; --ok:#1f8a4c; --attention:#c27a00; --panne:#c2332b; }
-@media (prefers-color-scheme: dark) { :root { --fond:#151514; --carte:#1f1f1d; --texte:#ecebe7; --doux:#9b9a95; --bord:#33322f; --ok:#4cc27e; --attention:#f0a72a; --panne:#f06a5f; } }
+/* Palette « pilotage premium » (maquette validée par louis le 05/10/2026) :
+   les anciens noms de variables sont gardés pour que toutes les pages suivent. */
+:root { color-scheme:light dark;
+  --fond:light-dark(#f5f3ee,#121214); --carte:light-dark(#ffffff,#1b1b1e); --carte2:light-dark(#faf8f3,#232326);
+  --texte:light-dark(#202025,#f2f0ea); --doux:light-dark(#66636b,#b2afb5); --bord:light-dark(#e3dfd5,#343337);
+  --or:light-dark(#80601d,#dfbd75); --or-doux:light-dark(#f5ecd6,#342d21);
+  --bouton:light-dark(#25232a,#ead1a0); --sur-bouton:light-dark(#ffffff,#242019);
+  --ok:light-dark(#256348,#7fc29b); --attention:light-dark(#8b551d,#ebbf82); --panne:light-dark(#993b37,#eba8a2);
+}
 * { box-sizing:border-box; }
-body { margin:0; background:var(--fond); color:var(--texte); font:15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
-header { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:20px; }
+body { margin:0; background:var(--fond); color:var(--texte); font:14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color:var(--or); text-underline-offset:3px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline:3px solid var(--or); outline-offset:3px; }
+.coquille { display:grid; grid-template-columns:214px minmax(0,1fr); max-width:1540px; margin:auto; min-height:100vh; }
+.menu { border-right:1px solid var(--bord); padding:22px 14px; background:var(--carte); display:flex; flex-direction:column; gap:22px; }
+.logo { display:flex; align-items:center; gap:10px; color:var(--texte); text-decoration:none; padding:0 8px; }
+.logo .mono { border:1px solid var(--or); width:34px; height:34px; display:grid; place-items:center; border-radius:10px; font-size:18px; flex-shrink:0; }
+.logo .marque { font-size:15px; font-weight:650; letter-spacing:-.3px; }
+.logo .marque small { display:block; font-size:10px; font-weight:400; letter-spacing:.05em; color:var(--doux); }
+.menu nav { display:flex; flex-direction:column; gap:4px; }
+.menu nav a { display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:8px; color:var(--doux); text-decoration:none; font-size:13px; }
+.menu nav a::before { content:attr(data-s); width:18px; text-align:center; font-size:14px; }
+.menu nav a:hover { background:var(--carte2); color:var(--texte); }
+.menu nav a.actif { background:var(--or-doux); color:var(--or); font-weight:650; }
+.menu-pied { margin-top:auto; padding:16px 8px 0; border-top:1px solid var(--bord); font-size:12px; }
+.menu-pied a { color:var(--doux); text-decoration:none; }
+main { min-width:0; padding:0 30px 44px; max-width:1280px; }
+.titre { padding:20px 0 0; }
+.titre h1 { font-size:26px; letter-spacing:-.6px; margin:0 0 18px; }
 h1 { font-size:22px; margin:0; }
-.resume { font-size:18px; font-weight:600; padding:14px 16px; border-radius:12px; background:var(--carte); border:1px solid var(--bord); border-left:6px solid var(--ok); margin-bottom:20px; }
+.resume { font-size:17px; font-weight:600; padding:14px 16px; border-radius:12px; background:var(--carte); border:1px solid var(--bord); border-left:5px solid var(--ok); margin-bottom:20px; }
 .resume small { display:block; font-weight:400; color:var(--doux); font-size:13px; margin-top:2px; }
 button { font:inherit; padding:8px 14px; border-radius:8px; border:1px solid var(--bord); background:var(--carte); color:var(--texte); cursor:pointer; }
+button:hover { border-color:var(--or); }
 button:disabled { opacity:.6; cursor:wait; }
 .grille { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; }
 .carte { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:14px 16px; }
@@ -125,10 +150,7 @@ h3 { font-size:16px; margin:28px 0 10px; }
 .carte .sens { margin-left:24px; font-size:14px; }
 time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 .vide { color:var(--doux); }
-nav { display:flex; gap:6px; flex-wrap:wrap; }
-nav a { color:var(--texte); text-decoration:none; padding:7px 12px; border-radius:8px; border:1px solid transparent; }
-nav a.actif { background:var(--carte); border-color:var(--bord); font-weight:600; }
-.badge { display:inline-block; min-width:20px; padding:0 6px; border-radius:10px; background:var(--panne); color:#fff; font-size:12px; text-align:center; }
+.badge { display:inline-block; min-width:20px; padding:0 6px; border-radius:10px; background:var(--panne); color:light-dark(#fff,#1b1b1e); font-size:12px; text-align:center; margin-left:auto; }
 .projets { list-style:none; padding:0; margin:0; background:var(--carte); border:1px solid var(--bord); border-radius:12px; }
 .projets li { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; border-top:1px solid var(--bord); }
 .projets li:first-child { border-top:0; }
@@ -139,13 +161,30 @@ nav a.actif { background:var(--carte); border-color:var(--bord); font-weight:600
 .projets form { margin:0; }
 .message { background:var(--carte); border:1px solid var(--bord); border-left:4px solid var(--ok); padding:10px 14px; border-radius:8px; }
 .actions { display:flex; justify-content:flex-end; margin:-8px 0 12px; }
+@media (max-width:700px) {
+  .coquille { display:block; min-height:0; }
+  .menu { border-right:0; border-bottom:1px solid var(--bord); padding:14px; }
+  .menu nav { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+  .menu nav a { justify-content:center; text-align:center; min-height:42px; font-size:12px; padding:8px 4px; }
+  .menu nav a::before { display:none; }
+  .menu nav a .badge { margin-left:4px; }
+  .menu-pied { display:none; }
+  main { padding:0 16px 30px; }
+}
 </style>
 </head>
 <body>
+<div class="coquille">
+<aside class="menu">
+<a class="logo" href="/journal"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
+<nav>${lien('journal', '/journal', '◆', 'Pilotage')}${lien('etat', '/', '●', 'Surveillance')}${lien('questions', '/questions', '✎', 'Questions du jour' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}${lien('discuter', '/discuter', '✦', 'Discuter')}</nav>
+<div class="menu-pied"><a href="/deconnexion">Se déconnecter</a></div>
+</aside>
 <main>
-<header><h1>🧠 Cerveau central</h1><nav>${lien('etat', '/', 'État')}${lien('journal', '/journal', 'Journal')}${lien('questions', '/questions', 'Questions du jour' + badge)}${lien('argent', '/argent', 'Argent')}${lien('serveurs', '/serveurs', 'Serveurs')}${lien('discuter', '/discuter', 'Discuter')}</nav></header>
+<div class="titre"><h1>${TITRES[onglet] ?? 'Cerveau central'}</h1></div>
 ${contenu}
 </main>
+</div>
 </body>
 </html>`;
 }

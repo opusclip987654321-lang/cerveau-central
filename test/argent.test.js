@@ -122,7 +122,7 @@ test('page Argent : tuiles, liste, facture orpheline proposée à l’ajout, tex
   assert.match(html, /name="facture" value="f1"/);
   assert.match(html, /&lt;script&gt;/);
   assert.doesNotMatch(html, /<td><script>/);
-  assert.match(html, /class="actif">Argent/);
+  assert.match(html, /class="actif" data-s="[^"]*">Argent/);
 });
 
 test('correction automatique : vrai montant, date de paiement, doublon, une seule fois, annulable', async () => {
