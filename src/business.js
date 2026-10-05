@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { sauverEtat as sauverJson } from './etat.js';
 import { jourParis } from './questions.js';
 import { projetDuWorkflow } from './journal.js';
+import { gainsPeriode } from './youtube.js';
 
 export async function chargerBusiness(fichier) {
   try {
@@ -248,11 +249,31 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     carte('impacteur', { titre: 'Invités contactés', dates: evenements(journal, 'impacteur', ['mail']), unite: 'invité contacté', branche: false, manque: ['liste des invités contactés'] });
   }
 
-  // L'extrait politique : vidéos publiées (automatisation PUBLICATION + notes).
-  const motifPub = reglages['extrait-politique']?.publication ?? 'publi';
-  const pubAuto = executions(journal, configJournal, 'extrait-politique', motifPub, mois);
-  const pubDates = [...mois.flatMap((j, i) => Array(pubAuto[i]).fill(j)), ...evenements(journal, 'extrait-politique', ['video', 'publication'])];
-  carte('extrait-politique', { titre: 'Vidéos publiées', dates: pubDates, unite: 'vidéo publiée', manque: ['vues', 'abonnés gagnés', 'revenus YouTube'] });
+  // L'extrait politique : vidéos, vues et abonnés viennent de YouTube quand c'est
+  // branché ; sinon on compte les automatisations de publication n8n.
+  const yt = business.sources?.youtube;
+  const chainesEP = (yt?.chaines ?? []).filter((c) => c.projet === 'extrait-politique');
+  if (chainesEP.length) {
+    const pubDates = [...chainesEP.flatMap((c) => c.videos.map((v) => v.jour).filter(Boolean)), ...evenements(journal, 'extrait-politique', ['video', 'publication'])];
+    const gains = gainsPeriode(yt, chainesEP, periode);
+    const abonnes = chainesEP.reduce((a, c) => a + c.abonnes, 0);
+    const enAttente = 'mesure en cours (il faut au moins deux jours de relevés)';
+    carte('extrait-politique', {
+      titre: 'Vidéos publiées',
+      dates: pubDates,
+      unite: 'vidéo publiée',
+      extra: [
+        { titre: 'Vues gagnées', valeur: gains ? nombre(gains.vues) : '—', detail: gains ? `${nombre(chainesEP.reduce((a, c) => a + c.vues, 0))} vues en tout` : enAttente },
+        { titre: 'Abonnés', valeur: nombre(abonnes), detail: gains ? `${gains.abonnes >= 0 ? '+' : ''}${nombre(gains.abonnes)} sur la période` : enAttente },
+      ],
+      manque: ['revenus YouTube (accès à part, plus tard)'],
+    });
+  } else {
+    const motifPub = reglages['extrait-politique']?.publication ?? 'publi';
+    const pubAuto = executions(journal, configJournal, 'extrait-politique', motifPub, mois);
+    const pubDates = [...mois.flatMap((j, i) => Array(pubAuto[i]).fill(j)), ...evenements(journal, 'extrait-politique', ['video', 'publication'])];
+    carte('extrait-politique', { titre: 'Vidéos publiées', dates: pubDates, unite: 'vidéo publiée', manque: ['vues', 'abonnés gagnés', 'revenus YouTube'] });
+  }
 
   // Petites histoires vraies : vidéos (programme + vidéos faites à la main notées).
   carte('histoires-vraies', {

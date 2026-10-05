@@ -25,6 +25,7 @@ import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoup
 import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from './discussion.js';
 import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
+import { synchroniserYoutube } from './youtube.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
@@ -56,6 +57,7 @@ const configQuestions = JSON.parse(await readFile(fichierQuestions, 'utf8'));
 const configArgent = JSON.parse(await readFile(fichierArgentDepart, 'utf8'));
 const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serveurs.json'), 'utf8'));
 const configJournal = JSON.parse(await readFile(path.join(racine, 'config/journal.json'), 'utf8'));
+const configYoutube = JSON.parse(await readFile(path.join(racine, 'config/youtube.json'), 'utf8'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
 let file = Promise.resolve();
@@ -177,6 +179,11 @@ async function synchroniserJournal() {
       await avecBusiness((b) => synchroniserImpacteur(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON }));
     } catch (err) {
       console.error(`Tableau de bord (Impacteur) : ${err.message}`);
+    }
+    try {
+      await avecBusiness((b) => synchroniserYoutube(b, { cle: env.YOUTUBE_API_KEY, chaines: configYoutube.chaines }));
+    } catch (err) {
+      console.error(`Tableau de bord (YouTube) : ${err.message}`);
     }
   } catch (err) {
     console.error(`Journal : ${err.message}`);
