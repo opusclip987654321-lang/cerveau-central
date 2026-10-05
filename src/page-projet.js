@@ -7,6 +7,8 @@ import { STATUTS_IDEE } from './idees.js';
 import { ETATS_SUIVI, ETATS_FINIS, cleReponse } from './suivi.js';
 import { jourParis } from './questions.js';
 import { lienVideo, depuisHeureParis } from './histoires.js';
+import { grouperParJour, exempleDuJour, reponseAutomatique, lienGmail } from './mails.js';
+import { DECISIONS_TRI, cleTri } from './tri-mails.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const date = (j) => (j ? new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—');
@@ -54,7 +56,32 @@ const AIDE = {
     ['erreur technique', 'le mail n’est pas arrivé (adresse invalide, boîte pleine…)'],
     ['opposition (stop)', 'l’entreprise demande qu’on arrête de la contacter'],
   ],
+  envoi: [
+    ['envoyé', 'le mail est parti chez le restaurant'],
+    ['échec', 'l’envoi a raté (adresse invalide, boîte pleine…) ; la cause exacte est dans n8n, le cerveau ne l’invente pas'],
+    ['en attente', 'préparé, il attend son créneau d’envoi'],
+    ['refusé', 'tu avais dit non du temps de la validation Telegram'],
+    ['jamais parti', 'préparé par l’ancien circuit de validation et resté en attente : à trier dans le bloc dédié'],
+    ['★ exemple du jour', 'un mail de la journée tiré au sort, toujours le même pour une même date'],
+    ['Important', 'le texte des mails n’est pas encore copié dans le cerveau : « Chercher dans Gmail » ouvre l’échange réel, rien n’est inventé à la place'],
+  ],
+  triMails: [
+    ['Laisser en attente', 'rien ne change, tu décideras plus tard'],
+    ['À faire repartir (après vérification)', 'ta décision est notée ; la reprise réelle passe par n8n ou Claude, après contrôle des envois déjà faits — le cerveau n’envoie rien lui-même'],
+    ['Abandonner', 'ce mail ne partira pas, la fiche est classée'],
+    ['⚠ doublon possible', 'ce restaurant a déjà reçu un mail envoyé : repartir risquerait une relance en double'],
+    ['Important', 'trier ces anciens mails ne remet aucune validation sur les envois automatiques futurs'],
+  ],
+  impacteur: [
+    ['à vérifier', 'la fiche attend ta vérification avant l’envoi'],
+    ['décès à vérifier', 'l’auteur est peut-être décédé : à vérifier avant tout contact'],
+    ['brouillon créé', 'le mail est prêt dans Gmail, pas encore envoyé'],
+    ['envoyé', 'le mail d’invitation est parti'],
+    ['bloqué (éligibilité)', 'la fiche ne remplit pas les critères, elle ne sera pas contactée'],
+    ['Important', 'la « chaîne » affichée vient du Sheet : c’est une déclaration, pas une preuve du compte Gmail réellement utilisé, que l’automatisation n’enregistre pas encore'],
+  ],
   suivi: [
+    ['À traiter', 'la liste compte les réponses qui attendent une suite de ta part ; les réponses automatiques probables (absence, accusé…) sont rangées à part'],
     ['À lire', 'réponse pas encore prise en main'],
     ['Suivi en cours', 'tu t’en occupes (appel prévu, échange en cours)'],
     ['En attente du restaurant', 'la balle est chez eux, tu attends leur retour'],
@@ -96,7 +123,7 @@ const texteCellule = (t) => {
 const tonProspect = (s) => (s === 'repondu' ? 'ok' : s === 'propose' ? 'attente' : ['exclu', 'ecarte', 'echec'].includes(s) ? 'off' : '');
 
 // Les sections de détail, selon le projet.
-function sections(id, { business, journal, histoires, suivi }) {
+function sections(id, { business, journal, histoires, suivi, tri }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
   // Les chaînes YouTube du projet, quand elles sont branchées.
   const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
@@ -146,9 +173,13 @@ function sections(id, { business, journal, histoires, suivi }) {
 <p class="vide">${envois.filter((x) => x.statut === 'envoye').length} mails envoyés au total, relances comprises. L’inscription sur le site n’est pas encore branchée${ab ? '' : ' ; Stripe non plus' }.</p></section>`;
 
     // Chaque réponse porte son suivi manuel (une étiquette : ça n'envoie jamais de mail).
+    // Une réponse détectée sans texte est dite telle quelle, avec le lien Gmail : rien d'inventé.
+    const sansTexte = (nom) =>
+      `<span class="vide">Réponse détectée, contenu indisponible.</span> <a href="${lienGmail(nom)}" target="_blank" rel="noopener">Chercher dans Gmail ›</a>`;
     const lignes = [
-      ...textes.map((r) => ({ cle: cleReponse(r), j: r.jour ?? '', q: date(r.jour), n: e(r.nom ?? r.de ?? '?'), v: e(r.ville ?? '—'), x: texteCellule(r.texte) })),
-      ...repondus.filter((x) => !nomsAvecTexte.has(x.nom)).map((x) => ({ cle: cleReponse({ jour: x.reponse, nom: x.nom }), j: x.reponse ?? '', q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—'), x: '—' })),
+      ...textes.map((r) => ({ cle: cleReponse(r), j: r.jour ?? '', q: date(r.jour), n: e(r.nom ?? r.de ?? '?'), v: e(r.ville ?? '—'), x: r.texte?.trim() ? texteCellule(r.texte) : sansTexte(r.nom ?? r.de), auto: reponseAutomatique(r) }),
+      ),
+      ...repondus.filter((x) => !nomsAvecTexte.has(x.nom)).map((x) => ({ cle: cleReponse({ jour: x.reponse, nom: x.nom }), j: x.reponse ?? '', q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—'), x: sansTexte(x.nom), auto: false })),
     ]
       .sort((a, b) => (b.j > a.j ? 1 : -1))
       .map((l) => ({ ...l, suivi: suivi?.reponses?.[l.cle] }));
@@ -159,16 +190,63 @@ function sections(id, { business, journal, histoires, suivi }) {
         .join('')}</select><input name="action" maxlength="300" placeholder="prochaine action" value="${e(s.action ?? '')}"><input name="echeance" type="date" value="${s.echeance ?? ''}"><button type="submit">OK</button></form>`;
     };
     const colonnes = [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'v', titre: 'Ville' }, { cle: 'x', titre: 'Leur réponse' }, { cle: 's', titre: 'Suivi' }];
-    const enCours = lignes.filter((l) => !ETATS_FINIS.has(l.suivi?.etat)).map((l) => ({ ...l, s: formSuivi(l) }));
+    const enCours = lignes.filter((l) => !ETATS_FINIS.has(l.suivi?.etat) && !l.auto).map((l) => ({ ...l, s: formSuivi(l) }));
+    const autos = lignes.filter((l) => !ETATS_FINIS.has(l.suivi?.etat) && l.auto).map((l) => ({ ...l, s: formSuivi(l) }));
     const finies = lignes.filter((l) => ETATS_FINIS.has(l.suivi?.etat)).map((l) => ({ ...l, s: formSuivi(l) }));
+
+    // L'échange complet d'un restaurant : premier mail, relances, réponses connues, dans l'ordre.
+    const echange = (nomResto) => {
+      const fils = [
+        ...envois.filter((x) => x.nom === nomResto).map((x) => ({ j: x.jour, h: `→ ${date(x.jour)} · ${e(x.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '')}` })),
+        ...textes.filter((r) => r.nom === nomResto).map((r) => ({ j: r.jour, h: `← ${date(r.jour)} · réponse : ${texteCellule(r.texte)}` })),
+      ].sort((a, b) => ((a.j ?? '') > (b.j ?? '') ? 1 : -1));
+      return `<div class="echange-mail">${fils.map((f) => `<p>${f.h}</p>`).join('')}
+<p class="note-mail">Le texte envoyé n’est pas encore copié dans le cerveau (contenu non récupéré). <a href="${lienGmail(nomResto)}" target="_blank" rel="noopener">Chercher l’échange dans Gmail ›</a></p></div>`;
+    };
+
+    // Une seule ligne par journée d'envoi ; chaque mail s'ouvre sur son échange.
+    const parJour = grouperParJour(envois).slice(0, 60);
+    const blocJours = parJour.length
+      ? `<section class="bloc"><h3>Mails envoyés, jour par jour <small>(${parJour.length} journée(s))</small></h3>${aide('envoi')}
+${parJour
+  .map(([j, liste]) => {
+    const envoyes = liste.filter((x) => x.statut === 'envoye').length;
+    const echecs = liste.filter((x) => x.statut === 'echec').length;
+    const ex = exempleDuJour(j, liste.length);
+    return `<details class="jour-mails"><summary><b>${date(j)}</b> · ${envoyes} mail(s) envoyé(s)${echecs ? ` · <span class="etiq off">${echecs} échec(s)</span>` : ''}<span class="voir">Voir les ${liste.length} mails ›</span></summary>
+${liste.map((m, i) => `<details class="mail"><summary>${i === ex ? '★ ' : ''}${e(m.nom ?? '?')} — ${e(m.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', m.statut), m.statut === 'envoye' ? 'ok' : m.statut === 'echec' ? 'off' : '')}${i === ex ? ' <small class="ex">exemple du jour</small>' : ''}</summary>${echange(m.nom)}</details>`).join('')}
+</details>`;
+  })
+  .join('')}</section>`
+      : '';
+
+    // Les vieux mails jamais partis se trient par lots : le cerveau NOTE la
+    // décision, il n'envoie rien (la reprise passe par n8n ou Claude).
+    const dejaDecide = (nom) => tri?.decisions?.[cleTri(nom)];
+    const blocTri = aValider.length
+      ? `<section class="bloc"><h3>Mails préparés jamais partis <small>(${aValider.length})</small></h3>${aide('triMails')}
+<form method="post" action="/tri-mails">
+<table><tr><th></th><th>Restaurant</th><th>Ta décision</th></tr>
+${aValider
+  .map((x) => {
+    const d = dejaDecide(x.nom);
+    return `<tr><td><input type="checkbox" name="noms" value="${e(x.nom ?? '')}"></td><td>${e(x.nom ?? '?')}</td><td>${
+      d ? `${etiquette(DECISIONS_TRI[d.decision] ?? d.decision, d.decision === 'abandonner' ? 'off' : d.decision === 'envoyer' ? 'ok' : '')}${d.doublon ? ' <span class="etiq off">⚠ doublon possible</span>' : ''}` : etiquette('jamais parti', 'attente')
+    }</td></tr>`;
+  })
+  .join('')}</table>
+<div class="barre-tri"><label>Décision pour les cochés <select name="decision">${Object.entries(DECISIONS_TRI).map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select></label><button>Noter</button></div>
+<p class="note-mail">Rien ne part d’ici : ta décision est notée, la reprise réelle se fait dans n8n ou via Claude après vérification des envois déjà faits.</p>
+</form></section>`
+      : `<section class="bloc"><h3>Mails préparés jamais partis</h3><p class="vide">Rien en attente : tous les mails préparés sont partis.</p></section>`;
+
     return [
       parcours,
       table('Réponses à traiter', colonnes, enCours, { vide: 'Aucune réponse en attente de suivi.', aide: aide('suivi') }),
+      autos.length ? table('Réponses automatiques probables', colonnes, autos, { visibles: 3 }) : '',
       finies.length ? table('Réponses traitées', colonnes, finies, { visibles: 5 }) : '',
-      table('Mails préparés jamais partis', [{ cle: 'n', titre: 'Restaurant' }, { cle: 's', titre: 'État' }],
-        aValider.map((x) => ({ n: e(x.nom ?? '?'), s: etiquette('jamais parti', 'attente') })), { vide: 'Rien en attente : tous les mails préparés sont partis.' }),
-      table('Derniers mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'o', titre: 'Objet' }, { cle: 's', titre: 'État' }],
-        envois.map((x) => ({ q: date(x.jour), n: e(x.nom ?? '?'), o: e(x.objet ?? '—'), s: etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '') }))),
+      blocTri,
+      blocJours,
       fin(blocNotes),
     ].join('');
   }
@@ -191,9 +269,36 @@ function sections(id, { business, journal, histoires, suivi }) {
     const im = business.sources?.impacteur;
     if (!im) return `<p class="vide">Le Sheet Impacteur n’est pas encore lu.</p>${fin(blocNotes)}`;
     const fiches = [...im.fiches].sort((a, b) => (b.envoi ?? '') > (a.envoi ?? '') ? 1 : -1);
+    const tonIm = (s) => (s === 'ENVOYE' ? 'ok' : s?.startsWith('A_VERIFIER') ? 'attente' : s === 'BLOQUE_ELIGIBILITE' ? 'off' : '');
+
+    // Une ligne par journée d'envoi, avec le compte par chaîne (Afrique / Frexit visibles ensemble).
+    const parJour = grouperParJour(fiches.filter((f) => f.envoi), (f) => f.envoi).slice(0, 60);
+    const blocJours = parJour.length
+      ? `<section class="bloc"><h3>Invités contactés, jour par jour <small>(${parJour.length} journée(s))</small></h3>${aide('impacteur')}
+${parJour
+  .map(([j, liste]) => {
+    const parChaine = Object.entries(Object.groupBy(liste, (f) => f.chaine ?? 'chaîne non déclarée'))
+      .map(([c, l]) => `${l.length} ${e(c)}`)
+      .join(' · ');
+    const ex = exempleDuJour(j, liste.length);
+    return `<details class="jour-mails"><summary><b>${date(j)}</b> · ${liste.length} invité(s) contacté(s) <small>(${parChaine})</small><span class="voir">Voir les ${liste.length} mails ›</span></summary>
+${liste
+  .map(
+    (f, i) => `<details class="mail"><summary>${i === ex ? '★ ' : ''}${e(f.auteur ?? '?')} — ${e(f.livre ?? 'livre non noté')} ${etiquette(f.chaine ?? 'chaîne non déclarée', 'or')} ${etiquette(lb('impacteur', f.statut), tonIm(f.statut))}${f.ouvert ? ` <small>ouvert le ${date(f.ouvert)}</small>` : ''}${i === ex ? ' <small class="ex">exemple du jour</small>' : ''}</summary>
+<div class="echange-mail"><p>→ ${date(f.envoi)} · invitation ${e(f.chaine ?? '?')} ${f.ouvert ? `· ouverte le ${date(f.ouvert)}` : '· pas d’ouverture enregistrée'}</p>
+<p class="note-mail">Compte d’envoi réellement utilisé : non enregistré par l’automatisation (la chaîne affichée vient du Sheet, c’est une déclaration, pas une preuve). Texte du mail non récupéré. <a href="${lienGmail(f.auteur)}" target="_blank" rel="noopener">Chercher dans Gmail ›</a></p></div></details>`,
+  )
+  .join('')}
+</details>`;
+  })
+  .join('')}</section>`
+      : '';
+
+    const sansEnvoi = fiches.filter((f) => !f.envoi);
     return [
-      table('Invités', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }, { cle: 'q', titre: 'Contacté le' }, { cle: 'o', titre: 'Mail ouvert' }],
-        fiches.map((f) => ({ a: e(f.auteur ?? '?'), l: e(f.livre ?? '—'), c: e(f.chaine ?? '—'), s: etiquette(lb('impacteur', f.statut), f.statut === 'ENVOYE' ? 'ok' : f.statut?.startsWith('A_VERIFIER') ? 'attente' : f.statut === 'BLOQUE_ELIGIBILITE' ? 'off' : ''), q: date(f.envoi), o: f.ouvert ? `✓ ${date(f.ouvert)}` : '—' })), { visibles: 12 }),
+      blocJours,
+      table('Fiches sans envoi (à vérifier, brouillons, bloquées)', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }],
+        sansEnvoi.map((f) => ({ a: e(f.auteur ?? '?'), l: e(f.livre ?? '—'), c: e(f.chaine ?? '—'), s: etiquette(lb('impacteur', f.statut), tonIm(f.statut)) })), { visibles: 12, vide: 'Toutes les fiches du Sheet ont été traitées.' }),
       fin(blocNotes),
     ].join('');
   }
@@ -230,7 +335,7 @@ function sections(id, { business, journal, histoires, suivi }) {
   return fin(blocNotes);
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   const tableau = tableauDeBord({ business, journal, configJournal, pauses, jour });
@@ -263,7 +368,7 @@ ${mesIdees.length ? `<ul>${mesIdees
 <p class="retour"><a href="/journal">‹ Retour au tableau de bord</a>${guide ? `<a class="guide-lien" href="/fonctionnement?projet=${e(id)}">⚙️ Comment ça marche</a>` : ''}</p>
 ${carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : ''}
 ${blocIdees}
-${sections(id, { business, journal, histoires, suivi })}
+${sections(id, { business, journal, histoires, suivi, tri })}
 ${surveillance}
 <style>
 .retour { margin:0 0 10px; display:flex; justify-content:space-between; gap:10px; } .retour a { color:var(--doux); text-decoration:none; }
@@ -302,6 +407,20 @@ td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
 .idees li { display:flex; gap:10px; justify-content:space-between; align-items:flex-start; padding:8px 0; border-top:1px solid var(--bord); }
 .idees li p { margin:0; font-size:14px; } .idees li small { color:var(--doux); }
 .idees li.faite p { text-decoration:line-through; color:var(--doux); }
+.jour-mails { border-top:1px solid var(--bord); padding:8px 0; }
+.jour-mails:first-of-type { border-top:0; }
+.jour-mails > summary { cursor:pointer; display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:14px; }
+.jour-mails > summary .voir { margin-left:auto; color:var(--or); font-size:13px; font-weight:600; }
+.jour-mails > summary small { color:var(--doux); }
+.mail { margin:6px 0 0 14px; }
+.mail > summary { cursor:pointer; font-size:13px; }
+.mail small.ex { color:var(--or); font-weight:600; }
+.echange-mail { margin:6px 0 4px 16px; border-left:2px solid var(--bord); padding-left:12px; }
+.echange-mail p { margin:4px 0; font-size:13px; }
+.note-mail { color:var(--doux); font-size:12px !important; }
+.barre-tri { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
+.barre-tri label { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--doux); }
+.barre-tri select { font:inherit; padding:6px 8px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
 .idees li.ecartee p { color:var(--doux); }
 .idees select { font:inherit; font-size:13px; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
 .technique summary { cursor:pointer; font-weight:600; font-size:15px; }
