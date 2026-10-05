@@ -88,6 +88,29 @@ test('page Nūr Meet : une ligne par journée, échange complet, contenu manquan
   assert.match(html, /exemple du jour/);
 });
 
+test('page Nūr Meet : le texte réellement envoyé s’affiche quand l’automatisation l’a copié', () => {
+  const business = {
+    objectifs: {},
+    sources: {
+      prospection: {
+        maj: '2026-10-05T18:00:00Z',
+        ouvertures: [],
+        prospects: [{ nom: 'Chez Momo', ville: 'Lyon', email: 'momo@x.fr', statut: 'contacte', premier: '2026-10-04' }],
+        envois: [
+          { jour: '2026-10-04', nom: 'Chez Momo', objet: 'Soirée Nūr', statut: 'envoye', corps: 'Bonjour, on organise des soirées sans alcool…' },
+          { jour: '2026-10-05', nom: 'Chez Momo', objet: 'Relance soirée', statut: 'envoye', corps: 'Je me permets de relancer mon précédent message.' },
+        ],
+        reponses: [],
+      },
+    },
+  };
+  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), jour: '2026-10-05', idees: { idees: [] }, suivi: { reponses: {} }, tri: { decisions: {} } });
+  assert.match(html, /Bonjour, on organise des soirées sans alcool…/);
+  assert.match(html, /Je me permets de relancer mon précédent message\./);
+  // Tous les textes sont là : plus de note « contenu non récupéré » sur cet échange.
+  assert.doesNotMatch(html, /contenu non récupéré/);
+});
+
 test('page Impacteur : journées avec compte par chaîne, compte d’envoi non enregistré dit tel quel', () => {
   const business = {
     objectifs: {},
@@ -95,7 +118,7 @@ test('page Impacteur : journées avec compte par chaîne, compte d’envoi non e
       impacteur: {
         maj: '2026-10-05T18:00:00Z',
         fiches: [
-          { auteur: 'A. Diop', livre: 'Livre A', chaine: 'Afrique', statut: 'ENVOYE', envoi: '2026-10-05', ouvert: '2026-10-05' },
+          { auteur: 'A. Diop', livre: 'Livre A', chaine: 'Afrique', statut: 'ENVOYE', envoi: '2026-10-05', ouvert: '2026-10-05', corps: 'Bonjour, votre livre nous a touchés.', compte: 'afrique.conteurs@gmail.com' },
           { auteur: 'B. Dupont', livre: 'Livre B', chaine: 'Frexit', statut: 'ENVOYE', envoi: '2026-10-05' },
           { auteur: 'C. Attente', livre: 'Livre C', chaine: 'Afrique', statut: 'A_VERIFIER' },
         ],
@@ -110,7 +133,10 @@ test('page Impacteur : journées avec compte par chaîne, compte d’envoi non e
   });
   assert.match(html, /Invités contactés, jour par jour/);
   assert.match(html, /2 invité\(s\) contacté\(s\) <small>\((1 Afrique · 1 Frexit|1 Frexit · 1 Afrique)\)/);
+  // La fiche sans enregistrement garde la note honnête ; celle qui a tout l'affiche en preuve.
   assert.match(html, /Compte d’envoi réellement utilisé : non enregistré/);
+  assert.match(html, /Texte envoyé : Bonjour, votre livre nous a touchés\./);
+  assert.match(html, /Compte d’envoi enregistré par l’automatisation : afrique\.conteurs@gmail\.com\./);
   assert.match(html, /Fiches sans envoi/);
   assert.match(html, /C\. Attente/);
 });

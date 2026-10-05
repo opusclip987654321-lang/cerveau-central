@@ -152,8 +152,8 @@
       "titre": "Lecture par journée",
       "points": [
         "La page Impacteur regroupe les invités contactés par journée, avec les comptes Afrique et Frexit côte à côte",
-        "La « chaîne » affichée vient du Sheet : c'est une déclaration, pas une preuve du compte Gmail réellement utilisé, que l'automatisation n'enregistre pas encore",
-        "Le texte des mails n'est pas copié dans le cerveau : chaque fiche renvoie vers Gmail pour lire l'échange réel"
+        "La « chaîne » affichée vient du Sheet : tant que l'automatisation n'enregistre pas le compte Gmail réellement utilisé (colonne compte_envoi), c'est une déclaration, pas une preuve ; dès qu'elle l'enregistre, le compte s'affiche sur chaque mail",
+        "Le texte du mail s'affiche sur la fiche dès que l'automatisation le copie dans le Sheet (colonne corps) ; tant qu'il manque, la fiche le dit et renvoie vers Gmail pour lire l'échange réel"
       ]
     }
   ],

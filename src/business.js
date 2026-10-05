@@ -70,7 +70,15 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
       dernier: jourDe(l.date_dernier_envoi),
       reponse: jourDe(l.date_reponse),
     })),
-    envois: (envois ?? []).filter(pasTest).map((l) => ({ nom: l.nom ? String(l.nom).slice(0, 80) : null, objet: l.objet ? String(l.objet).slice(0, 120) : null, statut: l.statut ?? null, jour: jourDe(l.date_decision) ?? jourDe(l.date_proposition) })),
+    // `corps` : le texte réellement envoyé, si l'automatisation le copie dans
+    // np_envois (colonne corps). Absent = non récupéré, la page le dit tel quel.
+    envois: (envois ?? []).filter(pasTest).map((l) => ({
+      nom: l.nom ? String(l.nom).slice(0, 80) : null,
+      objet: l.objet ? String(l.objet).slice(0, 120) : null,
+      statut: l.statut ?? null,
+      jour: jourDe(l.date_decision) ?? jourDe(l.date_proposition),
+      corps: l.corps ? String(l.corps).slice(0, 4000) : null,
+    })),
     // Un même mail peut être ouvert plusieurs fois : on garde la première ouverture de chaque envoi.
     ouvertures: [...new Map((ouvertures ?? []).map((l) => [String(l.envoi_id), jourDe(l.date)]).reverse()).values()].filter(Boolean),
     // Le texte des réponses, gardé par « Nour Meet 4 » dans np_reponses (depuis le 05/10/2026).
@@ -115,6 +123,10 @@ export async function synchroniserImpacteur(business, { url, jeton, delaiMs = 60
       chaine: l.chaine ? String(l.chaine) : null,
       envoi: jourDe(l.date_envoi),
       ouvert: jourDe(l.ouvert_le),
+      // Remplis seulement si l'automatisation les écrit dans le Sheet (colonnes
+      // corps et compte_envoi) : alors le compte devient une preuve, pas une déclaration.
+      corps: l.corps ? String(l.corps).slice(0, 4000) : null,
+      compte: l.compte_envoi ? String(l.compte_envoi).slice(0, 120) : null,
     })),
   };
   return { fiches: lignes.length };
