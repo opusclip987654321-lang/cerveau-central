@@ -100,7 +100,7 @@ test('page projet Nūr Meet : réponses et mails à valider', () => {
   assert.match(html, /La Plume/);
   assert.match(html, /Chez Sam/);
   assert.match(html, /Vos soirées sur Nūr Meet/);
-  assert.match(html, /Mails en attente de ta validation/);
+  assert.match(html, /Mails préparés jamais partis/);
   // Le texte de la réponse est lisible (résumé + dépliable), l'ancienne n'a que la date.
   assert.match(html, /Leur réponse/);
   assert.match(html, /<details class="texte"><summary>Bonjour, oui ça nous intéresse/);

@@ -12,7 +12,7 @@ const date = (j) => (j ? new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', 
 
 // Les étiquettes techniques, traduites pour louis.
 const L = {
-  prospect: { sans_email: 'sans email trouvé', contacte: 'contacté', relance1: 'relancé 1 fois', relance2: 'relancé 2 fois', propose: 'mail à valider', repondu: 'a répondu', ecarte: 'écarté', exclu: 'exclu' },
+  prospect: { sans_email: 'sans email trouvé', contacte: 'contacté', relance1: 'relancé 1 fois', relance2: 'relancé 2 fois', propose: 'mail préparé, jamais parti', repondu: 'a répondu', ecarte: 'écarté', exclu: 'exclu' },
   envoi: { envoye: 'envoyé', echec: 'échec', en_attente: 'en attente', refuse: 'refusé' },
   leviaroEtat: { decouverte: 'découverte', analysee: 'analysée', a_approfondir: 'à approfondir', hors_perimetre: 'hors périmètre', contact_introuvable: 'contact introuvable', attente_validation: 'mail à valider', sequence_active: 'prospection en cours', discussion_active: 'en discussion', cloturee: 'clôturée', exclue: 'exclue' },
   leviaroMail: { brouillon: 'brouillon', attente_validation: 'à valider', autorise: 'autorisé', reserve: 'réservé', envoye: 'envoyé', annule: 'annulé', rejete: 'rejeté', erreur_temporaire: 'erreur passagère', erreur_permanente: 'échec définitif', livraison_inconnue: 'livraison incertaine' },
@@ -121,8 +121,8 @@ function sections(id, { business, journal, histoires }) {
           ...textes.map((r) => ({ j: r.jour ?? '', q: date(r.jour), n: e(r.nom ?? r.de ?? '?'), v: e(r.ville ?? '—'), x: texteCellule(r.texte) })),
           ...repondus.filter((x) => !nomsAvecTexte.has(x.nom)).map((x) => ({ j: x.reponse ?? '', q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—'), x: '—' })),
         ].sort((a, b) => (b.j > a.j ? 1 : -1))),
-      table('Mails en attente de ta validation', [{ cle: 'n', titre: 'Restaurant' }, { cle: 's', titre: 'État' }],
-        aValider.map((x) => ({ n: e(x.nom ?? '?'), s: etiquette('mail à valider', 'attente') })), { vide: 'Aucun mail à valider.' }),
+      table('Mails préparés jamais partis', [{ cle: 'n', titre: 'Restaurant' }, { cle: 's', titre: 'État' }],
+        aValider.map((x) => ({ n: e(x.nom ?? '?'), s: etiquette('jamais parti', 'attente') })), { vide: 'Rien en attente : tous les mails préparés sont partis.' }),
       table('Derniers mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'o', titre: 'Objet' }, { cle: 's', titre: 'État' }],
         envois.map((x) => ({ q: date(x.jour), n: e(x.nom ?? '?'), o: e(x.objet ?? '—'), s: etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '') }))),
       fin(blocNotes),

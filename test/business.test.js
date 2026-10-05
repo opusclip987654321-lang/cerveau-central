@@ -99,7 +99,7 @@ test('tableauDeBord : chiffres de prospection Nūr Meet sur 7 jours', () => {
   assert.equal(n.chiffres[0].valeur, 1); // une réponse
   assert.equal(n.chiffres[1].valeur, 2); // deux mails ouverts
   assert.equal(n.couleur, 'orange'); // 20 % d'échecs
-  assert.ok(n.aDecider.some((t) => /1 mail\(s\) attendent ta validation/.test(t)));
+  assert.ok(n.aDecider.some((t) => /1 mail\(s\) préparés ne sont jamais partis/.test(t)));
   assert.ok(n.aDecider.some((t) => /6 restaurants trouvés n'ont pas d'email \(75 %\)/.test(t)));
   assert.ok(n.aDecider.some((t) => /20 % des envois échouent/.test(t)));
   assert.equal(n.objectif.propose, 3); // 10 envois sur 4 semaines → 2,5/semaine × 1,2

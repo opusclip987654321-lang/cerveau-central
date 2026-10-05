@@ -216,7 +216,7 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     const echecsPeriode = somme(parJour(periode, echecs.map((e) => e.jour)));
     const envPeriode = somme(parJour(periode, envoyes));
     const aDecider = [];
-    if (aValider) aDecider.push(`${nombre(aValider)} mail(s) attendent ta validation sur Telegram.`);
+    if (aValider) aDecider.push(`${nombre(aValider)} mail(s) préparés ne sont jamais partis (échecs ou restes de l'ancienne validation) : les relancer ou les abandonner ?`);
     if (sansEmail > pr.prospects.length / 3)
       aDecider.push(`${nombre(sansEmail)} restaurants trouvés n'ont pas d'email (${pct(sansEmail, pr.prospects.length)} %) : chercher leur email autrement, ou les appeler ?`);
     const tauxEchec = pct(echecsPeriode, envPeriode + echecsPeriode);
