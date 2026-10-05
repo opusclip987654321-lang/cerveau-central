@@ -26,6 +26,7 @@ import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from '.
 import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
 import { synchroniserYoutube } from './youtube.js';
+import { synchroniserStripe } from './stripe.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
@@ -184,6 +185,11 @@ async function synchroniserJournal() {
       await avecBusiness((b) => synchroniserYoutube(b, { cle: env.YOUTUBE_API_KEY, chaines: configYoutube.chaines }));
     } catch (err) {
       console.error(`Tableau de bord (YouTube) : ${err.message}`);
+    }
+    try {
+      await avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE }));
+    } catch (err) {
+      console.error(`Tableau de bord (Stripe) : ${err.message}`);
     }
   } catch (err) {
     console.error(`Journal : ${err.message}`);
