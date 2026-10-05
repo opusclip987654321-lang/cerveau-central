@@ -21,6 +21,7 @@ import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from '
 import { pageServeurs } from './page-serveurs.js';
 import { chargerJournal, sauverJournal, ajouterEvenement, synchroniserN8n, messageHier } from './journal.js';
 import { pageJournal } from './page-journal.js';
+import { pageActions } from './page-actions.js';
 import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N, SURVEILLANCE } from './pauses.js';
 import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from './discussion.js';
 import { pageDiscussion } from './page-discussion.js';
@@ -500,6 +501,26 @@ const serveur = http.createServer(async (req, res) => {
           business: await chargerBusiness(fichierBusiness),
           pauses: await chargerPauses(fichierPauses),
           message: url.searchParams.get('message') ?? undefined,
+        }),
+      );
+    }
+    if (req.method === 'GET' && url.pathname === '/actions') {
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      const tableau = tableauDeBord({
+        business: await chargerBusiness(fichierBusiness),
+        journal: await chargerJournal(fichierJournal),
+        configJournal,
+        pauses: await chargerPauses(fichierPauses),
+      });
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(
+        pageActions({
+          config,
+          configJournal,
+          etat: await chargerEtat(fichierEtat),
+          cartes: tableau.cartes,
+          idees: (await chargerIdees(fichierIdees)).idees,
+          aRepondre,
         }),
       );
     }
