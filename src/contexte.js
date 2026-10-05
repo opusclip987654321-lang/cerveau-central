@@ -4,7 +4,7 @@ import { bilanSemaine } from './journal.js';
 import { analyser, parProjet, goLisible } from './serveurs.js';
 import { jourParis } from './questions.js';
 
-export function contexteCerveau({ etat, argent, journal, serveurs, configServeurs, configJournal, pauses, jour = jourParis() }) {
+export function contexteCerveau({ etat, argent, journal, serveurs, configServeurs, configJournal, pauses, business, reponses, jour = jourParis() }) {
   const parties = [];
   const nomProjet = (id) => configJournal.projets.find((p) => p.id === id)?.nom ?? id;
 
@@ -42,6 +42,16 @@ export function contexteCerveau({ etat, argent, journal, serveurs, configServeur
       return `- ${s.nom} (${s.prix}, ${s.role}) : disque ${a.pctDisque} %, mémoire ${a.pctMemoire} %${a.joursAvantPlein !== null ? `, plein dans ~${a.joursAvantPlein} j` : ''} ; projets : ${projets}`;
     });
     parties.push(`## Serveurs\n${l.join('\n')}`);
+  }
+
+  if (business?.objectifs && Object.keys(business.objectifs).length) {
+    const obj = Object.entries(business.objectifs).map(([p, o]) => `- ${nomProjet(p)} : ${o?.valide ?? o} par semaine`);
+    parties.push(`## Objectifs hebdomadaires validés par louis\n${obj.join('\n')}`);
+  }
+
+  if (reponses?.reponses?.length) {
+    const recentes = reponses.reponses.slice(-30).map((r) => `- ${r.jour} [${nomProjet(r.projet)}] ${r.texte} → ${r.reponse}`);
+    parties.push(`## Réponses de louis aux questions du jour (les plus récentes)\n${recentes.join('\n')}`);
   }
 
   const enPause = Object.entries(pauses?.projets ?? {}).map(([p, x]) => `${nomProjet(p)} (depuis ${x.depuis.slice(0, 10)})`);
