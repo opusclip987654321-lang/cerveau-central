@@ -34,6 +34,7 @@ import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
+import { chargerTri, sauverTri, decider } from './tri-mails.js';
 import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, lundiDe } from './bilan.js';
 import { pageAnalyses } from './page-analyses.js';
 import { pageProjet } from './page-projet.js';
@@ -61,6 +62,7 @@ const fichierActions = path.join(path.dirname(fichierEtat), 'actions.json');
 const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
 const fichierIdees = path.join(path.dirname(fichierEtat), 'idees.json');
 const fichierSuivi = path.join(path.dirname(fichierEtat), 'suivi-reponses.json');
+const fichierTri = path.join(path.dirname(fichierEtat), 'tri-mails.json');
 const fichierBilans = path.join(path.dirname(fichierEtat), 'bilans.json');
 const plafondBilans = Number(env.PLAFOND_BILAN_DOLLARS ?? 10);
 
@@ -150,6 +152,7 @@ function fileDAttente(charger, sauver, fichier) {
 }
 const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
 const avecActions = fileDAttente(chargerActions, sauverActions, fichierActions);
+const avecTri = fileDAttente(chargerTri, sauverTri, fichierTri);
 const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
 const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
@@ -239,6 +242,16 @@ async function lireCorps(req, limite = 64_000) {
     if (corps.length > limite) throw new Error('trop long');
   }
   return Object.fromEntries(new URLSearchParams(corps));
+}
+
+// Comme lireCorps, mais garde les champs répétés (cases à cocher d'un lot).
+async function lireCorpsMulti(req, limite = 64_000) {
+  let corps = '';
+  for await (const morceau of req) {
+    corps += morceau;
+    if (corps.length > limite) throw new Error('trop long');
+  }
+  return new URLSearchParams(corps);
 }
 
 async function rappelDuMatin() {
@@ -685,6 +698,7 @@ const serveur = http.createServer(async (req, res) => {
           histoires: id === 'histoires-vraies' ? await lireHistoires(dossierHistoires).catch(() => null) : null,
           idees: await chargerIdees(fichierIdees),
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
+          tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
           verifications,
           aRepondre,
           message: url.searchParams.get('message') ?? undefined,
@@ -701,6 +715,17 @@ const serveur = http.createServer(async (req, res) => {
         envoyer(`💡 <b>Idée notée</b> (${nom})\n${r.idee.texte.slice(0, 300)}`).catch(() => {});
       }
       res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Claude vient lire les idées deux fois par jour et te répond dans votre discussion.')}` });
+      return res.end();
+    }
+    // Tri par lots des vieux mails jamais partis : le cerveau note la décision,
+    // il n'envoie rien ; « à faire repartir » sur un restaurant déjà servi est signalé.
+    if (req.method === 'POST' && url.pathname === '/tri-mails') {
+      const corps = await lireCorpsMulti(req, 32_000);
+      const pr = (await chargerBusiness(fichierBusiness)).sources?.prospection;
+      const dejaEnvoyes = new Set((pr?.envois ?? []).filter((x) => x.statut === 'envoye').map((x) => x.nom).filter(Boolean));
+      const r = await avecTri((d) => decider(d, corps.getAll('noms'), corps.get('decision'), { dejaEnvoyes }));
+      const message = r.erreur ?? `${r.nombre} décision(s) notée(s)${r.doublons ? ` · ⚠ ${r.doublons} doublon(s) possible(s) : déjà un mail envoyé, à vérifier avant de faire repartir` : ''}. Rien n'est envoyé d'ici.`;
+      res.writeHead(303, { location: `/projet?projet=nour-meet&message=${encodeURIComponent(message)}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/suivi-reponse') {
