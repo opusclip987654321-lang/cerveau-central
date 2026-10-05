@@ -88,3 +88,22 @@ test('la page affiche les questions et les réponses déjà données', () => {
   assert.match(html, /value="3" checked/);
   assert.match(html, /Petites histoires vraies/);
 });
+
+test('la page sépare à répondre, répondu du jour et historique', () => {
+  const h = vide();
+  const maintenant = new Date();
+  const jour = jourParis(maintenant);
+  const [nm] = questionsDuJour(config, h, jour);
+  enregistrerReponses(config, h, { [`${nm.projet.id}:${nm.questions[0].id}`]: '4' }, maintenant);
+  h.reponses.push({ jour: '2026-01-02', date: '2026-01-02T10:00:00Z', projet: nm.projet.id, question: 'x', texte: 'Question passée ?', reponse: 'Oui, bien' });
+  const html = pageQuestions(config, h, { jour });
+  // La question répondue n'apparaît plus dans « à répondre », mais reste modifiable dans le bloc du jour.
+  const avantFaites = html.slice(0, html.indexOf('Répondu aujourd'));
+  assert.doesNotMatch(avantFaites, new RegExp(`${nm.projet.id}:${nm.questions[0].id}`));
+  assert.match(html, /Répondu aujourd'hui \(1\)/);
+  assert.match(html, /value="4" checked/);
+  // L'historique montre les jours précédents sans les effacer.
+  assert.match(html, /Historique de tes réponses/);
+  assert.match(html, /Question passée \?/);
+  assert.match(html, /Oui, bien/);
+});
