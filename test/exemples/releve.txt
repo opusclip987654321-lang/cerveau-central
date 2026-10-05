@@ -1,0 +1,35 @@
+### hote
+vps-59f9b67f
+### coeurs
+2
+### charge
+0.42 0.38 0.51 1/312 12345
+### memoire
+MemTotal:        3913232 kB
+MemAvailable:    1203004 kB
+### disques
+/dev/sda1      40999264256 33285308416 7697178624      82% /
+/dev/sda15       109422592     6346752  103075840       6% /boot/efi
+### conteneurs
+{"Command":"\"caddy run\"","Image":"caddy:2","Labels":"com.docker.compose.project=nour-v2,com.docker.compose.service=caddy","Names":"nour-v2-caddy-1","Size":"0B (virtual 50.1MB)","State":"running","Status":"Up 3 days"}
+{"Image":"nour-v2-api","Labels":"com.docker.compose.project=nour-v2","Names":"nour-v2-api-1","Size":"1.2MB (virtual 410MB)","State":"running","Status":"Up 3 days"}
+{"Image":"postgres:16","Labels":"com.docker.compose.project=nour-v2","Names":"nour-v2-postgres-1","Size":"63B (virtual 432MB)","State":"running","Status":"Up 3 days"}
+{"Image":"n8nio/n8n","Labels":"com.docker.compose.project=n8n","Names":"n8n-n8n-1","Size":"2.1GB (virtual 3.2GB)","State":"running","Status":"Up 2 days"}
+{"Image":"leviaro-site","Labels":"","Names":"leviaro-site","Size":"12kB (virtual 180MB)","State":"exited","Status":"Exited (0) 5 days ago"}
+{"Image":"cerveau-central-cerveau","Labels":"com.docker.compose.project=cerveau-central","Names":"cerveau-central","Size":"40kB (virtual 160MB)","State":"running","Status":"Up 14 hours"}
+### stats
+{"CPUPerc":"0.12%","MemUsage":"38.5MiB / 3.732GiB","Name":"nour-v2-caddy-1"}
+{"CPUPerc":"1.05%","MemUsage":"210MiB / 3.732GiB","Name":"nour-v2-api-1"}
+{"CPUPerc":"0.30%","MemUsage":"96MiB / 3.732GiB","Name":"nour-v2-postgres-1"}
+{"CPUPerc":"4.20%","MemUsage":"1.62GiB / 3.732GiB","Name":"n8n-n8n-1"}
+{"CPUPerc":"0.05%","MemUsage":"42MiB / 3.732GiB","Name":"cerveau-central"}
+### docker
+{"Active":"6","Reclaimable":"2.4GB (45%)","Size":"5.3GB","TotalCount":"14","Type":"Images"}
+{"Active":"5","Reclaimable":"12kB (0%)","Size":"2.1GB","TotalCount":"6","Type":"Containers"}
+{"Active":"4","Reclaimable":"0B (0%)","Size":"1.8GB","TotalCount":"5","Type":"Local Volumes"}
+{"Active":"0","Reclaimable":"1.1GB","Size":"1.1GB","TotalCount":"40","Type":"Build Cache"}
+### volumes
+[{"Name":"nour-v2_pgdata","Size":"350MB"},{"Name":"n8n_n8n_data","Size":"1.3GB"},{"Name":"cerveau-central_cerveau-data","Size":"2MB"},{"Name":"orphelin","Size":"0B"}]
+### dossiers
+8123456789	/opt/nour-video-agent
+1200000000	/home/ubuntu/nour-v2

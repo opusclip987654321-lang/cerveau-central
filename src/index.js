@@ -1,6 +1,6 @@
 // Point d'entrée : vérifie tout à intervalle régulier et sert la page d'état.
 import http from 'node:http';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +16,8 @@ import { chargerReponses, sauverReponses, enAttente, enregistrerReponses, matinA
 import { chargerArgent, sauverArgent, lireLigne, rappelsARenvoyer, messageRappels } from './argent.js';
 import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient } from './factures.js';
 import { pageArgent } from './page-argent.js';
+import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from './serveurs.js';
+import { pageServeurs } from './page-serveurs.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -28,12 +30,14 @@ const fichierArgentDepart = path.join(racine, 'config/argent.json');
 const dossierFactures = path.join(path.dirname(fichierEtat), 'factures');
 const plafondIa = Number(env.PLAFOND_IA_DOLLARS ?? 10);
 const clientClaude = creerClient(env.ANTHROPIC_API_KEY);
+const fichierServeurs = env.FICHIER_SERVEURS ?? path.join(racine, 'data/serveurs.json');
 const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
 const configQuestions = JSON.parse(await readFile(fichierQuestions, 'utf8'));
 const configArgent = JSON.parse(await readFile(fichierArgentDepart, 'utf8'));
+const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serveurs.json'), 'utf8'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
 let file = Promise.resolve();
@@ -78,14 +82,34 @@ function lireFacturesEnAttente() {
     .finally(() => (lectureEnCours = null));
 }
 
-async function lireJson(req, limite) {
+// Relevés des VPS : écrits l'un après l'autre.
+let fileServeurs = Promise.resolve();
+function avecServeurs(fn) {
+  const suite = fileServeurs.then(async () => {
+    const donnees = await chargerServeurs(fichierServeurs);
+    const resultat = await fn(donnees);
+    await sauverServeurs(fichierServeurs, donnees);
+    return resultat;
+  });
+  fileServeurs = suite.catch(() => {});
+  return suite;
+}
+
+// Jeton partagé avec scripts/releve.sh, comparé sans fuite de temps.
+const empreinteJeton = (t) => createHash('sha256').update(String(t)).digest();
+const jetonReleveValide = (entete) =>
+  Boolean(env.RELEVE_JETON) && env.RELEVE_JETON.length >= 20 && timingSafeEqual(empreinteJeton(entete), empreinteJeton(`Bearer ${env.RELEVE_JETON}`));
+
+async function lireTexte(req, limite) {
   let corps = '';
   for await (const morceau of req) {
     corps += morceau;
     if (corps.length > limite) throw Object.assign(new Error('trop long'), { statut: 413 });
   }
-  return JSON.parse(corps);
+  return corps;
 }
+
+const lireJson = async (req, limite) => JSON.parse(await lireTexte(req, limite));
 
 async function lireCorps(req, limite = 64_000) {
   let corps = '';
@@ -109,7 +133,7 @@ async function rappelDuMatin() {
 }
 
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
-const options = { n8n: { url: env.N8N_URL, cle: env.N8N_API_KEY } };
+const options = { n8n: { url: env.N8N_URL, cle: env.N8N_API_KEY }, releve: { fichier: fichierServeurs } };
 
 // Secret qui signe les sessions, créé au premier démarrage et gardé dans data/.
 const fichierSecret = path.join(path.dirname(fichierEtat), 'secret');
@@ -153,6 +177,21 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/sante') {
       res.writeHead(200, { 'content-type': 'text/plain' });
       return res.end('ok');
+    }
+    if (req.method === 'POST' && url.pathname === '/api/releve') {
+      const id = url.searchParams.get('serveur');
+      if (!jetonReleveValide(req.headers.authorization ?? '')) {
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Jeton de relevé invalide');
+      }
+      if (!configServeurs.serveurs.some((s) => s.id === id)) {
+        res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end(`Serveur inconnu : ${id}`);
+      }
+      const releve = lireReleve(await lireTexte(req, 2_000_000));
+      await avecServeurs((d) => enregistrerReleve(d, id, releve));
+      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
+      return res.end(`Relevé reçu : ${releve.conteneurs.length} conteneur(s), ${releve.disques.length} disque(s)\n`);
     }
     if (acces.actif) {
       if (req.method === 'POST' && url.pathname === '/connexion') {
@@ -251,6 +290,15 @@ const serveur = http.createServer(async (req, res) => {
       lireFacturesEnAttente();
       res.writeHead(303, { location: '/argent?message=' + encodeURIComponent('Nouvelle lecture en cours') });
       return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/serveurs') {
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageServeurs(configServeurs, await chargerServeurs(fichierServeurs), { aRepondre }));
+    }
+    if (req.method === 'GET' && url.pathname === '/api/serveurs') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(await chargerServeurs(fichierServeurs)));
     }
     if (req.method === 'GET' && url.pathname === '/api/argent') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });

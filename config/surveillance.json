@@ -31,11 +31,18 @@
     },
     {
       "id": "serveur",
-      "nom": "Serveur OVH",
+      "nom": "VPS Nūr (ce serveur)",
       "verifications": [
         { "type": "disque", "nom": "Espace disque", "chemin": "/" },
         { "type": "memoire", "nom": "Mémoire" },
         { "type": "charge", "nom": "Charge du processeur" }
+      ]
+    },
+    {
+      "id": "vps-youtube",
+      "nom": "VPS YouTube automatisation",
+      "verifications": [
+        { "type": "releve", "nom": "Relevé du serveur", "serveur": "vps-youtube" }
       ]
     }
   ],
