@@ -569,7 +569,7 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/journal') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       const projet = configJournal.projets.some((p) => p.id === url.searchParams.get('projet')) ? url.searchParams.get('projet') : null;
-      const jours = url.searchParams.get('jours') === '30' ? 30 : 7;
+      const jours = ['30', '365'].includes(url.searchParams.get('jours')) ? Number(url.searchParams.get('jours')) : 7;
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(
         pageJournal(configJournal, await chargerJournal(fichierJournal), {
@@ -579,6 +579,8 @@ const serveur = http.createServer(async (req, res) => {
           aRepondre,
           business: await chargerBusiness(fichierBusiness),
           pauses: await chargerPauses(fichierPauses),
+          etat: await chargerEtat(fichierEtat),
+          actions: (await chargerActions(fichierActions)).actions,
           message: url.searchParams.get('message') ?? undefined,
         }),
       );

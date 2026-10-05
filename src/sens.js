@@ -35,6 +35,12 @@ const SITES = [
 
 const quiPourSite = (texte) => SITES.find(([re]) => re.test(texte)) ?? [null, null, 'Le site ne répond plus.'];
 
+// Ce qu'une automatisation fait et ce que sa panne coûte, d'après son nom (pour l'Activité).
+export const tacheEnClair = (nom) => {
+  const t = TACHES.find(([re]) => re.test(nom));
+  return t ? { tache: t[1], consequence: t[2] } : null;
+};
+
 function projetsDesWorkflows(noms, instance) {
   if (instance === 'actualite') return ['L’extrait politique'];
   const p = new Set(noms.map((n) => PROJETS_N8N.find(([re]) => re.test(n))?.[1] ?? 'automatisations diverses'));
