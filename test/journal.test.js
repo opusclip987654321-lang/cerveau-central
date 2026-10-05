@@ -96,3 +96,15 @@ test('synchro n8n : deux instances, chacune son curseur', async () => {
   assert.equal(j.n8n.jours[jour]['Extrait politique'].ok, 2);
   assert.equal(j.n8n.jours[jour]['Nour Meet 1'].ok, 2);
 });
+
+test('automatisation sans motif : rangée dans le projet par défaut de son n8n', async () => {
+  const j = vide();
+  const maintenant = new Date().toISOString();
+  const appel = async (chemin) =>
+    chemin.startsWith('/api/v1/workflows') ? { data: [{ id: '1', name: 'ZAPPING 1 - Zapping quotidien 19h' }] } : { data: [{ id: '5', workflowId: '1', status: 'success', startedAt: maintenant }] };
+  await synchroniserN8n(j, { instance: 'actualite', appel });
+  const cfg = { ...config, instances: { actualite: 'extrait-politique' } };
+  const jour = Object.keys(j.n8n.jours)[0];
+  assert.deepEqual(journee(j, cfg, jour).map((x) => x.projet.id), ['extrait-politique']);
+  assert.equal(projetDuWorkflow('IMPACTEUR - AGENT V17 TEST', cfg, 'principal'), 'impacteur');
+});

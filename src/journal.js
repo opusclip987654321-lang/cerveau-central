@@ -49,8 +49,9 @@ export function ajouterEvenement(journal, config, champs, { source = 'n8n', main
   return { evenement };
 }
 
-export const projetDuWorkflow = (nom, config) =>
-  config.projets.find((p) => p.motifs.some((m) => new RegExp(m, 'i').test(nom)))?.id ?? 'autre';
+// Le nom décide d'abord ; sinon le projet par défaut du n8n d'où vient l'automatisation.
+export const projetDuWorkflow = (nom, config, instance) =>
+  config.projets.find((p) => p.motifs.some((m) => new RegExp(m, 'i').test(nom)))?.id ?? config.instances?.[instance] ?? 'autre';
 
 // Compte les exécutions n8n par jour et par automatisation, sans recompter les
 // mêmes : on avance jusqu'à la dernière exécution déjà vue.
@@ -80,6 +81,7 @@ export async function synchroniserN8n(journal, { url, cle, instance = 'principal
       plusRecent = Math.max(plusRecent ?? id, id);
       const jour = jourParis(new Date(ex.startedAt));
       const nom = noms.get(String(ex.workflowId)) ?? `Automatisation ${ex.workflowId}`;
+      (journal.n8n.instances ??= {})[nom] = instance;
       const c = ((journal.n8n.jours[jour] ??= {})[nom] ??= { ok: 0, erreur: 0 });
       if (ex.status === 'success') c.ok++;
       else if (ex.status === 'error' || ex.status === 'crashed') c.erreur++;
@@ -108,7 +110,7 @@ export function journee(journal, config, jour, filtreProjet = null) {
   };
   for (const e of journal.evenements) if (e.jour === jour && (!filtreProjet || e.projet === filtreProjet)) p(e.projet).evenements.push(e);
   for (const [nom, c] of Object.entries(journal.n8n.jours[jour] ?? {})) {
-    const id = projetDuWorkflow(nom, config);
+    const id = projetDuWorkflow(nom, config, journal.n8n.instances?.[nom]);
     if (!filtreProjet || id === filtreProjet) p(id).automatisations.push({ nom, ...c });
   }
   const ordre = config.projets.map((x) => x.id);
@@ -129,7 +131,7 @@ export function bilanSemaine(journal, config, jour = jourParis(), jours = 7) {
   for (const [j, wf] of Object.entries(journal.n8n.jours)) {
     if (j < depuis || j > jour) continue;
     for (const [nom, c] of Object.entries(wf)) {
-      const x = (totaux[projetDuWorkflow(nom, config)] ??= { types: {}, executions: 0, erreurs: 0 });
+      const x = (totaux[projetDuWorkflow(nom, config, journal.n8n.instances?.[nom])] ??= { types: {}, executions: 0, erreurs: 0 });
       x.executions += c.ok;
       x.erreurs += c.erreur;
     }

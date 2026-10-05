@@ -1,5 +1,7 @@
 {
   "_note": "Onglet Journal. « motifs » range chaque automatisation n8n (par son nom) dans un projet ; le premier qui correspond gagne. À ajuster avec les vrais noms des workflows.",
+  "_instances": "Projet par défaut des automatisations d'un n8n quand leur nom ne correspond à aucun motif : le n8n du VPS YouTube ne sert qu'à L'extrait politique.",
+  "instances": { "actualite": "extrait-politique" },
   "projets": [
     { "id": "nour-meet", "nom": "Nūr Meet", "motifs": ["n[uū]r", "restaurant", "carrousel"] },
     { "id": "leviaro", "nom": "Leviaro", "motifs": ["leviaro"] },
