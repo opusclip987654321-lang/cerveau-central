@@ -32,6 +32,7 @@ import { synchroniserCambodge } from './cambodge.js';
 import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
+import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
 import { synchroniserLeviaro } from './leviaro.js';
@@ -55,6 +56,7 @@ const fichierPauses = path.join(path.dirname(fichierEtat), 'pauses.json');
 const fichierDiscussion = path.join(path.dirname(fichierEtat), 'discussion.json');
 const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
 const fichierIdees = path.join(path.dirname(fichierEtat), 'idees.json');
+const fichierSuivi = path.join(path.dirname(fichierEtat), 'suivi-reponses.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -144,6 +146,7 @@ const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
 const avecDiscussion = fileDAttente(chargerDiscussion, sauverDiscussion, fichierDiscussion);
 const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
 const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
+const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -554,6 +557,7 @@ const serveur = http.createServer(async (req, res) => {
           pauses: await chargerPauses(fichierPauses),
           histoires: id === 'histoires-vraies' ? await lireHistoires(dossierHistoires).catch(() => null) : null,
           idees: await chargerIdees(fichierIdees),
+          suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           verifications,
           aRepondre,
           message: url.searchParams.get('message') ?? undefined,
@@ -570,6 +574,12 @@ const serveur = http.createServer(async (req, res) => {
         envoyer(`💡 <b>Idée notée</b> (${nom})\n${r.idee.texte.slice(0, 300)}`).catch(() => {});
       }
       res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Claude vient lire les idées deux fois par jour et te répond dans votre discussion.')}` });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/suivi-reponse') {
+      const { cle, etat, action, echeance } = await lireCorps(req, 4_000);
+      const r = await avecSuivi((d) => changerSuivi(d, cle, { etat, action, echeance }));
+      res.writeHead(303, { location: `/projet?projet=nour-meet&message=${encodeURIComponent(r.erreur ?? 'Suivi enregistré')}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/idees/statut') {

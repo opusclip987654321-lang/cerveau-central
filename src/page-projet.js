@@ -4,6 +4,7 @@ import { gabarit } from './page.js';
 import { tableauDeBord } from './business.js';
 import { carteProjet, PASTILLES, CSS_CARTE } from './page-journal.js';
 import { STATUTS_IDEE } from './idees.js';
+import { ETATS_SUIVI, ETATS_FINIS, cleReponse } from './suivi.js';
 import { jourParis } from './questions.js';
 import { lienVideo, depuisHeureParis } from './histoires.js';
 
@@ -53,6 +54,16 @@ const AIDE = {
     ['erreur technique', 'le mail n’est pas arrivé (adresse invalide, boîte pleine…)'],
     ['opposition (stop)', 'l’entreprise demande qu’on arrête de la contacter'],
   ],
+  suivi: [
+    ['À lire', 'réponse pas encore prise en main'],
+    ['Suivi en cours', 'tu t’en occupes (appel prévu, échange en cours)'],
+    ['En attente du restaurant', 'la balle est chez eux, tu attends leur retour'],
+    ['À relancer', 'pas de nouvelles : prévoir une relance à la main'],
+    ['Traité', 'conversation terminée, la ligne part dans « Réponses traitées »'],
+    ['Refus', 'le restaurant a dit non'],
+    ['Opposition', 'il demande qu’on arrête de le contacter'],
+    ['Important', 'changer l’état n’envoie aucun mail et n’arrête aucune automatisation : c’est juste une étiquette pour toi'],
+  ],
 };
 const aide = (cle) =>
   AIDE[cle]
@@ -85,7 +96,7 @@ const texteCellule = (t) => {
 const tonProspect = (s) => (s === 'repondu' ? 'ok' : s === 'propose' ? 'attente' : ['exclu', 'ecarte', 'echec'].includes(s) ? 'off' : '');
 
 // Les sections de détail, selon le projet.
-function sections(id, { business, journal, histoires }) {
+function sections(id, { business, journal, histoires, suivi }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
   // Les chaînes YouTube du projet, quand elles sont branchées.
   const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
@@ -117,12 +128,40 @@ function sections(id, { business, journal, histoires }) {
     // Les réponses dont on a le texte (gardées depuis le 05/10/2026) ; les plus anciennes n'ont que la date.
     const textes = pr.reponses ?? [];
     const nomsAvecTexte = new Set(textes.map((r) => r.nom).filter(Boolean));
+
+    // Le parcours commercial compte des restaurants, pas des messages.
+    const ab = business.sources?.stripe?.abonnements;
+    const etapes = [
+      { n: pr.prospects.length, t: 'trouvés' },
+      { n: pr.prospects.filter((x) => x.email).length, t: 'contactables' },
+      { n: pr.prospects.filter((x) => x.premier).length, t: 'contactés' },
+      { n: repondus.length, t: 'ont répondu' },
+      { n: ab?.actifs ?? '?', t: 'abonnés payants' },
+    ];
+    const parcours = `<section class="bloc"><h3>Parcours commercial <small>(restaurants, depuis le début)</small></h3>
+<div class="parcours">${etapes.map((s) => `<div class="etape"><b>${s.n}</b><span>${s.t}</span></div>`).join('<span class="fleche-p">›</span>')}</div>
+<p class="vide">${envois.filter((x) => x.statut === 'envoye').length} mails envoyés au total, relances comprises. L’inscription sur le site n’est pas encore branchée${ab ? '' : ' ; Stripe non plus' }.</p></section>`;
+
+    // Chaque réponse porte son suivi manuel (une étiquette : ça n'envoie jamais de mail).
+    const lignes = [
+      ...textes.map((r) => ({ cle: cleReponse(r), j: r.jour ?? '', q: date(r.jour), n: e(r.nom ?? r.de ?? '?'), v: e(r.ville ?? '—'), x: texteCellule(r.texte) })),
+      ...repondus.filter((x) => !nomsAvecTexte.has(x.nom)).map((x) => ({ cle: cleReponse({ jour: x.reponse, nom: x.nom }), j: x.reponse ?? '', q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—'), x: '—' })),
+    ]
+      .sort((a, b) => (b.j > a.j ? 1 : -1))
+      .map((l) => ({ ...l, suivi: suivi?.reponses?.[l.cle] }));
+    const formSuivi = (l) => {
+      const s = l.suivi ?? { etat: 'a_lire' };
+      return `<form method="post" action="/suivi-reponse" class="suivi-form"><input type="hidden" name="cle" value="${l.cle}"><select name="etat">${Object.entries(ETATS_SUIVI)
+        .map(([v, t]) => `<option value="${v}"${s.etat === v ? ' selected' : ''}>${t}</option>`)
+        .join('')}</select><input name="action" maxlength="300" placeholder="prochaine action" value="${e(s.action ?? '')}"><input name="echeance" type="date" value="${s.echeance ?? ''}"><button type="submit">OK</button></form>`;
+    };
+    const colonnes = [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'v', titre: 'Ville' }, { cle: 'x', titre: 'Leur réponse' }, { cle: 's', titre: 'Suivi' }];
+    const enCours = lignes.filter((l) => !ETATS_FINIS.has(l.suivi?.etat)).map((l) => ({ ...l, s: formSuivi(l) }));
+    const finies = lignes.filter((l) => ETATS_FINIS.has(l.suivi?.etat)).map((l) => ({ ...l, s: formSuivi(l) }));
     return [
-      table('Réponses de restaurants', [{ cle: 'q', titre: 'Répondu le' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'v', titre: 'Ville' }, { cle: 'x', titre: 'Leur réponse' }],
-        [
-          ...textes.map((r) => ({ j: r.jour ?? '', q: date(r.jour), n: e(r.nom ?? r.de ?? '?'), v: e(r.ville ?? '—'), x: texteCellule(r.texte) })),
-          ...repondus.filter((x) => !nomsAvecTexte.has(x.nom)).map((x) => ({ j: x.reponse ?? '', q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—'), x: '—' })),
-        ].sort((a, b) => (b.j > a.j ? 1 : -1))),
+      parcours,
+      table('Réponses à traiter', colonnes, enCours, { vide: 'Aucune réponse en attente de suivi.', aide: aide('suivi') }),
+      finies.length ? table('Réponses traitées', colonnes, finies, { visibles: 5 }) : '',
       table('Mails préparés jamais partis', [{ cle: 'n', titre: 'Restaurant' }, { cle: 's', titre: 'État' }],
         aValider.map((x) => ({ n: e(x.nom ?? '?'), s: etiquette('jamais parti', 'attente') })), { vide: 'Rien en attente : tous les mails préparés sont partis.' }),
       table('Derniers mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'o', titre: 'Objet' }, { cle: 's', titre: 'État' }],
@@ -188,7 +227,7 @@ function sections(id, { business, journal, histoires }) {
   return fin(blocNotes);
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   const tableau = tableauDeBord({ business, journal, configJournal, pauses, jour });
@@ -221,7 +260,7 @@ ${mesIdees.length ? `<ul>${mesIdees
 <p class="retour"><a href="/journal">‹ Retour au tableau de bord</a>${guide ? `<a class="guide-lien" href="/fonctionnement?projet=${e(id)}">⚙️ Comment ça marche</a>` : ''}</p>
 ${carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : ''}
 ${blocIdees}
-${sections(id, { business, journal, histoires })}
+${sections(id, { business, journal, histoires, suivi })}
 ${surveillance}
 <style>
 .retour { margin:0 0 10px; display:flex; justify-content:space-between; gap:10px; } .retour a { color:var(--doux); text-decoration:none; }
@@ -244,6 +283,14 @@ ${CSS_CARTE}
 .aide li { margin:2px 0; } .aide b { color:var(--texte); font-weight:600; }
 td .texte summary { cursor:pointer; }
 td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
+.parcours { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:4px 0 10px; }
+.etape { display:flex; flex-direction:column; min-width:72px; }
+.etape b { font-size:22px; line-height:1.1; }
+.etape span { font-size:12px; color:var(--doux); }
+.fleche-p { color:var(--doux); font-size:18px; }
+.suivi-form { display:flex; flex-direction:column; gap:4px; min-width:170px; }
+.suivi-form select, .suivi-form input { font:inherit; font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
+.suivi-form button { align-self:flex-start; padding:3px 10px; font-size:12px; }
 .etiq { display:inline-block; padding:1px 8px; border-radius:10px; background:var(--fond); border:1px solid var(--bord); font-size:12px; white-space:nowrap; }
 .etiq.ok { color:var(--ok); border-color:var(--ok); } .etiq.off { color:var(--doux); } .etiq.attente { color:var(--attention); border-color:var(--attention); }
 .idees textarea { width:100%; font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); box-sizing:border-box; }
