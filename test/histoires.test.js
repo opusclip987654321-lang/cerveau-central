@@ -49,3 +49,10 @@ test('journal : chaque vidéo publiée une seule fois, avec le lien Facebook', a
   assert.equal(lina.lien, 'https://www.facebook.com/watch/?v=1831990074477395');
   assert.equal(lina.jour, '2026-09-29');
 });
+
+test('vidéos faites à la main : programme en pause, jamais d\'alerte', async () => {
+  const dossier = await dossierExemple();
+  const r = await verifierHistoires({ automatique: false }, {}, { dossier, maintenant: new Date('2026-11-05T14:00:00Z') });
+  assert.equal(r.etat, 'ok');
+  assert.match(r.detail, /en pause/);
+});
