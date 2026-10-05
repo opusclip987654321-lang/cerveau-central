@@ -130,7 +130,7 @@ export function rapprochement(donnees, jour = jourParis()) {
     const derniere = siennes[0] ?? null;
     const fenetre = l.frequence === 'mois' ? depuis(35) : l.frequence === 'an' ? depuis(366) : null;
     const aJour = l.frequence === 'une-fois' ? Boolean(derniere) : Boolean(derniere && derniere.lecture.date >= fenetre);
-    const ecart = derniere && derniere.lecture.devise === l.devise && Math.abs(derniere.lecture.montant - l.montant) > Math.max(1, l.montant * 0.05);
+    const ecart = Boolean(derniere) && (derniere.lecture.devise !== l.devise || Math.abs(derniere.lecture.montant - l.montant) > Math.max(1, l.montant * 0.05));
     return { ligne: l, derniere, aJour, ecart };
   });
   const orphelines = lues.filter((f) => !f.lecture.ligne);

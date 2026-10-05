@@ -76,6 +76,12 @@ test('factures : dépôt, lecture par Claude, rapprochement et plafond', async (
   assert.equal(vps.aJour, true);
   assert.equal(vps.ecart, true); // 16,80 € facturés pour 14 € prévus
   assert.equal(r.lignes.find((x) => x.ligne.id === 'twi').aJour, false);
+  assert.equal(r.lignes.find((x) => x.ligne.id === 'twi').ecart, false);
+
+  // Facture en dollars pour une ligne en euros : signalée aussi.
+  donnees.factures[0].lecture = { ...donnees.factures[0].lecture, montant: 14, devise: '$' };
+  assert.equal(rapprochement(donnees, '2026-10-05').lignes.find((x) => x.ligne.id === 'vps').ecart, true);
+  donnees.factures[0].lecture = { ...donnees.factures[0].lecture, montant: 16.8, devise: '€' };
 
   // Ligne inconnue renvoyée par Claude : traitée comme « aucune ligne ».
   const { facture: f2 } = await deposerFacture(donnees, dossier, { nom: 'x.png', type: 'image/png', base64: 'eA==' });
