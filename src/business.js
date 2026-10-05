@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { sauverEtat as sauverJson } from './etat.js';
 import { jourParis } from './questions.js';
 import { projetDuWorkflow } from './journal.js';
-import { gainsPeriode } from './youtube.js';
+import { gainsPeriode, revenusPeriode } from './youtube.js';
 import { encaissePeriode } from './stripe.js';
 
 export async function chargerBusiness(fichier) {
@@ -297,6 +297,9 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     const gains = gainsPeriode(yt, chainesEP, periode);
     const abonnes = chainesEP.reduce((a, c) => a + c.abonnes, 0);
     const enAttente = 'mesure en cours (il faut au moins deux jours de relevés)';
+    // Revenus : seulement quand la connexion OAuth est faite. Absent = « indisponible », jamais 0.
+    const rev = revenusPeriode(yt, chainesEP, periode);
+    const erreurRev = chainesEP.map((c) => yt.revenus?.erreurs?.[c.id]).find(Boolean);
     carte('extrait-politique', {
       titre: 'Vidéos publiées',
       dates: pubDates,
@@ -304,8 +307,15 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
       extra: [
         { titre: 'Vues gagnées', valeur: gains ? nombre(gains.vues) : '—', detail: gains ? `${nombre(chainesEP.reduce((a, c) => a + c.vues, 0))} vues en tout` : enAttente },
         { titre: 'Abonnés', valeur: nombre(abonnes), detail: gains ? `${gains.abonnes >= 0 ? '+' : ''}${nombre(gains.abonnes)} sur la période` : enAttente },
+        ...(yt.revenus
+          ? [{
+              titre: `Revenus (${jours} j)`,
+              valeur: rev ? `${rev.total.toLocaleString('fr-FR')} €` : 'indisponible',
+              detail: rev ? 'estimation YouTube Analytics, 2 à 3 jours de retard' : erreurRev ? `YouTube refuse pour l’instant : ${erreurRev}` : 'YouTube n’a pas encore renvoyé de chiffres',
+            }]
+          : []),
       ],
-      manque: ['revenus YouTube (accès à part, plus tard)'],
+      manque: yt.revenus ? [] : ['revenus YouTube (connexion à faire depuis la page /oauth/youtube)'],
     });
   } else {
     const motifPub = reglages['extrait-politique']?.publication ?? 'publi';

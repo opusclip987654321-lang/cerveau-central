@@ -27,7 +27,8 @@ import { repondre, CONSIGNE_ACTION } from './discussion.js';
 import { chargerActions, sauverActions, synchroniserActions, changerStatutAction, enregistrerEchange, dossierPourClaude, ouvrirAction, ajouterEchangeAction, cleProbleme } from './actions.js';
 import { pageAction } from './page-action.js';
 import { contexteCerveau } from './contexte.js';
-import { synchroniserYoutube } from './youtube.js';
+import { synchroniserYoutube, synchroniserRevenus, urlAutorisation, echangerCode } from './youtube.js';
+import { gabarit } from './page.js';
 import { synchroniserStripe } from './stripe.js';
 import { synchroniserCambodge } from './cambodge.js';
 import { chargerFonctionnement } from './fonctionnement.js';
@@ -203,6 +204,11 @@ async function synchroniserJournal() {
       await avecBusiness((b) => synchroniserYoutube(b, { cle: env.YOUTUBE_API_KEY, chaines: configYoutube.chaines }));
     } catch (err) {
       console.error(`Tableau de bord (YouTube) : ${err.message}`);
+    }
+    try {
+      await avecBusiness((b) => synchroniserRevenus(b, { clientId: env.YT_OAUTH_CLIENT_ID, clientSecret: env.YT_OAUTH_CLIENT_SECRET, refresh: env.YT_OAUTH_REFRESH }));
+    } catch (err) {
+      console.error(`Tableau de bord (revenus YouTube) : ${err.message}`);
     }
     try {
       await avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE }));
@@ -534,6 +540,45 @@ const serveur = http.createServer(async (req, res) => {
       }
       res.writeHead(200, { 'content-type': 'text/markdown; charset=utf-8', 'content-disposition': `attachment; filename="action-${action.id}.md"` });
       return res.end(dossierPourClaude(action));
+    }
+    // Connexion des revenus YouTube : louis autorise une fois chez Google, puis
+    // colle le jeton durable dans .env. Rien n'est stocké ailleurs que dans .env.
+    const pageOauth = (contenu) => gabarit({ onglet: 'journal', titre: 'Revenus YouTube', contenu: `${contenu}
+<style>.oauth { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:16px 20px; max-width:720px; } .oauth code { background:var(--fond); border:1px solid var(--bord); border-radius:6px; padding:2px 6px; word-break:break-all; } .oauth p { margin:8px 0; }</style>` });
+    const adresseRetour = (req2) => `${req2.headers['x-forwarded-proto'] ?? 'http'}://${req2.headers['x-forwarded-host'] ?? req2.headers.host}/oauth/youtube/retour`;
+    const eHtml = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    if (req.method === 'GET' && url.pathname === '/oauth/youtube') {
+      if (env.YT_OAUTH_CLIENT_ID && env.YT_OAUTH_CLIENT_SECRET) {
+        res.writeHead(302, { location: urlAutorisation({ clientId: env.YT_OAUTH_CLIENT_ID, retour: adresseRetour(req) }) });
+        return res.end();
+      }
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageOauth(`<section class="oauth"><h2>Brancher les revenus YouTube</h2>
+<p>Il manque les deux lignes <code>YT_OAUTH_CLIENT_ID</code> et <code>YT_OAUTH_CLIENT_SECRET</code> dans le fichier .env du serveur.</p>
+<p>Elles viennent du projet Google Cloud « cerveau » (celui du Gmail Walid) : un identifiant OAuth de type « application Web », avec cette adresse de retour autorisée :</p>
+<p><code>${eHtml(adresseRetour(req))}</code></p>
+<p>Une fois les deux lignes ajoutées et le cerveau redémarré, reviens sur cette page : elle t'enverra chez Google pour donner ton accord, une seule fois.</p></section>`));
+    }
+    if (req.method === 'GET' && url.pathname === '/oauth/youtube/retour') {
+      const code = url.searchParams.get('code');
+      const refus = url.searchParams.get('error');
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      if (refus || !code)
+        return res.end(pageOauth(`<section class="oauth"><h2>Connexion non terminée</h2>
+<p>Google n'a pas donné d'accord${refus ? ` (réponse : ${eHtml(refus)})` : ''}. Rien n'a changé.</p>
+<p><a href="/oauth/youtube">Réessayer ›</a></p></section>`));
+      try {
+        const { refresh } = await echangerCode({ code, clientId: env.YT_OAUTH_CLIENT_ID, clientSecret: env.YT_OAUTH_CLIENT_SECRET, retour: adresseRetour(req) });
+        if (!refresh) throw new Error('Google n’a pas renvoyé de jeton durable : refais la connexion depuis /oauth/youtube');
+        return res.end(pageOauth(`<section class="oauth"><h2>Accord reçu ✅ — dernière étape</h2>
+<p>Ajoute cette ligne dans le fichier .env du serveur, puis redémarre le cerveau :</p>
+<p><code>YT_OAUTH_REFRESH=${eHtml(refresh)}</code></p>
+<p>Ensuite, les revenus estimés apparaissent sur la carte L’extrait politique à la prochaine synchronisation (YouTube les donne avec 2 à 3 jours de retard). Ce jeton ne vit que dans .env, nulle part ailleurs.</p></section>`));
+      } catch (err) {
+        return res.end(pageOauth(`<section class="oauth"><h2>Échange refusé</h2>
+<p>${eHtml(err.message)}</p>
+<p><a href="/oauth/youtube">Réessayer ›</a></p></section>`));
+      }
     }
     if (req.method === 'GET' && url.pathname === '/questions') {
       const n = url.searchParams.get('enregistre');

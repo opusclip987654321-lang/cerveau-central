@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { referenceChaine, synchroniserYoutube, gainsPeriode } from '../src/youtube.js';
+import { referenceChaine, synchroniserYoutube, gainsPeriode, synchroniserRevenus, revenusPeriode, urlAutorisation, echangerCode } from '../src/youtube.js';
 import { tableauDeBord, joursJusqua } from '../src/business.js';
 import { pageProjet } from '../src/page-projet.js';
 
@@ -73,4 +73,62 @@ test('gains sur la période et carte L’extrait politique', async () => {
   assert.match(html, /1 200 abonnés/);
   assert.match(html, /Zapping du 4 octobre/);
   assert.match(html, /youtube\.com\/watch\?v=v1/);
+});
+
+test('revenus YouTube : lecture par chaîne, erreurs notées, « indisponible » jamais 0', async () => {
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserYoutube(b, { appel: fauxYoutube(), chaines: { 'extrait-politique': ['@Extrait'] }, maintenant: new Date('2026-10-05T12:00:00Z') });
+  // Sans connexion OAuth : on ne fait rien, la carte dit que la connexion reste à faire.
+  assert.deepEqual(await synchroniserRevenus(b, {}), { ignore: true });
+  let carte = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour: '2026-10-05' }).cartes.find((x) => x.id === 'extrait-politique');
+  assert.match(carte.manque[0], /revenus YouTube \(connexion à faire/);
+
+  // Connexion faite : les lignes renvoyées s'additionnent sur la période.
+  const r = await synchroniserRevenus(b, {
+    appel: async (params) => {
+      assert.equal(params.ids, 'channel==UCextrait');
+      assert.equal(params.metrics, 'estimatedRevenue');
+      return { rows: [['2026-10-03', 1.25], ['2026-10-04', 2.5]] };
+    },
+    maintenant: new Date('2026-10-05T12:00:00Z'),
+  });
+  assert.deepEqual(r, { chaines: 1, erreurs: 0 });
+  const periode = joursJusqua('2026-10-05', 7);
+  assert.deepEqual(revenusPeriode(b.sources.youtube, b.sources.youtube.chaines, periode).total, 3.75);
+  carte = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour: '2026-10-05' }).cartes.find((x) => x.id === 'extrait-politique');
+  const rev = carte.chiffres.find((x) => /Revenus/.test(x.titre));
+  assert.equal(rev.valeur, '3,75 €');
+  assert.deepEqual(carte.manque, []);
+
+  // YouTube refuse (chaîne pas monétisée, mauvais compte…) : erreur notée, « indisponible ».
+  await synchroniserRevenus(b, { appel: async () => { throw new Error('YouTube Analytics répond 403 (Forbidden)'); }, maintenant: new Date('2026-10-05T12:00:00Z') });
+  carte = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour: '2026-10-05' }).cartes.find((x) => x.id === 'extrait-politique');
+  const indispo = carte.chiffres.find((x) => /Revenus/.test(x.titre));
+  assert.equal(indispo.valeur, 'indisponible');
+  assert.match(indispo.detail, /YouTube refuse pour l’instant : YouTube Analytics répond 403/);
+  // Aucune ligne renvoyée : indisponible aussi, pas un faux 0.
+  await synchroniserRevenus(b, { appel: async () => ({ rows: [] }), maintenant: new Date('2026-10-05T12:00:00Z') });
+  assert.equal(revenusPeriode(b.sources.youtube, b.sources.youtube.chaines, periode), null);
+});
+
+test('connexion OAuth : adresse Google correcte et échange du code', async () => {
+  const url = new URL(urlAutorisation({ clientId: 'id-client', retour: 'https://cerveau.exemple/oauth/youtube/retour' }));
+  assert.equal(url.origin + url.pathname, 'https://accounts.google.com/o/oauth2/v2/auth');
+  assert.equal(url.searchParams.get('client_id'), 'id-client');
+  assert.equal(url.searchParams.get('redirect_uri'), 'https://cerveau.exemple/oauth/youtube/retour');
+  assert.match(url.searchParams.get('scope'), /yt-analytics-monetary\.readonly/);
+  assert.equal(url.searchParams.get('access_type'), 'offline');
+
+  const { refresh } = await echangerCode({
+    code: 'abc',
+    clientId: 'id-client',
+    clientSecret: 'secret',
+    retour: 'https://cerveau.exemple/oauth/youtube/retour',
+    appelJeton: async (champs) => {
+      assert.equal(champs.code, 'abc');
+      assert.equal(champs.grant_type, 'authorization_code');
+      return { refresh_token: 'jeton-durable', access_token: 'jeton-court' };
+    },
+  });
+  assert.equal(refresh, 'jeton-durable');
 });
