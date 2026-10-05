@@ -1,0 +1,34 @@
+{
+  "maj": "2026-10-05",
+  "source": "Lu dans la base leviaro.db et les conteneurs du serveur Nūr le 05/10/2026",
+  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre, les étudie, leur écrit, les relance deux fois, et classe leurs réponses. Les mails partent seulement après ton accord.",
+  "journee": [
+    { "quand": "En continu", "quoi": "Le conteneur « leviaro-cycle » fait tourner la prospection : découverte, analyse, préparation des mails, envois autorisés, lecture des réponses.", "toi": "Valider les mails en attente" },
+    { "quand": "Chaque heure", "quoi": "Le cerveau lit la base Leviaro et met à jour la carte et la page du projet.", "toi": "Rien" }
+  ],
+  "circuits": [
+    {
+      "titre": "La prospection",
+      "etapes": [
+        { "type": "auto", "texte": "Découverte d'entreprises, puis analyse : à approfondir, ou hors périmètre (écartée)" },
+        { "type": "auto", "texte": "Recherche du contact ; sans adresse, la fiche s'arrête là (« contact introuvable »)" },
+        { "type": "toi", "texte": "Mail rédigé par l'agent : il attend ta validation avant de partir" },
+        { "type": "auto", "texte": "Envoi, puis relances 1 et 2 si pas de réponse (« prospection en cours »)" },
+        { "type": "auto", "texte": "Réponses classées : vraie réponse, absence automatique, erreur technique, ou opposition (stop)" },
+        { "type": "toi", "texte": "Tu lis les vraies réponses sur la page Leviaro et tu réponds pour conclure (« en discussion »)" }
+      ]
+    }
+  ],
+  "regles": [
+    { "titre": "Validation", "points": ["Aucun mail ne part sans ton accord (statut « mail à valider »)", "Une opposition (stop) arrête définitivement la fiche"] },
+    { "titre": "Relances", "points": ["Deux relances au maximum après le premier mail"] }
+  ],
+  "role": {
+    "quotidien": ["Valider ou rejeter les mails en attente", "Répondre aux entreprises en discussion"],
+    "parfois": ["Suivre le coût mensuel de l'agent (affiché sur la carte Leviaro)"]
+  },
+  "aCompleter": [
+    "Les horaires exacts des cycles et l'endroit où tu valides (Telegram ?) restent à confirmer : il me faudrait le contenu de ~/leviaro-agent/README.md.",
+    "Le code de l'agent n'est pas sur GitHub : le cerveau ne lit que sa base de données."
+  ]
+}

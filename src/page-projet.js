@@ -171,7 +171,7 @@ function sections(id, { business, journal, histoires }) {
   return fin(blocNotes);
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, verifications = [], jour = jourParis(), message, aRepondre = 0 } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   const tableau = tableauDeBord({ business, journal, configJournal, pauses, jour });
@@ -201,13 +201,14 @@ ${mesIdees.length ? `<ul>${mesIdees
 </section>`;
 
   const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
-<p class="retour"><a href="/journal">‹ Retour au tableau de bord</a></p>
+<p class="retour"><a href="/journal">‹ Retour au tableau de bord</a>${guide ? `<a class="guide-lien" href="/fonctionnement?projet=${e(id)}">⚙️ Comment ça marche</a>` : ''}</p>
 ${carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : ''}
 ${blocIdees}
 ${sections(id, { business, journal, histoires })}
 ${surveillance}
 <style>
-.retour { margin:0 0 10px; } .retour a { color:var(--doux); text-decoration:none; }
+.retour { margin:0 0 10px; display:flex; justify-content:space-between; gap:10px; } .retour a { color:var(--doux); text-decoration:none; }
+.retour .guide-lien { border:1px solid var(--bord); border-radius:8px; padding:3px 10px; font-size:13px; color:var(--texte); }
 .bds.une { display:grid; margin-bottom:14px; }
 .bd { background:var(--carte); border:1px solid var(--bord); border-top:4px solid var(--bord); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
 .bd.vert { border-top-color:var(--ok); } .bd.orange { border-top-color:var(--attention); } .bd.rouge { border-top-color:var(--panne); }

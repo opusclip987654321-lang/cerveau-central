@@ -1,0 +1,14 @@
+{
+  "maj": "2026-10-05",
+  "source": "D'après louis le 05/10/2026 : tout est manuel",
+  "intro": "La recherche d'un emploi au Cambodge se fait entièrement à la main : tu envoies les candidatures toi-même, et chaque envoi reçoit un retour par mail. Rien ne tourne sur les serveurs pour ce projet.",
+  "journee": [
+    { "quand": "Quand tu prospectes", "quoi": "Tu envoies les candidatures depuis ta boîte mail.", "toi": "Tout : c'est toi l'agent" }
+  ],
+  "role": {
+    "quotidien": ["Envoyer les candidatures", "Relancer les contacts intéressants"]
+  },
+  "aCompleter": [
+    "Brancher la boîte mail des candidatures (en discussion avec louis) pour compter les envois et les réponses sur la carte Cambodge."
+  ]
+}
