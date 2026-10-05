@@ -341,7 +341,7 @@ const serveur = http.createServer(async (req, res) => {
           return res.end(pageConnexion(resultat === 'bloque' ? 'Trop d’essais. Réessaie dans 15 minutes.' : 'Mot de passe incorrect.'));
         }
         const securise = req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
-        res.writeHead(303, { location: '/', 'set-cookie': `${COOKIE}=${acces.jeton()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000${securise}` });
+        res.writeHead(303, { location: '/journal', 'set-cookie': `${COOKIE}=${acces.jeton()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000${securise}` });
         return res.end();
       }
       if (url.pathname === '/deconnexion') {
