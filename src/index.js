@@ -24,7 +24,7 @@ import { pageJournal } from './page-journal.js';
 import { pageActions } from './page-actions.js';
 import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N, SURVEILLANCE } from './pauses.js';
 import { repondre, CONSIGNE_ACTION } from './discussion.js';
-import { chargerActions, sauverActions, synchroniserActions, changerStatutAction, enregistrerEchange, dossierPourClaude } from './actions.js';
+import { chargerActions, sauverActions, synchroniserActions, changerStatutAction, enregistrerEchange, dossierPourClaude, ouvrirAction, ajouterEchangeAction, cleProbleme } from './actions.js';
 import { pageAction } from './page-action.js';
 import { contexteCerveau } from './contexte.js';
 import { synchroniserYoutube } from './youtube.js';
@@ -275,10 +275,36 @@ async function ecrireBilan(semaine) {
     business: await chargerBusiness(fichierBusiness),
     reponses: await chargerReponses(fichierReponses),
   });
-  return avecBilans((d) => {
+  const entree = await avecBilans((d) => {
     d.bilans = d.bilans.filter((b) => b.semaine !== semaine);
     return genererBilan(d, { client: clientClaude, contexte, semaine, plafondDollars: plafondBilans });
   });
+  // Chaque fiche du bilan ouvre (ou retrouve) son action : le bouton « Ouvrir
+  // l'action » de la page Analyses mène à la fiche où louis décide.
+  if (entree.fiches?.length) {
+    const nomB = (id) => configJournal.projets.find((p) => p.id === id)?.nom ?? id;
+    const ids = await avecActions((d) =>
+      entree.fiches.map((f) => {
+        const action = ouvrirAction(d, {
+          cle: cleProbleme(`analyse:${f.projet ?? 'cerveau'}`, f.constat),
+          projet: f.projet ? nomB(f.projet) : '',
+          titre: f.constat,
+          constat: f.constat,
+          consequence: f.consequence || null,
+          source: { type: 'analyse', semaine },
+        });
+        if (f.proposition) ajouterEchangeAction(action, 'cerveau', `Proposition du bilan du ${semaine} : ${f.proposition}`);
+        if (action.statut === 'a_analyser') action.statut = 'proposition_a_valider';
+        return action.id;
+      }),
+    );
+    entree.fiches.forEach((f, i) => { f.action = ids[i]; });
+    await avecBilans((d) => {
+      const b = d.bilans.find((x) => x.cree === entree.cree);
+      if (b) b.fiches = entree.fiches;
+    });
+  }
+  return entree;
 }
 
 // Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
@@ -288,9 +314,12 @@ async function bilanDuLundi() {
     const semaine = bilanAFaire(await chargerBilans(fichierBilans), { heure: Number(env.BILAN_HEURE ?? 8) });
     if (!semaine) return;
     const entree = await ecrireBilan(semaine);
+    const resume = entree.fiches?.length
+      ? entree.fiches.map((f) => `• ${f.constat}\n→ ${f.proposition || f.consequence}`).join('\n')
+      : entree.texte;
     await envoyer(
-      entree.texte
-        ? `📊 <b>Bilan du lundi</b>\n${entree.texte.slice(0, 3500)}\n\nLe bilan complet est dans l’onglet Analyses du cerveau.`
+      resume
+        ? `📊 <b>Bilan du lundi</b>\n${resume.slice(0, 3500)}\n\nLe détail et les décisions sont dans l’onglet Analyses du cerveau.`
         : `📊 Bilan du lundi : ${entree.erreur}`,
     );
   } catch (err) {
@@ -588,7 +617,14 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/analyses') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      return res.end(pageAnalyses(await chargerBilans(fichierBilans), { aRepondre, plafond: plafondBilans, actif: Boolean(clientClaude) }));
+      return res.end(
+        pageAnalyses(await chargerBilans(fichierBilans), {
+          aRepondre,
+          plafond: plafondBilans,
+          actif: Boolean(clientClaude),
+          nomProjet: (id) => configJournal.projets.find((p) => p.id === id)?.nom ?? id,
+        }),
+      );
     }
     // Réécrit le bilan de la semaine en cours (si le premier est coupé ou raté). Pas de Telegram ici.
     if (req.method === 'POST' && url.pathname === '/analyses/refaire') {

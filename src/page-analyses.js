@@ -31,12 +31,24 @@ const paragraphes = (texte) =>
     })
     .join('');
 
-export function pageAnalyses(donnees, { aRepondre = 0, plafond = 10, actif = false } = {}) {
+const TYPES_FICHE = { blocage: ['Blocage', 'panne'], amelioration: ['Amélioration', 'or'], donnee_manquante: ['Donnée manquante', 'doux'] };
+
+export function pageAnalyses(donnees, { aRepondre = 0, plafond = 10, actif = false, nomProjet = (id) => id } = {}) {
   const [dernier, ...anciens] = donnees.bilans ?? [];
+  const ficheHtml = (f) => {
+    const [nomType, classe] = TYPES_FICHE[f.type] ?? TYPES_FICHE.amelioration;
+    return `<article class="fiche-b ${classe}"><p class="tete-b"><span class="type-b ${classe}">${nomType}</span>${f.projet ? `<b>${e(nomProjet(f.projet))}</b>` : '<b>Ensemble des projets</b>'}</p>
+<p class="constat-b">${e(f.constat)}</p>
+${f.consequence ? `<p class="csq-b">${e(f.consequence)}</p>` : ''}
+${f.proposition ? `<p class="prop-b"><b>Proposition :</b> ${e(f.proposition)}</p>` : ''}
+${f.action ? `<p class="lien-b"><a href="/action?id=${e(f.action)}">Ouvrir l’action ›</a></p>` : ''}</article>`;
+  };
   const bloc = (b) =>
-    b.texte
-      ? paragraphes(b.texte)
-      : `<p class="vide">Pas de bilan cette semaine-là : ${e(b.erreur ?? 'raison inconnue')}</p>`;
+    b.fiches?.length
+      ? `<div class="fiches-b">${b.fiches.map(ficheHtml).join('')}</div>`
+      : b.texte
+        ? paragraphes(b.texte)
+        : `<p class="vide">Pas de bilan cette semaine-là : ${e(b.erreur ?? 'raison inconnue')}</p>`;
 
   const contenu = `${
     dernier
@@ -61,6 +73,19 @@ ${
 .bilan { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:16px 20px; }
 .bilan h3 { margin:0 0 10px; }
 .bilan p, .bilan-ancien p { margin:0 0 10px; max-width:70ch; }
+.fiches-b { display:grid; gap:10px; }
+.fiche-b { background:var(--carte2); border:1px solid var(--bord); border-radius:10px; padding:12px 14px; }
+.fiche-b.panne { border-left:4px solid var(--panne); }
+.fiche-b.or { border-left:4px solid var(--or); }
+.fiche-b.doux { border-left:4px solid var(--bord); }
+.tete-b { margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+.type-b { font-size:11px; font-weight:650; padding:2px 9px; border-radius:999px; background:var(--carte); border:1px solid var(--bord); color:var(--doux); }
+.type-b.panne { color:var(--panne); border-color:color-mix(in srgb, var(--panne) 45%, transparent); }
+.type-b.or { color:var(--or); border-color:color-mix(in srgb, var(--or) 45%, transparent); }
+.constat-b { margin:0 0 6px; font-weight:600; }
+.csq-b { margin:0 0 6px; color:var(--doux); }
+.prop-b { margin:0; }
+.lien-b { margin:6px 0 0; } .lien-b a { font-size:13px; font-weight:600; text-decoration:none; }
 .bilan h4, .bilan-ancien h4 { margin:14px 0 6px; font-size:14px; }
 .bilan ul, .bilan-ancien ul { margin:0 0 10px; padding-left:20px; max-width:70ch; }
 .bilan li, .bilan-ancien li { margin:0 0 4px; }
