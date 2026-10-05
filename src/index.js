@@ -27,7 +27,7 @@ import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
 import { depenseIaDuMois } from './factures.js';
 import { synchroniserLeviaro } from './leviaro.js';
-import { chargerBusiness, sauverBusiness, synchroniserProspection, tableauDeBord, messageSilences, validerObjectif } from './business.js';
+import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserImpacteur, tableauDeBord, messageSilences, validerObjectif } from './business.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -168,6 +168,11 @@ async function synchroniserJournal() {
       await avecBusiness((b) => synchroniserLeviaro(b, dossierLeviaro));
     } catch (err) {
       console.error(`Tableau de bord (Leviaro) : ${err.message}`);
+    }
+    try {
+      await avecBusiness((b) => synchroniserImpacteur(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON }));
+    } catch (err) {
+      console.error(`Tableau de bord (Impacteur) : ${err.message}`);
     }
   } catch (err) {
     console.error(`Journal : ${err.message}`);
