@@ -23,7 +23,7 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {} 
   const etat = await chargerEtat(fichierEtat);
   const maintenant = new Date().toISOString();
   const optionsPar = {
-    n8n: { ...options.n8n, depuis: etat.derniereVerification },
+    n8n: options.n8n ?? {},
     site: options.site,
     certificat: options.certificat,
     releve: options.releve,
@@ -35,7 +35,9 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {} 
       const fn = VERIFICATEURS[verif.type];
       let resultat;
       try {
-        resultat = fn ? await fn(verif, config.seuils, optionsPar[verif.type]) : { etat: 'ignore', detail: `type inconnu : ${verif.type}` };
+        // Plusieurs n8n possibles : la vérification nomme son instance (« principal » par défaut).
+        const opts = verif.type === 'n8n' ? { ...optionsPar.n8n[verif.instance ?? 'principal'], depuis: etat.derniereVerification } : optionsPar[verif.type];
+        resultat = fn ? await fn(verif, config.seuils, opts) : { etat: 'ignore', detail: `type inconnu : ${verif.type}` };
       } catch (err) {
         resultat = { etat: 'panne', detail: `vérification impossible (${err.message})` };
       }
