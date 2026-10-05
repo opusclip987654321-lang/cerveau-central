@@ -148,9 +148,36 @@ test('page Journal : tableau de bord en tête, détail technique replié', () =>
 
 test('projet pas encore branché et sans note : gris, sans alerte ni objectif', () => {
   const t = tableauDeBord({ business: businessExemple(), journal: journalVide(), configJournal, jour });
-  const l = t.cartes.find((c) => c.id === 'leviaro');
+  const l = t.cartes.find((c) => c.id === 'cambodge');
   assert.equal(l.couleur, 'gris');
   assert.deepEqual(l.aDecider, []);
   const html = pageJournal(configJournal, journalVide(), { jour, business: businessExemple() });
-  assert.ok(html.indexOf('⚪ Leviaro') > html.indexOf('🟠 Nūr Meet'));
+  assert.ok(html.indexOf('⚪ Emploi Cambodge') > html.indexOf('🟠 Nūr Meet'));
+});
+
+test('Impacteur : lecture du Sheet via n8n et carte', async () => {
+  const { synchroniserImpacteur, cheminImpacteur } = await import('../src/business.js');
+  assert.match(cheminImpacteur('abc'), /^cerveau-impacteur-[0-9a-f]{32}$/);
+  const lignes = [
+    { statut: 'CONFIG' },
+    { statut: 'ENVOYE', chaine: 'Afrique', date_envoi: '2026-10-03T10:00:00Z', ouvert_le: '2026-10-04T08:00:00Z' },
+    { statut: 'ENVOYE', chaine: 'Frexit', date_envoi: '2026-09-01T10:00:00Z', ouvert_le: '' },
+    { statut: 'A_VERIFIER' },
+    { statut: 'A_VERIFIER' },
+    { statut: 'BROUILLON_CREE' },
+    { statut: 'A_VERIFIER_DECES' },
+  ];
+  const b = { sources: {}, objectifs: {} };
+  assert.deepEqual(await synchroniserImpacteur(b, { appel: async () => lignes }), { fiches: 6 });
+  const c = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour }).cartes.find((x) => x.id === 'impacteur');
+  assert.equal(c.principal.total, 1);
+  assert.equal(c.chiffres[0].valeur, 1);
+  assert.match(c.chiffres[0].detail, /50 % ouverts/);
+  assert.equal(c.chiffres[1].valeur, 3);
+  assert.equal(c.chiffres[2].detail, '1 Afrique, 1 Frexit');
+  assert.ok(c.aDecider.some((t) => /2 fiche\(s\) d'invités attendent ta vérification/.test(t)));
+  assert.ok(c.aDecider.some((t) => /1 brouillon/.test(t)));
+  assert.ok(c.aDecider.some((t) => /décédé/.test(t)));
+  assert.notEqual(c.couleur, 'gris');
+  assert.deepEqual(await synchroniserImpacteur({ sources: {} }, {}), { ignore: true });
 });

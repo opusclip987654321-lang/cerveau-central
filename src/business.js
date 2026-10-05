@@ -2,6 +2,7 @@
 // projet par projet. Les chiffres viennent des vraies données (tableaux de
 // prospection n8n, journal, vidéos…) ; ce qui n'est pas encore branché est dit.
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { sauverEtat as sauverJson } from './etat.js';
 import { jourParis } from './questions.js';
 import { projetDuWorkflow } from './journal.js';
@@ -68,6 +69,32 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
     ouvertures: [...new Map((ouvertures ?? []).map((l) => [String(l.envoi_id), jourDe(l.date)]).reverse()).values()].filter(Boolean),
   };
   return { prospects: business.sources.prospection.prospects.length };
+}
+
+// Adresse secrète de l'automatisation n8n « CERVEAU - lecture Impacteur »
+// (créée par scripts/impacteur-n8n.py avec le même calcul).
+export const cheminImpacteur = (jeton) => `cerveau-impacteur-${createHash('sha256').update(`impacteur:${jeton}`).digest('hex').slice(0, 32)}`;
+
+// Impacteur : lit l'onglet Prospection du Google Sheet, via n8n.
+export async function synchroniserImpacteur(business, { url, jeton, delaiMs = 60_000, appel, maintenant = new Date() } = {}) {
+  if (!appel && (!url || !jeton)) return { ignore: true };
+  appel ??= () =>
+    fetch(new URL(`/webhook/${cheminImpacteur(jeton)}`, url), { signal: AbortSignal.timeout(delaiMs) }).then(async (r) => {
+      if (!r.ok) throw new Error(`n8n répond ${r.status}`);
+      return r.json();
+    });
+  const rep = await appel();
+  const lignes = (Array.isArray(rep) ? rep : [rep]).filter((l) => l && l.statut && l.statut !== 'CONFIG');
+  business.sources.impacteur = {
+    maj: maintenant.toISOString(),
+    fiches: lignes.map((l) => ({
+      statut: String(l.statut),
+      chaine: l.chaine ? String(l.chaine) : null,
+      envoi: jourDe(l.date_envoi),
+      ouvert: jourDe(l.ouvert_le),
+    })),
+  };
+  return { fiches: lignes.length };
 }
 
 // Les `n` jours qui finissent à `jour`, du plus ancien au plus récent.
@@ -191,7 +218,31 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
 
   // Impacteur : invités contactés. Tant que la source n'est pas branchée, on compte
   // les mails notés dans le journal.
-  carte('impacteur', { titre: 'Invités contactés', dates: evenements(journal, 'impacteur', ['mail']), unite: 'invité contacté', branche: false, manque: ['liste des invités contactés'] });
+  const im = business.sources?.impacteur;
+  if (im) {
+    const envoyes = im.fiches.filter((f) => f.envoi);
+    const compte = (statut) => im.fiches.filter((f) => f.statut === statut).length;
+    const ouverts = envoyes.filter((f) => f.ouvert).length;
+    const parChaine = Object.entries(Object.groupBy(envoyes, (f) => f.chaine ?? '?')).map(([c, l]) => `${l.length} ${c}`).join(', ');
+    const aDecider = [];
+    if (compte('A_VERIFIER')) aDecider.push(`${nombre(compte('A_VERIFIER'))} fiche(s) d'invités attendent ta vérification avant l'envoi.`);
+    if (compte('BROUILLON_CREE')) aDecider.push(`${nombre(compte('BROUILLON_CREE'))} brouillon(s) prêts dans Gmail, pas encore envoyés.`);
+    if (compte('A_VERIFIER_DECES')) aDecider.push(`${nombre(compte('A_VERIFIER_DECES'))} auteur(s) peut-être décédé(s) : à vérifier avant de les contacter.`);
+    carte('impacteur', {
+      titre: 'Invités contactés',
+      dates: [...envoyes.map((f) => f.envoi), ...evenements(journal, 'impacteur', ['mail'])],
+      unite: 'invité contacté',
+      aDecider,
+      extra: [
+        { titre: 'Mails ouverts', valeur: somme(parJour(periode, envoyes.map((f) => f.ouvert))), detail: `${pct(ouverts, envoyes.length) ?? 0} % ouverts depuis le début (${nombre(ouverts)} sur ${nombre(envoyes.length)})` },
+        { titre: 'À vérifier', valeur: compte('A_VERIFIER') + compte('A_VERIFIER_DECES') },
+        { titre: 'Contactés en tout', valeur: envoyes.length, detail: parChaine || undefined },
+      ],
+      manque: ['réponses des invités', 'interviews acceptées'],
+    });
+  } else {
+    carte('impacteur', { titre: 'Invités contactés', dates: evenements(journal, 'impacteur', ['mail']), unite: 'invité contacté', branche: false, manque: ['liste des invités contactés'] });
+  }
 
   // L'extrait politique : vidéos publiées (automatisation PUBLICATION + notes).
   const motifPub = reglages['extrait-politique']?.publication ?? 'publi';
