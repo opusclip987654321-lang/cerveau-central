@@ -100,6 +100,10 @@
         {
           "type": "toi",
           "texte": "Tu lis la réponse et tu réponds toi-même pour transformer l'intérêt en abonnement"
+        },
+        {
+          "type": "toi",
+          "texte": "Tu notes le suivi de chaque réponse sur la page Nūr Meet : à lire, suivi en cours, en attente du restaurant, à relancer, traité, refus ou opposition, avec une prochaine action et une échéance si tu veux"
         }
       ]
     }
@@ -137,12 +141,22 @@
         "Les ouvertures de mail sont comptées, mais c'est un indicateur approximatif",
         "Aucune validation avant envoi : c'est ton choix (05/10), les mails partent tout seuls"
       ]
+    },
+    {
+      "titre": "Suivi des réponses",
+      "points": [
+        "Chaque réponse porte un état dans « Réponses à traiter » de la page Nūr Meet : à lire, suivi en cours, en attente du restaurant, à relancer, traité, refus, opposition",
+        "Changer un état n'envoie AUCUN mail et n'arrête aucune automatisation : c'est une étiquette pour t'y retrouver",
+        "Traité, refus et opposition rangent la conversation dans « Réponses traitées »",
+        "La fiche montre aussi le parcours commercial en restaurants : trouvés, contactables, contactés, ont répondu, abonnés payants"
+      ]
     }
   ],
   "role": {
     "quotidien": [
       "Lire les réponses sur la page Nūr Meet et y répondre depuis la boîte mail",
-      "Transformer les restaurants intéressés en abonnés (c'est l'étape que rien n'automatise)"
+      "Transformer les restaurants intéressés en abonnés (c'est l'étape que rien n'automatise)",
+      "Tenir le suivi des réponses à traiter (état, prochaine action, échéance) sur la page Nūr Meet"
     ],
     "parfois": [
       "Lire le bilan Telegram de 10 h 30",
