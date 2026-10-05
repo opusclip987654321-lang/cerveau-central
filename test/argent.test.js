@@ -200,3 +200,21 @@ test('recharges du même nom : une facture par ligne, la plus proche en date, la
   assert.equal(corrigerDepuisFactures(donnees, '2026-10-05').length, 0);
   assert.equal(rapprochement(donnees, '2026-10-05').lignes.every((x) => x.aJour), true);
 });
+
+test('historique : mois précédents, années et total depuis le début', async () => {
+  const { historique } = await import('../src/argent.js');
+  const lignes = [
+    { id: 'v', libelle: 'VPS', projet: 'commun', montant: 14, devise: '€', frequence: 'mois', date: null },
+    { id: 'd', libelle: 'Domaine', projet: 'commun', montant: 12, devise: '€', frequence: 'an', date: null },
+    { id: 'n', libelle: 'Nouveau', projet: 'commun', montant: 5, devise: '€', frequence: 'mois', date: null, depuis: '2026-10-01' },
+    { id: 't', libelle: 'Twilio', projet: 'commun', montant: 20, devise: '€', frequence: 'une-fois', date: '2026-09-22' },
+    { id: 'i', libelle: 'IPRoyal', projet: 'commun', montant: 50, devise: '$', frequence: 'une-fois', date: '2026-10-04' },
+  ];
+  const h = historique(lignes, '2026-10-05');
+  assert.deepEqual(h.mois.map((x) => x.mois), ['2026-10', '2026-09']);
+  assert.deepEqual(h.mois[1].total, { '€': 35 });
+  assert.deepEqual(h.mois[0].total, { '€': 20, $: 50 });
+  assert.deepEqual(h.depuisLeDebut, { '€': 55, $: 50 });
+  assert.equal(h.debut, '2026-09');
+  assert.equal(historique(lignes, '2027-01-02').annees['2027']['€'], 20);
+});

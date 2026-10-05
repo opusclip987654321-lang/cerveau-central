@@ -1,6 +1,6 @@
 // Page « Argent » : ce que coûtent les projets, et les factures déposées par louis.
 import { gabarit } from './page.js';
-import { bilan, prochaineEcheance, totalLisible, montantLisible, FREQUENCES, DEVISES } from './argent.js';
+import { bilan, historique, moisLisible, prochaineEcheance, totalLisible, montantLisible, FREQUENCES, DEVISES } from './argent.js';
 import { rapprochement, depenseIaDuMois, decrireCorrection, TYPES, TAILLE_MAX } from './factures.js';
 import { jourParis } from './questions.js';
 
@@ -39,6 +39,19 @@ ${tuile('Factures', factures.length ? `${aJour} / ${r.lignes.length} à jour` : 
 <td><form method="post" action="/argent/supprimer" onsubmit="return confirm('Retirer « ${e(l.libelle).replace(/'/g, '’')} » de la liste ?')"><input type="hidden" name="id" value="${e(l.id)}"><button class="petit" title="Retirer">✕</button></form></td></tr>`;
     })
     .join('\n');
+
+  const h = historique(donnees.lignes, jour);
+  const ligneMois = (x) =>
+    `<tr><td>${moisLisible(x.mois)}${x.mois === jour.slice(0, 7) ? ' <small>en cours</small>' : ''}</td><td class="num">${totalLisible(x.abonnements)}</td><td class="num">${totalLisible(x.recharges)}</td><td class="num"><b>${totalLisible(x.total)}</b></td></tr>`;
+  const tableMois = (liste) =>
+    `<div class="defile"><table><thead><tr><th>Mois</th><th class="num">Abonnements</th><th class="num">Recharges</th><th class="num">Total</th></tr></thead><tbody>${liste.map(ligneMois).join('')}</tbody></table></div>`;
+  const historiqueHtml = `${tableMois(h.mois.slice(0, 3))}${
+    h.mois.length > 3 ? `<details class="plus"><summary>Voir ${h.mois.length - 3} mois de plus</summary>${tableMois(h.mois.slice(3))}</details>` : ''
+  }
+<p class="annees">${Object.entries(h.annees)
+    .sort(([a], [b2]) => b2.localeCompare(a))
+    .map(([a, t]) => `<span>${a} : <b>${totalLisible(t)}</b></span>`)
+    .join('')}<span>Depuis ${moisLisible(h.debut).toLowerCase()} : <b>${totalLisible(h.depuisLeDebut)}</b></span></p>`;
 
   const parProjet = Object.entries(b.projets)
     .sort(([, x], [, y]) => (y.ceMois['€'] ?? 0) - (x.ceMois['€'] ?? 0))
@@ -114,6 +127,12 @@ ${lignes}
 </section>
 
 <section class="bloc">
+<h3>Historique</h3>
+${historiqueHtml}
+<p class="doux petit-texte">Rien ne s'efface d'un mois sur l'autre : les recharges restent à leur date, les abonnements comptent chaque mois (domaines lissés sur 12 mois).</p>
+</section>
+
+<section class="bloc">
 <h3>Par projet</h3>
 <div class="defile"><table><thead><tr><th>Projet</th><th class="num">Fixe par mois</th><th class="num">Ce mois-ci</th></tr></thead><tbody>${parProjet}</tbody></table></div>
 <p class="doux petit-texte">Les dépenses partagées (VPS Nūr, Claude, ChatGPT…) sont dans « Commun ». L'argent qui rentre (Stripe, YouTube) arrivera ici quand on les branchera.</p>
@@ -155,6 +174,7 @@ button.petit { padding:2px 8px; font-size:13px; }
   .depenses td:nth-child(5) { grid-row:1; grid-column:3; }
 }
 .corrections { margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--fond); border:1px solid var(--bord); font-size:14px; }
+.annees { display:flex; flex-wrap:wrap; gap:8px 18px; margin:12px 0 0; font-size:14px; }
 .plus > summary { cursor:pointer; list-style:none; display:inline-block; margin:8px 0 4px; padding:6px 12px; border:1px solid var(--bord); border-radius:8px; font-size:14px; }
 .plus > summary::-webkit-details-marker { display:none; }
 .plus[open] > summary { margin-bottom:0; }
