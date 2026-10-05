@@ -3,6 +3,8 @@ import { gabarit } from './page.js';
 import { journee, bilanSemaine } from './journal.js';
 import { jourParis } from './questions.js';
 import { tableauDeBord } from './business.js';
+import { expliquerAncien, tacheEnClair } from './sens.js';
+import { schemaParcours, etapeBloquee, PROJETS_TOUCHES, PARCOURS, CSS_PARCOURS } from './parcours.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const NOMS_TYPES = { video: 'vidéo(s)', publication: 'publication(s)', mail: 'mail(s)', rdv: 'rendez-vous', client: 'client(s)', note: 'note(s)', autre: 'action(s)' };
@@ -91,7 +93,7 @@ ${pied}
 </article>`;
 }
 
-export function pageJournal(config, journal, { jour = jourParis(), jours = 7, projet = null, vue = 'pilotage', message, aRepondre = 0, business = { sources: {}, objectifs: {} }, pauses } = {}) {
+export function pageJournal(config, journal, { jour = jourParis(), jours = 7, projet = null, vue = 'pilotage', message, aRepondre = 0, business = { sources: {}, objectifs: {} }, pauses, etat = null, actions = [] } = {}) {
   // Deux vues sur la même page : « pilotage » (les cartes) et « activite » (le jour par jour).
   const activite = vue === 'activite';
   const chemin = (prm = {}) => {
@@ -123,36 +125,69 @@ export function pageJournal(config, journal, { jour = jourParis(), jours = 7, pr
     })
     .join('');
 
+  // En vue Activité, les jours sont « les problèmes d'abord » : incidents et
+  // erreurs visibles, exécutions réussies repliées, jours vides sautés.
   const blocsJours = [];
-  for (let i = 0; i < jours; i++) {
-    const j = jourParis(new Date(new Date(`${jour}T12:00:00Z`) - i * 86_400_000));
-    const contenu = journee(journal, config, j, projet);
-    const corps = contenu.length
-      ? contenu
-          .map(
-            (x) => `<div class="projet"><h4>${e(x.projet.nom)}</h4><ul>
-${x.evenements
-  .map(
-    (ev) =>
-      `<li><span class="type">${config.types[ev.type] ?? '•'}</span><span><time>${heure(ev.date)}</time> ${ev.lien ? `<a href="${e(ev.lien)}" target="_blank" rel="noopener">${e(ev.titre)}</a>` : e(ev.titre)}${ev.details ? `<small>${e(ev.details)}</small>` : ''}</span></li>`,
-  )
-  .join('')}
-${x.automatisations
-  .map((a) => `<li class="auto"><span class="type">⚙️</span><span>${e(a.nom)} : ${a.ok} réussie(s)${a.erreur ? ` · <span class="erreur">${a.erreur} en erreur</span>` : ''}</span></li>`)
-  .join('')}
-</ul></div>`,
-          )
-          .join('')
-      : '<p class="vide">Rien d’enregistré ce jour-là.</p>';
-    blocsJours.push(`<section class="jour"><h3>${titreJour(j, jour)}</h3>${corps}</section>`);
+  if (activite) {
+    const incidentsParJour = {};
+    for (const h of etat?.historique ?? []) {
+      if (h.type === 'retabli') continue;
+      (incidentsParJour[jourParis(new Date(h.date))] ??= []).push(h);
+    }
+    for (let i = 0; i < jours; i++) {
+      const j = jourParis(new Date(new Date(`${jour}T12:00:00Z`) - i * 86_400_000));
+      const incidents = (incidentsParJour[j] ?? []).filter((h) => !projet || (PROJETS_TOUCHES[h.projet] ?? [h.projet]).includes(projet));
+      const lignesIncidents = incidents.map((h) => {
+        const { pour, texte } = h.sens ? { pour: h.pour, texte: h.sens } : expliquerAncien(h);
+        return `<div class="incident">⛔ <b>${e(pour)}</b> · ${e(texte)}<small>${e(h.verification)} : ${e(h.detail)}</small></div>`;
+      });
+      const sections = journee(journal, config, j, projet)
+        .map((x) => {
+          const erreursAuto = x.automatisations.filter((a) => a.erreur);
+          const okAuto = x.automatisations.filter((a) => !a.erreur);
+          const lignesErr = erreursAuto.map((a) => {
+            const t = tacheEnClair(a.nom);
+            return `<li class="auto"><span class="type">⚠️</span><span>${e(a.nom)} : <span class="erreur">${a.erreur} exécution(s) en erreur</span>${a.ok ? ` (${a.ok} réussie(s))` : ''}${t ? `<small>Si ça se répète : ${e(t.consequence)}.</small>` : ''}</span></li>`;
+          });
+          const lignesEv = x.evenements.map(
+            (ev) =>
+              `<li><span class="type">${config.types[ev.type] ?? '•'}</span><span><time>${heure(ev.date)}</time> ${ev.lien ? `<a href="${e(ev.lien)}" target="_blank" rel="noopener">${e(ev.titre)}</a>` : e(ev.titre)}${ev.details ? `<small>${e(ev.details)}</small>` : ''}</span></li>`,
+          );
+          const okRepli = okAuto.length
+            ? `<li class="auto"><details class="autos"><summary>⚙️ ${okAuto.length} automatisation(s) ont tourné sans erreur</summary><ul>${okAuto.map((a) => `<li>${e(a.nom)} : ${a.ok} réussie(s)</li>`).join('')}</ul></details></li>`
+            : '';
+          if (!lignesErr.length && !lignesEv.length && !okRepli) return '';
+          return `<div class="projet"><h4>${e(x.projet.nom)}</h4><ul>${lignesErr.join('')}${lignesEv.join('')}${okRepli}</ul></div>`;
+        })
+        .filter(Boolean);
+      if (!lignesIncidents.length && !sections.length) continue;
+      blocsJours.push(`<section class="jour"><h3>${titreJour(j, jour)}</h3>${lignesIncidents.join('')}${sections.join('')}</section>`);
+    }
   }
+
+  // « Où ça bloque en ce moment » : les pannes en cours, avec le parcours du
+  // projet et l'étape en erreur quand on la reconnaît vraiment.
+  const pannesVives = Object.entries(etat?.verifications ?? {}).filter(([, v]) => v.etat === 'panne');
+  const blocages = pannesVives
+    .map(([k, v]) => {
+      const texteIncident = `${v.nom} ${v.detail} ${v.sens ?? ''}`;
+      const candidats = (PROJETS_TOUCHES[v.projet] ?? [v.projet]).filter((p) => PARCOURS[p] && (!projet || p === projet));
+      if (projet && !candidats.length) return '';
+      // Le schéma du parcours ne s'affiche que si l'étape bloquée est vraiment reconnue : pas de supposition.
+      const trouve = candidats.map((p) => [p, etapeBloquee(p, texteIncident)]).find(([, idx]) => idx !== null);
+      const fiche = actions.find((a) => a.cle === `panne:${k}` && a.statut !== 'resolu');
+      return `<div class="blocage"><p class="sens-blocage">⛔ ${e(v.sens ?? v.detail)} <a href="${fiche ? `/action?id=${e(fiche.id)}` : '/actions'}">Ouvrir la fiche ›</a></p>${trouve ? schemaParcours(trouve[0], { nom: nom(trouve[0]), etape: trouve[1] }) : ''}</div>`;
+    })
+    .filter(Boolean);
+  const blocBlocage = `<section class="moment"><h3>Où ça bloque en ce moment</h3>${blocages.length ? blocages.join('') : '<p class="ok-blocage">🟢 Rien ne bloque en ce moment. Le détail des contrôles au vert reste sur la page Surveillance.</p>'}</section>`;
 
   const options = config.projets.map((p) => `<option value="${e(p.id)}"${p.id === projet ? ' selected' : ''}>${e(p.nom)}</option>`).join('');
   const types = Object.keys(config.types).map((t) => `<option value="${t}"${t === 'note' ? ' selected' : ''}>${config.types[t]} ${NOMS_TYPES[t]}</option>`).join('');
 
   const lienPeriode = (n) => `<a href="${chemin({ jours: n, projet })}" class="${jours === n ? 'actif' : ''}">${n} jours</a>`;
-  const entete = (titre) => `<div class="entete-bd"><h3>${titre}</h3><nav class="puces periode">${lienPeriode(7)}${lienPeriode(30)}</nav></div>`;
+  const entete = (titre, periodes = [7, 30]) => `<div class="entete-bd"><h3>${titre}</h3><nav class="puces periode">${periodes.map(lienPeriode).join('')}</nav></div>`;
   const ajout = `<details class="ajout"><summary>+ Ajouter une note</summary>
+<p class="aide-note">Facultatif, rien à remplir chaque jour : note ici ce que le cerveau ne voit pas tout seul (un appel, un accord, une dépense), il s’en sert dans ses bilans. Exemple : « Appel avec un restaurateur de Lyon, intéressé ».</p>
 <form method="post" action="/journal" class="formulaire">
 ${activite ? '<input type="hidden" name="vue" value="activite">' : ''}
 <label>Projet<select name="projet">${options}</select></label>
@@ -162,10 +197,11 @@ ${activite ? '<input type="hidden" name="vue" value="activite">' : ''}
 <button type="submit">Ajouter</button>
 </form></details>`;
   const corps = activite
-    ? `${entete('Ce qui s’est passé, jour par jour')}
+    ? `${entete('Ce qui s’est passé, jour par jour', [7, 30, 365])}
+${blocBlocage}
 ${ajout}
-${semaine ? `<div class="tuiles">${semaine}</div>` : '<p class="vide">Rien sur la période.</p>'}
-${blocsJours.join('\n')}`
+${semaine ? `<div class="tuiles">${semaine}</div>` : ''}
+${blocsJours.length ? blocsJours.join('\n') : '<p class="vide">Rien sur la période : pas d’incident, pas d’événement noté.</p>'}`
     : `${entete('Tableau de bord')}
 <div class="bds">${cartes.join('')}</div>
 ${tableau.maj ? `<p class="maj">Prospection Nūr Meet relue à ${new Date(tableau.maj).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}.</p>` : ''}
@@ -202,6 +238,20 @@ ${CSS_CARTE}
 .projet a { color:var(--texte); }
 .erreur { color:var(--panne); }
 .vide { color:var(--doux); font-size:14px; }
+.moment { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:12px 16px; margin-bottom:14px; }
+.moment h3 { margin:0 0 8px; font-size:15px; }
+.ok-blocage { margin:0; color:var(--doux); }
+.blocage { padding:8px 0; border-top:1px solid var(--bord); }
+.blocage:first-of-type { border-top:0; }
+.sens-blocage { margin:0; font-size:14px; }
+.sens-blocage a { font-size:13px; font-weight:600; text-decoration:none; margin-left:6px; }
+.incident { background:color-mix(in srgb, var(--panne) 8%, var(--carte)); border:1px solid color-mix(in srgb, var(--panne) 35%, transparent); border-radius:12px; padding:10px 14px; margin-bottom:8px; font-size:14px; }
+.incident small { display:block; color:var(--doux); font-size:12px; margin-top:2px; }
+.autos summary { cursor:pointer; color:var(--doux); }
+.autos ul { list-style:none; margin:4px 0 0; padding-left:18px; }
+.autos li { border:0; padding:2px 0; font-size:13px; color:var(--doux); display:block; }
+.aide-note { color:var(--doux); font-size:13px; margin:4px 0 8px; max-width:75ch; }
+${CSS_PARCOURS}
 .ajout summary { cursor:pointer; font-weight:600; margin:6px 0; }
 .formulaire { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:10px; align-items:end; margin:8px 0; }
 .formulaire label { display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--doux); }

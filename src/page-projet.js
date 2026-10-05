@@ -112,12 +112,15 @@ function sections(id, { business, journal, histoires, suivi }) {
           .map((v) => ({ q: date(v.jour), t: `<a href="https://www.youtube.com/watch?v=${e(v.id)}" target="_blank" rel="noopener">${e(v.titre)}</a>`, v: n(v.vues), a: n(v.aimes) })), { visibles: 10 })
     : '';
   const fin = (reste) => blocYoutube + reste;
-  const blocNotes = table(
-    'Noté dans le journal',
-    [{ cle: 'q', titre: 'Quand' }, { cle: 't', titre: 'Quoi' }],
-    notes.map((n) => ({ q: date(n.jour), t: n.lien ? `<a href="${e(n.lien)}" target="_blank" rel="noopener">${e(n.titre)}</a>` : e(n.titre) })),
-    { vide: 'Aucune note. Le bouton « Ajouter une note » du Journal les range ici.' },
-  );
+  // Le bloc des notes est masqué tant qu'il est vide (demande de louis du 06/10) :
+  // « Ajouter une note » reste expliqué sur la page Activité, où il se trouve.
+  const blocNotes = notes.length
+    ? table(
+        'Noté dans le journal',
+        [{ cle: 'q', titre: 'Quand' }, { cle: 't', titre: 'Quoi' }],
+        notes.map((n) => ({ q: date(n.jour), t: n.lien ? `<a href="${e(n.lien)}" target="_blank" rel="noopener">${e(n.titre)}</a>` : e(n.titre) })),
+      )
+    : '';
 
   if (id === 'nour-meet') {
     const pr = business.sources?.prospection;
