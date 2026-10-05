@@ -74,6 +74,14 @@ ${reste.length ? `<button type="button" class="voir-plus" onclick="this.previous
 }
 
 const etiquette = (texte, ton = '') => `<span class="etiq ${ton}">${e(texte)}</span>`;
+
+// Un texte long se replie : on voit le début, un clic montre tout.
+const texteCellule = (t) => {
+  const plein = String(t ?? '').trim();
+  if (!plein) return '—';
+  if (plein.length <= 90) return e(plein);
+  return `<details class="texte"><summary>${e(plein.slice(0, 90))}…</summary><p>${e(plein)}</p></details>`;
+};
 const tonProspect = (s) => (s === 'repondu' ? 'ok' : s === 'propose' ? 'attente' : ['exclu', 'ecarte', 'echec'].includes(s) ? 'off' : '');
 
 // Les sections de détail, selon le projet.
@@ -109,12 +117,6 @@ function sections(id, { business, journal, histoires }) {
     // Les réponses dont on a le texte (gardées depuis le 05/10/2026) ; les plus anciennes n'ont que la date.
     const textes = pr.reponses ?? [];
     const nomsAvecTexte = new Set(textes.map((r) => r.nom).filter(Boolean));
-    const texteCellule = (t) => {
-      const plein = String(t ?? '').trim();
-      if (!plein) return '—';
-      if (plein.length <= 90) return e(plein);
-      return `<details class="texte"><summary>${e(plein.slice(0, 90))}…</summary><p>${e(plein)}</p></details>`;
-    };
     return [
       table('Réponses de restaurants', [{ cle: 'q', titre: 'Répondu le' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'v', titre: 'Ville' }, { cle: 'x', titre: 'Leur réponse' }],
         [
@@ -150,6 +152,21 @@ function sections(id, { business, journal, histoires }) {
     return [
       table('Invités', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }, { cle: 'q', titre: 'Contacté le' }, { cle: 'o', titre: 'Mail ouvert' }],
         fiches.map((f) => ({ a: e(f.auteur ?? '?'), l: e(f.livre ?? '—'), c: e(f.chaine ?? '—'), s: etiquette(lb('impacteur', f.statut), f.statut === 'ENVOYE' ? 'ok' : f.statut?.startsWith('A_VERIFIER') ? 'attente' : f.statut === 'BLOQUE_ELIGIBILITE' ? 'off' : ''), q: date(f.envoi), o: f.ouvert ? `✓ ${date(f.ouvert)}` : '—' })), { visibles: 12 }),
+      fin(blocNotes),
+    ].join('');
+  }
+
+  if (id === 'cambodge') {
+    const cb = business.sources?.cambodge;
+    if (!cb) return `<p class="vide">La boîte mail Cambodge n’est pas encore lue : lance le branchement (scripts/cambodge-n8n.py), puis les mails étiquetés « Cambodge » apparaîtront ici.</p>${fin(blocNotes)}`;
+    const recues = cb.mails.filter((m) => !m.deMoi);
+    const envoyees = cb.mails.filter((m) => m.deMoi);
+    const contact = (m) => e((m.deMoi ? m.a : m.de) || '?');
+    return [
+      table('Réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'De' }, { cle: 'o', titre: 'Objet' }, { cle: 'x', titre: 'Leur réponse' }],
+        recues.map((m) => ({ q: date(m.jour), n: contact(m), o: e(m.objet || '—'), x: texteCellule(m.extrait) })), { vide: 'Pas encore de réponse dans la boîte étiquetée « Cambodge ».' }),
+      table('Candidatures envoyées', [{ cle: 'q', titre: 'Envoyée le' }, { cle: 'n', titre: 'À' }, { cle: 'o', titre: 'Objet' }],
+        envoyees.map((m) => ({ q: date(m.jour), n: contact(m), o: e(m.objet || '—') })), { vide: 'Aucune candidature envoyée trouvée sous l’étiquette « Cambodge ».' }),
       fin(blocNotes),
     ].join('');
   }
