@@ -33,7 +33,7 @@ import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
-import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, depenseBilansDuMois } from './bilan.js';
+import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, lundiDe } from './bilan.js';
 import { pageAnalyses } from './page-analyses.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
@@ -259,24 +259,33 @@ async function rappelDuMatin() {
 
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
 
+// Écrit (ou réécrit) le bilan de la semaine `semaine` : utilisé par le rendez-vous
+// du lundi et par le bouton « Refaire le bilan » de la page Analyses.
+async function ecrireBilan(semaine) {
+  const contexte = contexteCerveau({
+    etat: await chargerEtat(fichierEtat),
+    argent: await chargerArgent(fichierArgent, fichierArgentDepart),
+    journal: await chargerJournal(fichierJournal),
+    serveurs: await chargerServeurs(fichierServeurs),
+    configServeurs,
+    configJournal,
+    pauses: await chargerPauses(fichierPauses),
+    business: await chargerBusiness(fichierBusiness),
+    reponses: await chargerReponses(fichierReponses),
+  });
+  return avecBilans((d) => {
+    d.bilans = d.bilans.filter((b) => b.semaine !== semaine);
+    return genererBilan(d, { client: clientClaude, contexte, semaine, plafondDollars: plafondBilans });
+  });
+}
+
 // Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
 async function bilanDuLundi() {
   if (!clientClaude) return;
   try {
     const semaine = bilanAFaire(await chargerBilans(fichierBilans), { heure: Number(env.BILAN_HEURE ?? 8) });
     if (!semaine) return;
-    const contexte = contexteCerveau({
-      etat: await chargerEtat(fichierEtat),
-      argent: await chargerArgent(fichierArgent, fichierArgentDepart),
-      journal: await chargerJournal(fichierJournal),
-      serveurs: await chargerServeurs(fichierServeurs),
-      configServeurs,
-      configJournal,
-      pauses: await chargerPauses(fichierPauses),
-      business: await chargerBusiness(fichierBusiness),
-      reponses: await chargerReponses(fichierReponses),
-    });
-    const entree = await avecBilans((d) => genererBilan(d, { client: clientClaude, contexte, semaine, plafondDollars: plafondBilans }));
+    const entree = await ecrireBilan(semaine);
     await envoyer(
       entree.texte
         ? `📊 <b>Bilan du lundi</b>\n${entree.texte.slice(0, 3500)}\n\nLe bilan complet est dans l’onglet Analyses du cerveau.`
@@ -545,7 +554,13 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/analyses') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      return res.end(pageAnalyses(await chargerBilans(fichierBilans), { aRepondre, plafond: plafondBilans }));
+      return res.end(pageAnalyses(await chargerBilans(fichierBilans), { aRepondre, plafond: plafondBilans, actif: Boolean(clientClaude) }));
+    }
+    // Réécrit le bilan de la semaine en cours (si le premier est coupé ou raté). Pas de Telegram ici.
+    if (req.method === 'POST' && url.pathname === '/analyses/refaire') {
+      if (clientClaude) await ecrireBilan(lundiDe());
+      res.writeHead(303, { location: '/analyses' });
+      return res.end();
     }
     if (req.method === 'GET' && url.pathname === '/actions') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
