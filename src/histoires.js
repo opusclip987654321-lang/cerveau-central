@@ -78,6 +78,8 @@ export async function verifierHistoires(verif, _seuils, { dossier, maintenant = 
     derniere ? `dernière vidéo publiée : « ${derniere.p.title} », le ${dateCourte(derniere.date)}` : 'aucune vidéo publiée',
     refusees ? `${refusees} essai(s) non publié(s) depuis` : null,
   ].filter(Boolean);
+  // Vidéos faites à la main (depuis le 05/10) : le programme est en pause, pas d'alerte.
+  if (verif.automatique === false) return { etat: 'ok', detail: `fabrication automatique en pause ; ${infos.join(' ; ')}` };
   const sans = dernierJob ? joursDepuis(dernierJob.date, maintenant) : Infinity;
   if (sans > (verif.joursMax ?? 4))
     return { etat: 'attention', detail: `le programme n'a lancé aucune histoire depuis ${dernierJob ? `${Math.floor(sans)} jours` : 'le début'} (il devrait tous les 2 jours) ; ${infos.join(' ; ')}` };

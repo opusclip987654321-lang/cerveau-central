@@ -45,7 +45,7 @@
       "id": "histoires-vraies",
       "nom": "Petites histoires vraies",
       "verifications": [
-        { "type": "histoires", "nom": "Vidéos publiées", "joursMax": 4 }
+        { "type": "histoires", "nom": "Vidéos publiées", "joursMax": 4, "automatique": false }
       ]
     },
     {
