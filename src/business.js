@@ -345,8 +345,10 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
   }
   const cb = business.sources?.cambodge;
   if (cb?.mails) {
-    const candidatures = cb.mails.filter((m) => m.deMoi).map((m) => m.jour);
-    const reponsesCb = cb.mails.filter((m) => !m.deMoi).map((m) => m.jour);
+    // Une candidature laisse deux traces possibles : le mail de louis, ou l'accusé
+    // de réception automatique de la plateforme. Une réponse, c'est le reste.
+    const candidatures = cb.mails.filter((m) => m.deMoi || m.automatique).map((m) => m.jour);
+    const reponsesCb = cb.mails.filter((m) => !m.deMoi && !m.automatique).map((m) => m.jour);
     const c = carte('cambodge', {
       titre: 'Candidatures envoyées',
       dates: candidatures,

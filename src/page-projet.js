@@ -159,14 +159,14 @@ function sections(id, { business, journal, histoires }) {
   if (id === 'cambodge') {
     const cb = business.sources?.cambodge;
     if (!cb) return `<p class="vide">La boîte mail Cambodge n’est pas encore lue : lance le branchement (scripts/cambodge-n8n.py), puis les mails étiquetés « Cambodge » apparaîtront ici.</p>${fin(blocNotes)}`;
-    const recues = cb.mails.filter((m) => !m.deMoi);
-    const envoyees = cb.mails.filter((m) => m.deMoi);
+    const recues = cb.mails.filter((m) => !m.deMoi && !m.automatique);
+    const envoyees = cb.mails.filter((m) => m.deMoi || m.automatique);
     const contact = (m) => e((m.deMoi ? m.a : m.de) || '?');
     return [
-      table('Réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'De' }, { cle: 'o', titre: 'Objet' }, { cle: 'x', titre: 'Leur réponse' }],
-        recues.map((m) => ({ q: date(m.jour), n: contact(m), o: e(m.objet || '—'), x: texteCellule(m.extrait) })), { vide: 'Pas encore de réponse dans la boîte étiquetée « Cambodge ».' }),
-      table('Candidatures envoyées', [{ cle: 'q', titre: 'Envoyée le' }, { cle: 'n', titre: 'À' }, { cle: 'o', titre: 'Objet' }],
-        envoyees.map((m) => ({ q: date(m.jour), n: contact(m), o: e(m.objet || '—') })), { vide: 'Aucune candidature envoyée trouvée sous l’étiquette « Cambodge ».' }),
+      table('Vraies réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'De' }, { cle: 'o', titre: 'Objet' }, { cle: 'x', titre: 'Leur réponse' }],
+        recues.map((m) => ({ q: date(m.jour), n: contact(m), o: e(m.objet || '—'), x: texteCellule(m.extrait) })), { vide: 'Pas encore de vraie réponse (les accusés de réception automatiques ne comptent pas).' }),
+      table('Candidatures envoyées', [{ cle: 'q', titre: 'Quand' }, { cle: 'o', titre: 'Candidature' }, { cle: 's', titre: 'Trace' }],
+        envoyees.map((m) => ({ q: date(m.jour), o: e(m.objet || m.a || '—'), s: m.deMoi ? etiquette('mail envoyé', 'ok') : etiquette('confirmation automatique', '') })), { vide: 'Aucune candidature trouvée sous l’étiquette « Cambodge ».' }),
       fin(blocNotes),
     ].join('');
   }

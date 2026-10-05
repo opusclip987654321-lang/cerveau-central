@@ -12,6 +12,11 @@ export const cheminCambodge = (jeton) => `cerveau-cambodge-${createHash('sha256'
 
 const texte = (v) => (v == null ? null : String(v));
 
+// Accusé de réception automatique (« votre candidature a bien été envoyée ») :
+// ce n'est pas une réponse, c'est la trace qu'une candidature est partie.
+const EXPEDITEUR_AUTO = /no-?reply|do-?not-?reply|donotreply|ne-?pas-?r[ée]pondre|mailer-?daemon|notifications?@|indeedapply/i;
+const TEXTE_AUTO = /accus[ée] de r[ée]ception|candidature (?:a (?:bien )?[ée]t[ée] |bien )?(?:re[cç]ue|envoy[ée]e|transmise)|nous avons bien re[cç]u votre candidature|votre candidature a [ée]t[ée] envoy[ée]e|thank you for applying|application (?:received|submitted|sent)|confirmation de (?:votre )?candidature/i;
+
 export async function synchroniserCambodge(business, { url, jeton, delaiMs = 60_000, appel, maintenant = new Date() } = {}) {
   if (!appel && (!url || !jeton)) return { ignore: true };
   appel ??= () =>
@@ -35,6 +40,10 @@ export async function synchroniserCambodge(business, { url, jeton, delaiMs = 60_
         extrait: (texte(m.snippet) ?? '').slice(0, 300),
         deMoi: de.toLowerCase().includes(ADRESSE_LOUIS),
       };
+    })
+    .map((m) => {
+      const automatique = !m.deMoi && (EXPEDITEUR_AUTO.test(m.de) || TEXTE_AUTO.test(`${m.objet} ${m.extrait}`));
+      return { ...m, automatique };
     })
     .sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1));
   business.sources.cambodge = { maj: maintenant.toISOString(), mails };
