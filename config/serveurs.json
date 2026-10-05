@@ -2,18 +2,20 @@
   "_note": "Les VPS de louis. Chaque VPS envoie un relevé par heure (scripts/releve.sh). « motifs » : quel projet tourne dans quel conteneur, le premier qui correspond gagne.",
   "releveMaxMinutes": 180,
   "serveurs": [
-    { "id": "vps-nour", "nom": "VPS Nūr", "role": "Sites Nūr Meet et Leviaro, n8n, cerveau central", "prix": "14 €/mois" },
-    { "id": "vps-youtube", "nom": "VPS YouTube automatisation", "role": "Vidéos d'actualité YouTube (L'extrait politique)", "prix": "12 €/mois" }
+    { "id": "vps-nour", "nom": "VPS Nūr", "role": "Sites Nūr Meet et Leviaro, n8n (Nūr Meet, Impacteur), Petites histoires vraies, cerveau central", "prix": "14 €/mois" },
+    { "id": "vps-youtube", "nom": "VPS YouTube automatisation", "role": "L'extrait politique : n8n.actualitevideo.fr et l'atelier vidéo", "prix": "12 €/mois" }
   ],
   "motifs": [
     { "motif": "caddy", "projet": "Caddy (adresses web)" },
     { "motif": "^nour-v2-", "projet": "Nūr Meet" },
     { "motif": "^nour", "projet": "Nūr Meet" },
     { "motif": "^leviaro", "projet": "Leviaro" },
+    { "motif": "^atelier", "projet": "L'extrait politique" },
     { "motif": "^n8n", "projet": "n8n (automatisations)" },
     { "motif": "^cerveau", "projet": "Cerveau central" }
   ],
   "dossiers": [
-    { "motif": "^/opt/nour-video-agent", "projet": "Agent vidéo Nūr" }
+    { "motif": "^/opt/nour-video-agent", "projet": "Petites histoires vraies" },
+    { "motif": "^/opt/atelier", "projet": "L'extrait politique" }
   ]
 }
