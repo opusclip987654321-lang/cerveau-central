@@ -42,6 +42,13 @@
       ]
     },
     {
+      "id": "histoires-vraies",
+      "nom": "Petites histoires vraies",
+      "verifications": [
+        { "type": "histoires", "nom": "Vidéos publiées", "joursMax": 4 }
+      ]
+    },
+    {
       "id": "vps-youtube",
       "nom": "VPS YouTube automatisation",
       "verifications": [
