@@ -14,7 +14,7 @@ import { creerAcces, lireCookie, pageConnexion } from './acces.js';
 import { pageQuestions } from './page-questions.js';
 import { chargerReponses, sauverReponses, enAttente, enregistrerReponses, matinARappeler } from './questions.js';
 import { chargerArgent, sauverArgent, lireLigne, rappelsARenvoyer, messageRappels } from './argent.js';
-import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient, corrigerDepuisFactures, annulerCorrection, messageCorrections } from './factures.js';
+import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient, corrigerDepuisFactures, annulerCorrection, marquerOrphelinesARelire, messageCorrections } from './factures.js';
 import { pageArgent } from './page-argent.js';
 import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from './serveurs.js';
 import { pageServeurs } from './page-serveurs.js';
@@ -74,10 +74,11 @@ let lectureEnCours = null;
 function lireFacturesEnAttente() {
   if (!clientClaude) return;
   lectureEnCours ??= (async () => {
+    await avecArgent((d) => marquerOrphelinesARelire(d));
     for (;;) {
       const { donnees, facture } = await avecArgent((d) => ({ donnees: structuredClone(d), facture: d.factures?.find((f) => !f.lecture && !f.erreur) }));
       if (!facture) break;
-      const resultat = await lireFacture(donnees, dossierFactures, facture, { client: clientClaude, plafondDollars: plafondIa });
+      const resultat = await lireFacture(donnees, dossierFactures, facture, { client: clientClaude, plafondDollars: plafondIa, projets: configArgent.projets });
       const corrections = await avecArgent((d) => {
         appliquerLecture(d, facture.id, resultat);
         return corrigerDepuisFactures(d);

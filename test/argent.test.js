@@ -148,3 +148,30 @@ test('correction automatique : vrai montant, date de paiement, doublon, une seul
   const html = pageArgent({ projets }, donnees, { jour: '2026-10-05' });
   assert.match(html, /même paiement que Receipt.pdf/);
 });
+
+test('facture sans ligne : le cerveau ajoute la dépense, rattache les suivantes, annulable', async () => {
+  const { corrigerDepuisFactures, annulerCorrection, marquerOrphelinesARelire, messageCorrections } = await import('../src/factures.js');
+  const lu = (montant, date, extra = {}) => ({ estUneFacture: true, fournisseur: 'Deepgram', montant, devise: '$', date, periode: '', ligne: '', frequence: 'mois', projet: 'extrait-politique', ...extra });
+  const donnees = {
+    lignes: [],
+    factures: [
+      { id: 'a', nom: 'oct.pdf', lecture: lu(15, '2026-10-02') },
+      { id: 'b', nom: 'sept.pdf', lecture: lu(12, '2026-09-02') },
+      { id: 'v', nom: 'vieille.pdf', lecture: { ...lu(5, '2026-09-01'), fournisseur: 'Twilio', frequence: undefined } },
+    ],
+  };
+  const c = corrigerDepuisFactures(donnees, '2026-10-05');
+  assert.equal(c.length, 1);
+  assert.equal(donnees.lignes.length, 1);
+  assert.deepEqual({ ...donnees.lignes[0], id: 'x' }, { id: 'x', libelle: 'Deepgram', projet: 'extrait-politique', montant: 15, devise: '$', frequence: 'mois', date: '2026-10-02' });
+  assert.equal(donnees.factures[1].lecture.ligne, donnees.lignes[0].id);
+  assert.match(messageCorrections(c), /Deepgram : dépense ajoutée, 15 \$ par mois/);
+  assert.equal(corrigerDepuisFactures(donnees, '2026-10-05').length, 0);
+
+  assert.equal(annulerCorrection(donnees, c[0].id), true);
+  assert.equal(donnees.lignes.length, 0);
+  assert.equal(corrigerDepuisFactures(donnees, '2026-10-05').length, 0); // ni recréée, ni via la facture rattachée
+
+  assert.equal(marquerOrphelinesARelire(donnees), 1); // l'ancienne lecture sans fréquence est relue
+  assert.equal(donnees.factures[2].lecture, null);
+});
