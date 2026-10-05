@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chargerBilans, bilanAFaire, genererBilan, lundiDe, depenseBilansDuMois } from '../src/bilan.js';
+import { chargerBilans, bilanAFaire, genererBilan, lundiDe, depenseBilansDuMois, analyserFiches } from '../src/bilan.js';
 import { pageAnalyses } from '../src/page-analyses.js';
 import { contexteCerveau } from '../src/contexte.js';
 
@@ -33,6 +33,52 @@ test('genererBilan : écrit, compte le coût, archive ; plafond = mode dégradé
   const e2 = await genererBilan(d, { client: { beta: { messages: { create: () => assert.fail('ne doit pas appeler Claude') } } }, contexte: 'x', semaine: '2026-11-02' });
   assert.match(e2.erreur, /Plafond du mois atteint/);
   assert.equal(d.bilans[0].semaine, '2026-11-02');
+});
+
+test('genererBilan : la réponse JSON devient des fiches, blocages en premier', async () => {
+  const d = vide();
+  const json = JSON.stringify({
+    fiches: [
+      { projet: 'leviaro', type: 'amelioration', constat: '12 entreprises découvertes', consequence: 'Pipeline qui vit', proposition: 'Augmenter le rythme d’étude' },
+      { projet: 'nour-meet', type: 'blocage', constat: '19 réponses sans suite depuis 5 jours', consequence: 'Des clients chauds refroidissent', proposition: 'Rétablir l’alerte réponse' },
+    ],
+  });
+  const client = { beta: { messages: { create: async () => ({ usage: { input_tokens: 1000, output_tokens: 500 }, stop_reason: 'end_turn', content: [{ type: 'text', text: `\`\`\`json\n${json}\n\`\`\`` }] }) } } };
+  const e1 = await genererBilan(d, { client, contexte: 'x', semaine: '2026-10-05' });
+  assert.equal(e1.texte, null);
+  assert.equal(e1.fiches.length, 2);
+  assert.equal(e1.fiches[0].type, 'blocage'); // les blocages passent devant
+  assert.equal(e1.fiches[0].projet, 'nour-meet');
+  // JSON cassé : message honnête, pas de JSON brut affiché.
+  const casse = { beta: { messages: { create: async () => ({ usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: 'end_turn', content: [{ type: 'text', text: '{"fiches": [oops' }] }) } } };
+  const e2 = await genererBilan(vide(), { client: casse, contexte: 'x', semaine: '2026-10-05' });
+  assert.match(e2.erreur, /Réponse illisible/);
+  assert.equal(e2.texte, null);
+  assert.equal(analyserFiches('pas du json'), null);
+});
+
+test('page Analyses : les fiches s’affichent avec leur action, l’ancien texte reste lisible', () => {
+  const d = {
+    ia: {},
+    bilans: [
+      {
+        semaine: '2026-10-05',
+        cree: 'x',
+        fiches: [{ projet: 'nour-meet', type: 'blocage', constat: '19 réponses sans suite', consequence: 'Clients qui refroidissent', proposition: 'Rétablir l’alerte', action: 'abc123' }],
+        texte: null,
+        cout: 0.03,
+        erreur: null,
+      },
+      { semaine: '2026-09-28', cree: 'y', texte: 'Ancien bilan en texte.', cout: 0.02, erreur: null },
+    ],
+  };
+  const html = pageAnalyses(d, { plafond: 10, actif: true, nomProjet: (id) => (id === 'nour-meet' ? 'Nūr Meet' : id) });
+  assert.match(html, /class="type-b panne">Blocage</);
+  assert.match(html, /<b>Nūr Meet<\/b>/);
+  assert.match(html, /19 réponses sans suite/);
+  assert.match(html, /<b>Proposition :<\/b> Rétablir l’alerte/);
+  assert.match(html, /href="\/action\?id=abc123">Ouvrir l’action ›/);
+  assert.match(html, /Ancien bilan en texte\./);
 });
 
 test('genererBilan : une réponse coupée (max_tokens) est signalée dans le texte', async () => {
