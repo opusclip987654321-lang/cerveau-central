@@ -106,9 +106,21 @@ function sections(id, { business, journal, histoires }) {
     const envois = pr.envois.filter((x) => x.jour).sort((a, b) => (b.jour > a.jour ? 1 : -1));
     const repondus = pr.prospects.filter((x) => x.reponse).sort((a, b) => (b.reponse > a.reponse ? 1 : -1));
     const aValider = pr.prospects.filter((x) => x.statut === 'propose');
+    // Les réponses dont on a le texte (gardées depuis le 05/10/2026) ; les plus anciennes n'ont que la date.
+    const textes = pr.reponses ?? [];
+    const nomsAvecTexte = new Set(textes.map((r) => r.nom).filter(Boolean));
+    const texteCellule = (t) => {
+      const plein = String(t ?? '').trim();
+      if (!plein) return '—';
+      if (plein.length <= 90) return e(plein);
+      return `<details class="texte"><summary>${e(plein.slice(0, 90))}…</summary><p>${e(plein)}</p></details>`;
+    };
     return [
-      table('Réponses de restaurants', [{ cle: 'q', titre: 'Répondu le' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'v', titre: 'Ville' }],
-        repondus.map((x) => ({ q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—') }))),
+      table('Réponses de restaurants', [{ cle: 'q', titre: 'Répondu le' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'v', titre: 'Ville' }, { cle: 'x', titre: 'Leur réponse' }],
+        [
+          ...textes.map((r) => ({ j: r.jour ?? '', q: date(r.jour), n: e(r.nom ?? r.de ?? '?'), v: e(r.ville ?? '—'), x: texteCellule(r.texte) })),
+          ...repondus.filter((x) => !nomsAvecTexte.has(x.nom)).map((x) => ({ j: x.reponse ?? '', q: date(x.reponse), n: e(x.nom ?? '?'), v: e(x.ville ?? '—'), x: '—' })),
+        ].sort((a, b) => (b.j > a.j ? 1 : -1))),
       table('Mails en attente de ta validation', [{ cle: 'n', titre: 'Restaurant' }, { cle: 's', titre: 'État' }],
         aValider.map((x) => ({ n: e(x.nom ?? '?'), s: etiquette('mail à valider', 'attente') })), { vide: 'Aucun mail à valider.' }),
       table('Derniers mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Restaurant' }, { cle: 'o', titre: 'Objet' }, { cle: 's', titre: 'État' }],
@@ -226,6 +238,8 @@ ${surveillance}
 .aide summary { cursor:pointer; user-select:none; }
 .aide ul { margin:6px 0 4px; padding-left:18px; }
 .aide li { margin:2px 0; } .aide b { color:var(--texte); font-weight:600; }
+td .texte summary { cursor:pointer; }
+td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
 .etiq { display:inline-block; padding:1px 8px; border-radius:10px; background:var(--fond); border:1px solid var(--bord); font-size:12px; white-space:nowrap; }
 .etiq.ok { color:var(--ok); border-color:var(--ok); } .etiq.off { color:var(--doux); } .etiq.attente { color:var(--attention); border-color:var(--attention); }
 .idees textarea { width:100%; font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); box-sizing:border-box; }

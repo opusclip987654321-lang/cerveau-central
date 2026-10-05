@@ -90,6 +90,9 @@ test('page projet Nūr Meet : réponses et mails à valider', () => {
         ],
         envois: [{ nom: 'La Plume', objet: 'Vos soirées sur Nūr Meet', statut: 'envoye', jour: '2026-10-01' }],
         ouvertures: [],
+        reponses: [
+          { jour: '2026-10-05', nom: 'Didon', ville: 'Paris', de: 'Didon <resa@didon.fr>', objet: 'Re: Vos soirées', texte: 'Bonjour, oui ça nous intéresse, pouvez-vous nous rappeler au 01 02 03 04 05 pour en discuter la semaine prochaine ? Merci.' },
+        ],
       },
     },
   };
@@ -98,4 +101,8 @@ test('page projet Nūr Meet : réponses et mails à valider', () => {
   assert.match(html, /Chez Sam/);
   assert.match(html, /Vos soirées sur Nūr Meet/);
   assert.match(html, /Mails en attente de ta validation/);
+  // Le texte de la réponse est lisible (résumé + dépliable), l'ancienne n'a que la date.
+  assert.match(html, /Leur réponse/);
+  assert.match(html, /<details class="texte"><summary>Bonjour, oui ça nous intéresse/);
+  assert.match(html, /la semaine prochaine \? Merci\./);
 });
