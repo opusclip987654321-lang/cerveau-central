@@ -91,17 +91,26 @@ ${pied}
 </article>`;
 }
 
-export function pageJournal(config, journal, { jour = jourParis(), jours = 7, projet = null, message, aRepondre = 0, business = { sources: {}, objectifs: {} }, pauses } = {}) {
-  const tableau = tableauDeBord({ business, journal, configJournal: config, pauses, jour, jours });
-  const cartes = tableau.cartes
-    .filter((c) => !projet || c.id === projet)
-    .sort((a, b) => (a.couleur === 'gris') - (b.couleur === 'gris')).map((c) => carteProjet({ ...c, periode: tableau.periode }, jours));
+export function pageJournal(config, journal, { jour = jourParis(), jours = 7, projet = null, vue = 'pilotage', message, aRepondre = 0, business = { sources: {}, objectifs: {} }, pauses } = {}) {
+  // Deux vues sur la même page : « pilotage » (les cartes) et « activite » (le jour par jour).
+  const activite = vue === 'activite';
+  const chemin = (prm = {}) => {
+    const parts = activite ? ['vue=activite'] : [];
+    for (const [k, v] of Object.entries(prm)) if (v) parts.push(`${k}=${encodeURIComponent(v)}`);
+    return `/journal${parts.length ? `?${parts.join('&')}` : ''}`;
+  };
+  const tableau = activite ? null : tableauDeBord({ business, journal, configJournal: config, pauses, jour, jours });
+  const cartes = activite
+    ? []
+    : tableau.cartes
+        .filter((c) => !projet || c.id === projet)
+        .sort((a, b) => (a.couleur === 'gris') - (b.couleur === 'gris')).map((c) => carteProjet({ ...c, periode: tableau.periode }, jours));
   const heure = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
   const bilan = bilanSemaine(journal, config, jour, jours);
   const nom = (id) => config.projets.find((p) => p.id === id)?.nom ?? id;
 
-  const puces = `<nav class="puces"><a href="/journal" class="${projet ? '' : 'actif'}">Tous</a>${config.projets
-    .map((p) => `<a href="/journal?projet=${e(p.id)}" class="${projet === p.id ? 'actif' : ''}">${e(p.nom)}</a>`)
+  const puces = `<nav class="puces"><a href="${chemin()}" class="${projet ? '' : 'actif'}">Tous</a>${config.projets
+    .map((p) => `<a href="${chemin({ projet: p.id })}" class="${projet === p.id ? 'actif' : ''}">${e(p.nom)}</a>`)
     .join('')}</nav>`;
 
   const semaine = Object.entries(bilan)
@@ -141,25 +150,30 @@ ${x.automatisations
   const options = config.projets.map((p) => `<option value="${e(p.id)}"${p.id === projet ? ' selected' : ''}>${e(p.nom)}</option>`).join('');
   const types = Object.keys(config.types).map((t) => `<option value="${t}"${t === 'note' ? ' selected' : ''}>${config.types[t]} ${NOMS_TYPES[t]}</option>`).join('');
 
-  const lienPeriode = (n) => `<a href="/journal?jours=${n}${projet ? `&projet=${e(projet)}` : ''}" class="${jours === n ? 'actif' : ''}">${n} jours</a>`;
-  const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
-${puces}
-<div class="entete-bd"><h3>Tableau de bord</h3><nav class="puces periode">${lienPeriode(7)}${lienPeriode(30)}</nav></div>
-<div class="bds">${cartes.join('')}</div>
-${tableau.maj ? `<p class="maj">Prospection Nūr Meet relue à ${new Date(tableau.maj).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}.</p>` : ''}
-<details class="ajout"><summary>+ Ajouter une note</summary>
+  const lienPeriode = (n) => `<a href="${chemin({ jours: n, projet })}" class="${jours === n ? 'actif' : ''}">${n} jours</a>`;
+  const entete = (titre) => `<div class="entete-bd"><h3>${titre}</h3><nav class="puces periode">${lienPeriode(7)}${lienPeriode(30)}</nav></div>`;
+  const ajout = `<details class="ajout"><summary>+ Ajouter une note</summary>
 <form method="post" action="/journal" class="formulaire">
+${activite ? '<input type="hidden" name="vue" value="activite">' : ''}
 <label>Projet<select name="projet">${options}</select></label>
 <label>Type<select name="type">${types}</select></label>
 <label class="large">Ce qui a été fait<input name="titre" required maxlength="200" placeholder="ex. Appel avec un restaurateur de Lyon, intéressé"></label>
 <label class="large">Lien (facultatif)<input name="lien" type="url" placeholder="https://…"></label>
 <button type="submit">Ajouter</button>
-</form></details>
-<details class="technique"><summary>Détail technique, jour par jour (automatisations)</summary>
-<h3 class="titre-semaine">${jours} derniers jours</h3>
+</form></details>`;
+  const corps = activite
+    ? `${entete('Ce qui s’est passé, jour par jour')}
+${ajout}
 ${semaine ? `<div class="tuiles">${semaine}</div>` : '<p class="vide">Rien sur la période.</p>'}
-${blocsJours.join('\n')}
-</details>
+${blocsJours.join('\n')}`
+    : `${entete('Tableau de bord')}
+<div class="bds">${cartes.join('')}</div>
+${tableau.maj ? `<p class="maj">Prospection Nūr Meet relue à ${new Date(tableau.maj).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}.</p>` : ''}
+${ajout}
+<p class="voir-activite"><a href="/journal?vue=activite${projet ? `&projet=${encodeURIComponent(projet)}` : ''}">Voir l’activité jour par jour ›</a></p>`;
+  const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
+${puces}
+${corps}
 <style>
 .entete-bd { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin:4px 0 10px; }
 .entete-bd h3 { margin:0; }
@@ -168,12 +182,10 @@ ${blocsJours.join('\n')}
 @media (max-width:900px) { .bds { grid-template-columns:1fr; } }
 ${CSS_CARTE}
 .maj { font-size:12px; color:var(--doux); margin:6px 0 0; }
-.technique { margin-top:18px; }
-.technique > summary { cursor:pointer; font-weight:600; padding:8px 0; color:var(--doux); }
+.voir-activite { margin:14px 0 0; font-size:14px; }
 .puces { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
 .puces a { text-decoration:none; color:var(--texte); font-size:14px; padding:5px 11px; border-radius:16px; border:1px solid var(--bord); background:var(--carte); }
 .puces a.actif { background:var(--texte); color:var(--fond); border-color:var(--texte); }
-.titre-semaine { margin:0 0 10px; }
 .tuiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:12px; }
 .tuile { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:10px 14px; display:flex; flex-direction:column; gap:4px; font-size:14px; }
 .tuile span { color:var(--doux); }
@@ -197,5 +209,5 @@ ${CSS_CARTE}
 .formulaire input, .formulaire select { font:inherit; padding:7px 9px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
 .message { background:var(--carte); border:1px solid var(--bord); border-left:4px solid var(--ok); border-radius:8px; padding:10px 12px; }
 </style>`;
-  return gabarit({ onglet: 'journal', aRepondre, contenu });
+  return gabarit({ onglet: activite ? 'activite' : 'journal', aRepondre, contenu });
 }

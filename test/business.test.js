@@ -149,9 +149,11 @@ test('page Journal : tableau de bord en tête, détail technique replié', () =>
   assert.match(html, /À décider/);
   assert.match(html, /action="\/journal\/objectif"/);
   assert.match(html, /<svg viewBox/);
-  assert.match(html, /<details class="technique">/);
+  assert.match(html, /href="\/journal\?vue=activite">Voir l’activité jour par jour/);
   assert.match(html, /Pas encore branché : rendez-vous \/ démos/);
-  assert.ok(html.indexOf('Tableau de bord') < html.indexOf('Détail technique'));
+  const act = pageJournal(configJournal, journalVide(), { jour, business: businessExemple(), vue: 'activite' });
+  assert.match(act, /Ce qui s’est passé, jour par jour/);
+  assert.doesNotMatch(act, /Tableau de bord/);
 });
 
 test('projet pas encore branché et sans note : gris, sans alerte ni objectif', () => {

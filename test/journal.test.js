@@ -69,13 +69,14 @@ test('page Journal : jours, liens cliquables, filtre par projet, texte échappé
   const j = vide();
   ajouterEvenement(j, config, { projet: 'extrait-politique', type: 'video', titre: '<b>Vidéo</b>', lien: 'https://youtu.be/abc', date: '2026-10-05T08:00:00Z' });
   ajouterEvenement(j, config, { projet: 'leviaro', type: 'rdv', titre: 'RDV client', date: '2026-10-04T08:00:00Z' });
-  const html = pageJournal(config, j, { jour: '2026-10-05' });
+  const html = pageJournal(config, j, { jour: '2026-10-05', vue: 'activite' });
   assert.match(html, /Aujourd'hui/);
   assert.match(html, /Hier/);
   assert.match(html, /href="https:\/\/youtu.be\/abc"/);
   assert.match(html, /&lt;b&gt;Vidéo&lt;\/b&gt;/);
-  assert.match(html, /class="actif" data-s="[^"]*">Pilotage/);
-  const filtre = pageJournal(config, j, { jour: '2026-10-05', projet: 'leviaro' });
+  assert.match(html, /class="actif" data-s="[^"]*">Activité/);
+  assert.match(pageJournal(config, j, { jour: '2026-10-05' }), /class="actif" data-s="[^"]*">Pilotage/);
+  const filtre = pageJournal(config, j, { jour: '2026-10-05', projet: 'leviaro', vue: 'activite' });
   assert.doesNotMatch(filtre, /youtu\.be/);
   assert.match(filtre, /RDV client/);
 });
