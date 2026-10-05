@@ -64,13 +64,21 @@ ${tuile('Factures', factures.length ? `${aJour} / ${r.lignes.length} à jour` : 
     return `<li><div><b>${e(f.nom)}</b><br>${corps}</div><div class="boutons">${relire}<form method="post" action="/argent/factures/supprimer" class="enligne" onsubmit="return confirm('Supprimer cette facture ?')"><input type="hidden" name="id" value="${e(f.id)}"><button class="petit" title="Supprimer">✕</button></form></div></li>`;
   };
 
-  const faites = (donnees.corrections ?? []).filter((c) => !c.annulee).slice(0, 8);
+  // Deux éléments visibles, le reste replié derrière un bouton.
+  const replier = (elements, classe, quoi) =>
+    `<ul class="${classe}">${elements.slice(0, 2).join('')}</ul>${
+      elements.length > 2 ? `<details class="plus"><summary>Voir ${elements.length - 2} ${quoi} de plus</summary><ul class="${classe}">${elements.slice(2).join('')}</ul></details>` : ''
+    }`;
+
+  const faites = (donnees.corrections ?? []).filter((c) => !c.annulee).slice(0, 30);
   const corrections = faites.length
-    ? `<div class="corrections"><b>✏️ Corrigé d'après tes factures</b><ul>${faites
-        .map(
+    ? `<div class="corrections"><b>✏️ Corrigé d'après tes factures</b>${replier(
+        faites.map(
           (c) => `<li><span>${e(decrireCorrection(c))}</span><form method="post" action="/argent/corrections/annuler" class="enligne"><input type="hidden" name="id" value="${e(c.id)}"><button class="petit">Annuler</button></form></li>`,
-        )
-        .join('')}</ul></div>`
+        ),
+        'liste-corrections',
+        'correction(s)',
+      )}</div>`
     : '';
 
   const options = (liste, choisi) => liste.map(([v, t]) => `<option value="${e(v)}"${v === choisi ? ' selected' : ''}>${e(t)}</option>`).join('');
@@ -83,7 +91,7 @@ ${tuiles}
 <label class="depot" id="depot"><input type="file" id="fichiers" accept="${Object.keys(TYPES).join(',')}" multiple hidden>
 <b>📎 Dépose tes factures ici</b><span>ou clique pour les choisir · PDF ou photo · ${TAILLE_MAX / 1024 / 1024} Mo max</span></label>
 <p id="envoi" class="doux"></p>
-${factures.length ? `<ul class="factures">${factures.map(ligneFacture).join('')}</ul>` : ''}
+${factures.length ? replier(factures.map(ligneFacture), 'factures', 'facture(s)') : ''}
 ${corrections}
 <p class="doux petit-texte">Le cerveau lit chaque facture avec Claude (environ 1 centime par facture) et la rapproche de ta liste. Dépense IA ce mois : ${montantLisible(Math.round(depenseIaDuMois(donnees, jour) * 100) / 100, '$')} sur ${plafondIa} $ de plafond.</p>
 </section>
@@ -147,6 +155,9 @@ button.petit { padding:2px 8px; font-size:13px; }
   .depenses td:nth-child(5) { grid-row:1; grid-column:3; }
 }
 .corrections { margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--fond); border:1px solid var(--bord); font-size:14px; }
+.plus > summary { cursor:pointer; list-style:none; display:inline-block; margin:8px 0 4px; padding:6px 12px; border:1px solid var(--bord); border-radius:8px; font-size:14px; }
+.plus > summary::-webkit-details-marker { display:none; }
+.plus[open] > summary { margin-bottom:0; }
 .corrections ul { list-style:none; margin:6px 0 0; padding:0; }
 .corrections li { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:4px 0; }
 .message { background:var(--carte); border:1px solid var(--bord); border-left:4px solid var(--ok); border-radius:8px; padding:10px 12px; }

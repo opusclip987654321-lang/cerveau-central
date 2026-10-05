@@ -127,20 +127,49 @@ export function appliquerLecture(donnees, id, { lecture, erreur, cout }, jour = 
 
 export const creerClient = (cle) => (cle ? new Anthropic({ apiKey: cle }) : null);
 
+// Paiements ponctuels (recharges) : plusieurs lignes portent souvent le même nom
+// (« xAI / Grok (recharge) » ×2). Chaque facture y compte pour un paiement : on la
+// range sur la ligne du groupe la plus proche en date (puis en montant), une facture
+// par ligne. Une facture en trop devient une nouvelle recharge.
+function associerPaiementsUniques(lignes, lues) {
+  const ligneDe = new Map(lues.map((f) => [f.id, f.lecture.ligne]));
+  const nom = (l) => l.libelle.trim().toLowerCase();
+  const groupes = new Map();
+  for (const l of lignes) if (l.frequence === 'une-fois') groupes.set(nom(l), [...(groupes.get(nom(l)) ?? []), l]);
+  const jours = (a, b) => Math.abs(new Date(`${a}T12:00:00Z`) - new Date(`${b}T12:00:00Z`)) / 86_400_000 || 0;
+  for (const groupe of groupes.values()) {
+    const ids = new Set(groupe.map((l) => l.id));
+    const siennes = lues.filter((f) => ids.has(f.lecture.ligne));
+    if (!siennes.length) continue;
+    const paires = siennes
+      .flatMap((f) => groupe.map((l) => ({ f, l, score: jours(f.lecture.date, l.date ?? f.lecture.date) + (f.lecture.montant === l.montant && f.lecture.devise === l.devise ? 0 : 0.5) })))
+      .sort((a, b) => a.score - b.score);
+    const prises = new Set();
+    for (const f of siennes) ligneDe.set(f.id, '');
+    for (const { f, l } of paires) {
+      if (prises.has(l.id) || ligneDe.get(f.id)) continue;
+      ligneDe.set(f.id, l.id);
+      prises.add(l.id);
+    }
+  }
+  return ligneDe;
+}
+
 // Rapproche factures et dépenses : pour chaque ligne, la dernière facture reçue et
 // si elle couvre la période en cours ; plus les factures qui ne collent à aucune ligne.
 export function rapprochement(donnees, jour = jourParis()) {
   const lues = (donnees.factures ?? []).filter((f) => f.lecture?.estUneFacture && !f.doublonDe);
   const depuis = (jours) => jourParis(new Date(new Date(`${jour}T12:00:00Z`) - jours * 86_400_000));
+  const ligneDe = associerPaiementsUniques(donnees.lignes, lues);
   const lignes = donnees.lignes.map((l) => {
-    const siennes = lues.filter((f) => f.lecture.ligne === l.id).sort((a, b) => b.lecture.date.localeCompare(a.lecture.date));
+    const siennes = lues.filter((f) => ligneDe.get(f.id) === l.id).sort((a, b) => b.lecture.date.localeCompare(a.lecture.date));
     const derniere = siennes[0] ?? null;
     const fenetre = l.frequence === 'mois' ? depuis(35) : l.frequence === 'an' ? depuis(366) : null;
     const aJour = l.frequence === 'une-fois' ? Boolean(derniere) : Boolean(derniere && derniere.lecture.date >= fenetre);
     const ecart = Boolean(derniere) && (derniere.lecture.devise !== l.devise || Math.abs(derniere.lecture.montant - l.montant) > Math.max(1, l.montant * 0.05));
     return { ligne: l, derniere, aJour, ecart };
   });
-  const orphelines = lues.filter((f) => !f.lecture.ligne);
+  const orphelines = lues.filter((f) => !ligneDe.get(f.id));
   return { lignes, orphelines, enAttente: (donnees.factures ?? []).filter((f) => !f.lecture && !f.erreur).length };
 }
 
@@ -185,23 +214,27 @@ export function corrigerDepuisFactures(donnees, jour = jourParis(), maintenant =
   const orphelines = rapprochement(donnees, jour).orphelines.sort((a, b) => b.lecture.date.localeCompare(a.lecture.date));
   for (const f of orphelines) {
     const lu = f.lecture;
-    if (traitees.has(f.id) || !FREQUENCES_LUES.includes(lu.frequence)) continue;
+    // Facture en trop d'un groupe de recharges : même nature que la ligne choisie par Claude.
+    const modele = donnees.lignes.find((l) => l.id === lu.ligne);
+    const frequence = modele?.frequence ?? lu.frequence;
+    if (traitees.has(f.id) || !FREQUENCES_LUES.includes(frequence)) continue;
     if (!['€', '$'].includes(lu.devise) || !(lu.montant > 0)) continue;
     const cle = lu.fournisseur.trim().toLowerCase();
-    if (creees.has(cle)) {
+    if (frequence !== 'une-fois' && creees.has(cle)) {
       const c = creees.get(cle);
       lu.ligne = c.ligne;
       c.rattachees.push(f.id);
       continue;
     }
     const date = /^\d{4}-\d{2}-\d{2}$/.test(lu.date ?? '') ? lu.date : null;
-    if (lu.frequence === 'une-fois' && !date) continue;
-    const ligne = { id: randomBytes(6).toString('hex'), libelle: lu.fournisseur.trim().slice(0, 80) || 'Dépense', projet: lu.projet || 'commun', montant: Math.round(lu.montant * 100) / 100, devise: lu.devise, frequence: lu.frequence, date };
+    if (frequence === 'une-fois' && !date) continue;
+    const libelle = modele?.libelle ?? (lu.fournisseur.trim().slice(0, 80) || 'Dépense');
+    const ligne = { id: randomBytes(6).toString('hex'), libelle, projet: modele?.projet ?? (lu.projet || 'commun'), montant: Math.round(lu.montant * 100) / 100, devise: lu.devise, frequence, date };
     donnees.lignes.push(ligne);
     lu.ligne = ligne.id;
     const { id: _id, libelle: _l, ...apres } = ligne;
     const c = { id: randomBytes(6).toString('hex'), quand: maintenant.toISOString(), ligne: ligne.id, libelle: ligne.libelle, facture: f.id, rattachees: [], cree: true, avant: null, apres };
-    creees.set(cle, c);
+    if (frequence !== 'une-fois') creees.set(cle, c);
     donnees.corrections.unshift(c);
     nouvelles.push(c);
   }
@@ -238,11 +271,12 @@ export function annulerCorrection(donnees, id) {
 
 const echapperHtml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const FREQUENCES_LUES = ['mois', 'an', 'une-fois'];
+const nombre = (n) => Number(n).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 const RYTHME = { mois: 'par mois', an: 'par an', 'une-fois': 'payé une fois' };
 export function decrireCorrection(c) {
-  if (c.cree) return `${c.libelle} : dépense ajoutée, ${c.apres.montant} ${c.apres.devise} ${RYTHME[c.apres.frequence]}`;
+  if (c.cree) return `${c.libelle} : dépense ajoutée, ${nombre(c.apres.montant)} ${c.apres.devise} ${RYTHME[c.apres.frequence]}`;
   const parts = [];
-  if (c.avant.montant !== c.apres.montant || c.avant.devise !== c.apres.devise) parts.push(`${c.avant.montant} ${c.avant.devise} → ${c.apres.montant} ${c.apres.devise}`);
+  if (c.avant.montant !== c.apres.montant || c.avant.devise !== c.apres.devise) parts.push(`${nombre(c.avant.montant)} ${c.avant.devise} → ${nombre(c.apres.montant)} ${c.apres.devise}`);
   if (c.avant.date !== c.apres.date) parts.push(`date de paiement : ${new Date(`${c.apres.date}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' })}`);
   return `${c.libelle} : ${parts.join(', ')}`;
 }
