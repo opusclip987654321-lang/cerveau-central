@@ -120,7 +120,13 @@ function avecJournal(fn) {
 // Compte les exécutions n8n de l'heure écoulée pour le journal.
 async function synchroniserJournal() {
   try {
-    await avecJournal((j) => synchroniserN8n(j, { url: env.N8N_URL, cle: env.N8N_API_KEY }));
+    for (const [instance, { url, cle }] of Object.entries(instancesN8n)) {
+      try {
+        await avecJournal((j) => synchroniserN8n(j, { url, cle, instance }));
+      } catch (err) {
+        console.error(`Journal n8n (${instance}) : ${err.message}`);
+      }
+    }
   } catch (err) {
     console.error(`Journal n8n : ${err.message}`);
   }
@@ -166,7 +172,12 @@ async function rappelDuMatin() {
 }
 
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
-const options = { n8n: { url: env.N8N_URL, cle: env.N8N_API_KEY }, releve: { fichier: fichierServeurs } };
+// Les n8n de louis : n8n.nourmeet.com (Nūr Meet, Impacteur) et n8n.actualitevideo.fr (VPS YouTube).
+const instancesN8n = {
+  principal: { url: env.N8N_URL, cle: env.N8N_API_KEY },
+  actualite: { url: env.N8N_ACTUALITE_URL || 'https://n8n.actualitevideo.fr', cle: env.N8N_ACTUALITE_API_KEY },
+};
+const options = { n8n: instancesN8n, releve: { fichier: fichierServeurs } };
 
 // Secret qui signe les sessions, créé au premier démarrage et gardé dans data/.
 const fichierSecret = path.join(path.dirname(fichierEtat), 'secret');

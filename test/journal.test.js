@@ -79,3 +79,20 @@ test('page Journal : jours, liens cliquables, filtre par projet, texte échappé
   assert.doesNotMatch(filtre, /youtu\.be/);
   assert.match(filtre, /RDV client/);
 });
+
+test('synchro n8n : deux instances, chacune son curseur', async () => {
+  const { synchroniserN8n } = await import('../src/journal.js');
+  const j = vide();
+  const maintenant = new Date().toISOString();
+  const appel = (ids, nom) => async (chemin) =>
+    chemin.startsWith('/api/v1/workflows') ? { data: [{ id: '1', name: nom }] } : { data: ids.map((id) => ({ id, workflowId: '1', status: 'success', startedAt: maintenant })) };
+  await synchroniserN8n(j, { appel: appel(['50', '49'], 'Nour Meet 1') });
+  await synchroniserN8n(j, { instance: 'actualite', appel: appel(['3', '2'], 'Extrait politique') });
+  assert.equal(j.n8n.dernierId, '50');
+  assert.equal(j.n8n.curseurs.actualite, '3');
+  // Les petits identifiants du 2e n8n ne sont pas ignorés à cause du curseur du premier, ni recomptés.
+  await synchroniserN8n(j, { instance: 'actualite', appel: appel(['3', '2'], 'Extrait politique') });
+  const jour = Object.keys(j.n8n.jours)[0];
+  assert.equal(j.n8n.jours[jour]['Extrait politique'].ok, 2);
+  assert.equal(j.n8n.jours[jour]['Nour Meet 1'].ok, 2);
+});

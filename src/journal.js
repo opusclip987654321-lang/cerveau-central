@@ -54,7 +54,7 @@ export const projetDuWorkflow = (nom, config) =>
 
 // Compte les exécutions n8n par jour et par automatisation, sans recompter les
 // mêmes : on avance jusqu'à la dernière exécution déjà vue.
-export async function synchroniserN8n(journal, { url, cle, delaiMs = 15_000, maxPages = 10, appel } = {}) {
+export async function synchroniserN8n(journal, { url, cle, instance = 'principal', delaiMs = 15_000, maxPages = 10, appel } = {}) {
   if (!appel && (!url || !cle)) return { nouvelles: 0, ignore: true };
   appel ??= (chemin) =>
     fetch(new URL(chemin, url), { headers: { 'X-N8N-API-KEY': cle, accept: 'application/json' }, signal: AbortSignal.timeout(delaiMs) }).then(async (r) => {
@@ -63,7 +63,10 @@ export async function synchroniserN8n(journal, { url, cle, delaiMs = 15_000, max
     });
   const workflows = await appel('/api/v1/workflows?limit=250');
   const noms = new Map((workflows.data ?? []).map((w) => [String(w.id), w.name]));
-  const dejaVu = journal.n8n.dernierId != null ? Number(journal.n8n.dernierId) : null;
+  // Chaque n8n a sa propre suite d'identifiants ; le principal garde l'ancien champ.
+  const curseurs = (journal.n8n.curseurs ??= {});
+  const lu = instance === 'principal' ? journal.n8n.dernierId : curseurs[instance];
+  const dejaVu = lu != null ? Number(lu) : null;
   const limite = Date.now() - 8 * 86_400_000;
   let curseur = null;
   let plusRecent = dejaVu;
@@ -86,7 +89,10 @@ export async function synchroniserN8n(journal, { url, cle, delaiMs = 15_000, max
     if (!rep.nextCursor) break;
     curseur = rep.nextCursor;
   }
-  if (plusRecent !== null) journal.n8n.dernierId = String(plusRecent);
+  if (plusRecent !== null) {
+    if (instance === 'principal') journal.n8n.dernierId = String(plusRecent);
+    else curseurs[instance] = String(plusRecent);
+  }
   // On garde 120 jours de comptes.
   const garder = jourParis(new Date(Date.now() - 120 * 86_400_000));
   for (const j of Object.keys(journal.n8n.jours)) if (j < garder) delete journal.n8n.jours[j];

@@ -26,7 +26,10 @@
       "verifications": [
         { "type": "site", "nom": "n8n.nourmeet.com", "url": "https://n8n.nourmeet.com/healthz", "json": { "status": "ok" } },
         { "type": "certificat", "nom": "Certificat n8n.nourmeet.com", "hote": "n8n.nourmeet.com" },
-        { "type": "n8n" }
+        { "type": "n8n" },
+        { "type": "site", "nom": "n8n.actualitevideo.fr", "url": "https://n8n.actualitevideo.fr/healthz", "json": { "status": "ok" } },
+        { "type": "certificat", "nom": "Certificat n8n.actualitevideo.fr", "hote": "n8n.actualitevideo.fr" },
+        { "type": "n8n", "nom": "Exécutions en erreur (n8n.actualitevideo.fr)", "instance": "actualite" }
       ]
     },
     {

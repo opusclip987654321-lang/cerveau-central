@@ -139,7 +139,7 @@ Sans ces deux valeurs, le cerveau tourne quand même et écrit les alertes dans 
 
 ## Brancher n8n (facultatif)
 
-Dans n8n : *Settings → n8n API → Create an API key*, puis la mettre dans `N8N_API_KEY`. Le cerveau ne fait que **lire** la liste des automatisations et des exécutions en erreur.
+Dans n8n : *Settings → n8n API → Create an API key*, puis la mettre dans `N8N_API_KEY`. Le 2ᵉ n8n (n8n.actualitevideo.fr, VPS YouTube) se branche de la même façon avec `N8N_ACTUALITE_API_KEY`. Le cerveau ne fait que **lire** la liste des automatisations et des exécutions en erreur.
 
 ## Si le serveur lui-même tombe
 
