@@ -1,7 +1,12 @@
 {
   "_note": "Chaînes YouTube par projet : colle l'adresse de la chaîne (youtube.com/@…) ou son identifiant UC…. Lues chaque heure avec la clé YOUTUBE_API_KEY du .env.",
   "chaines": {
-    "extrait-politique": [],
-    "impacteur": []
+    "extrait-politique": [
+      "https://www.youtube.com/@LExtrait-politique"
+    ],
+    "impacteur": [
+      "https://www.youtube.com/@ImpacteurAfrique",
+      "https://www.youtube.com/@impacteurfrexit"
+    ]
   }
 }
