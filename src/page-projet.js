@@ -2,7 +2,7 @@
 // vidéos…), sa carte business, et l'espace où louis propose ses modifications.
 import { gabarit } from './page.js';
 import { tableauDeBord } from './business.js';
-import { carteProjet, PASTILLES } from './page-journal.js';
+import { carteProjet, PASTILLES, CSS_CARTE } from './page-journal.js';
 import { STATUTS_IDEE } from './idees.js';
 import { jourParis } from './questions.js';
 import { lienVideo, depuisHeureParis } from './histoires.js';
@@ -227,23 +227,9 @@ ${surveillance}
 .retour { margin:0 0 10px; display:flex; justify-content:space-between; gap:10px; } .retour a { color:var(--doux); text-decoration:none; }
 .retour .guide-lien { border:1px solid var(--bord); border-radius:8px; padding:3px 10px; font-size:13px; color:var(--texte); }
 .bds.une { display:grid; margin-bottom:14px; }
-.bd { background:var(--carte); border:1px solid var(--bord); border-top:4px solid var(--bord); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
-.bd.vert { border-top-color:var(--ok); } .bd.orange { border-top-color:var(--attention); } .bd.rouge { border-top-color:var(--panne); }
-.bd h3 { margin:0; font-size:16px; } .bd h3 a { color:inherit; text-decoration:none; } .bd h3 .fleche { display:none; }
-.chiffres { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; }
-.chiffres div { display:flex; flex-direction:column; }
-.chiffres b { font-size:22px; line-height:1.1; } .chiffres .principal b { font-size:28px; }
-.chiffres span { font-size:13px; color:var(--doux); } .chiffres small { font-size:12px; color:var(--doux); }
-.graphe { width:100%; height:auto; max-width:460px; }
-.graphe .b1 { fill:var(--ok); opacity:.55; } .graphe .b2 { fill:var(--texte); opacity:.85; }
-.graphe .axe { stroke:var(--bord); } .graphe text { font-size:9px; fill:var(--doux); }
-.legende { margin:0; font-size:12px; color:var(--doux); display:flex; gap:6px; align-items:center; }
-.legende i { width:10px; height:10px; border-radius:2px; display:inline-block; } .legende .l1 { background:var(--ok); opacity:.55; } .legende .l2 { background:var(--texte); margin-left:8px; }
-.decider { background:var(--fond); border-radius:8px; padding:8px 10px; font-size:14px; } .decider ul { margin:4px 0 0; padding-left:18px; }
-.obj { margin:0; font-size:13px; color:var(--doux); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-.obj input[type=number] { width:70px; font:inherit; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
-.obj button { padding:4px 10px; font-size:13px; }
-.manque { margin:0; font-size:12px; color:var(--doux); font-style:italic; }
+${CSS_CARTE}
+.une .pied { display:none; }
+.graphe { max-width:460px; }
 .bloc { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:12px 14px; margin-bottom:14px; overflow-x:auto; }
 .bloc h3 { margin:0 0 8px; font-size:15px; }
 .chaines { list-style:none; margin:0; padding:0; } .chaines li { padding:3px 0; font-size:14px; } .bloc h3 small { color:var(--doux); font-weight:400; }

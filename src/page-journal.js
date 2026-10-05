@@ -14,7 +14,44 @@ function titreJour(jour, aujourdhui) {
 }
 
 export const PASTILLES = { vert: '🟢', orange: '🟠', rouge: '🔴', pause: '⏸️', gris: '⚪' };
+// Le statut en mots sur les cartes : pas de rouge pour une pause voulue, pas de vert par défaut.
+const STATUTS = { vert: 'avance', orange: 'à surveiller', rouge: 'à débloquer', pause: 'en pause', gris: 'données manquantes' };
 const jourCourt = (j) => new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric', timeZone: 'Europe/Paris' });
+
+// Styles de la carte projet, partagés entre le tableau de bord et la page projet.
+export const CSS_CARTE = `.bd { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:10px; min-width:0; }
+.bd.gris { gap:8px; }
+.tete { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.tete h3 { margin:0; font-size:16px; }
+.tete h3 a { color:inherit; text-decoration:none; }
+.tete h3 a:hover { text-decoration:underline; }
+.statut { font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; white-space:nowrap; background:var(--carte2); color:var(--doux); border:1px solid var(--bord); }
+.statut.vert { color:var(--ok); border-color:color-mix(in srgb, var(--ok) 45%, transparent); }
+.statut.orange { color:var(--attention); border-color:color-mix(in srgb, var(--attention) 45%, transparent); }
+.statut.rouge { color:var(--panne); border-color:color-mix(in srgb, var(--panne) 45%, transparent); }
+.statut.pause, .statut.gris { background:var(--or-doux); color:var(--or); border-color:transparent; }
+.principal { display:flex; flex-direction:column; }
+.principal b { font-size:30px; line-height:1.1; letter-spacing:-.5px; }
+.principal span { font-size:13px; color:var(--doux); }
+.principal small { font-size:12px; color:var(--doux); }
+.secondaires { display:flex; flex-wrap:wrap; gap:4px 18px; font-size:13px; color:var(--doux); }
+.secondaires b { color:var(--texte); font-size:15px; }
+.secondaires small { display:block; font-size:12px; }
+.graphe { width:100%; height:auto; }
+.graphe .b1 { fill:var(--or); opacity:.65; } .graphe .b2 { fill:var(--texte); opacity:.85; }
+.graphe .axe { stroke:var(--bord); } .graphe text { font-size:9px; fill:var(--doux); }
+.legende { margin:0; font-size:12px; color:var(--doux); display:flex; gap:6px; align-items:center; }
+.legende i { width:10px; height:10px; border-radius:2px; display:inline-block; } .legende .l1 { background:var(--or); opacity:.65; } .legende .l2 { background:var(--texte); margin-left:8px; }
+.decider { background:var(--or-doux); border-radius:8px; padding:8px 10px; font-size:14px; }
+.decider ul { margin:4px 0 0; padding-left:18px; }
+.obj { margin:0; font-size:13px; color:var(--doux); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.obj input[type=number] { width:70px; font:inherit; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
+.obj button { padding:4px 10px; font-size:13px; }
+.manque { margin:0; font-size:12px; color:var(--doux); font-style:italic; }
+.pied { margin-top:auto; display:flex; justify-content:space-between; align-items:center; gap:8px; padding-top:10px; border-top:1px solid var(--bord); }
+.pied a { font-size:13px; font-weight:600; text-decoration:none; color:var(--or); }
+.pied a:hover { text-decoration:underline; }
+.pied small { font-size:12px; color:var(--doux); }`;
 
 // Petit graphique en barres (SVG) : série principale, et une seconde série en surimpression.
 function graphique(periode, serie, secondaire) {
@@ -32,24 +69,25 @@ function graphique(periode, serie, secondaire) {
 
 export function carteProjet(c, jours) {
   const p = c.principal;
+  const statut = `<span class="statut ${c.couleur}">${STATUTS[c.couleur] ?? c.couleur}</span>`;
+  const pied = `<footer class="pied"><a href="/projet?projet=${e(c.id)}">Ouvrir le projet ›</a><small>${jours} derniers jours</small></footer>`;
   // Projet pas encore branché et sans aucune note : une carte courte.
   if (c.couleur === 'gris')
-    return `<article class="bd gris"><h3>${PASTILLES.gris} <a href="/projet?projet=${e(c.id)}">${e(c.nom)}</a></h3><p class="manque">Pas encore branché : ${e(c.manque.join(', '))}. En attendant, tu peux noter ce que tu fais avec « Ajouter une note ».</p></article>`;
+    return `<article class="bd gris"><header class="tete"><h3><a href="/projet?projet=${e(c.id)}">${e(c.nom)}</a></h3>${statut}</header><p class="manque">Pas encore branché : ${e(c.manque.join(', '))}. En attendant, tu peux noter ce que tu fais avec « Ajouter une note ».</p>${pied}</article>`;
   const evolution = p.precedent || p.total ? (p.total >= p.precedent ? `▲ ${p.total - p.precedent}` : `▼ ${p.precedent - p.total}`) : '';
   const objectif = c.objectif.valide
     ? `<p class="obj">Objectif : ${c.objectif.valide} par semaine${p.objectif ? ` · ${Math.min(100, Math.round((p.total / p.objectif) * 100))} % atteint` : ''}</p>`
     : `<form method="post" action="/journal/objectif" class="obj"><input type="hidden" name="projet" value="${e(c.id)}"><span>Objectif proposé, par semaine :</span><input name="valeur" type="number" min="1" value="${c.objectif.propose}"><button type="submit">Valider</button></form>`;
   return `<article class="bd ${c.couleur}">
-<h3>${PASTILLES[c.couleur]} <a href="/projet?projet=${e(c.id)}">${e(c.nom)}</a> <span class="fleche">›</span></h3>
-<div class="chiffres">
-<div class="principal"><b>${p.total}</b><span>${e(p.titre)} · ${jours} j</span>${evolution ? `<small>${evolution} vs ${jours} j avant</small>` : ''}</div>
-${c.chiffres.map((x) => `<div><b>${x.valeur}</b><span>${e(x.titre)}</span>${x.detail ? `<small>${e(x.detail)}</small>` : ''}</div>`).join('')}
-</div>
+<header class="tete"><h3><a href="/projet?projet=${e(c.id)}">${e(c.nom)}</a></h3>${statut}</header>
+<div class="principal"><b>${p.total}</b><span>${e(p.titre)}</span>${evolution ? `<small>${evolution} vs ${jours} j avant</small>` : ''}</div>
+${c.chiffres.length ? `<div class="secondaires">${c.chiffres.map((x) => `<span><b>${x.valeur}</b> ${e(x.titre)}${x.detail ? `<small>${e(x.detail)}</small>` : ''}</span>`).join('')}</div>` : ''}
 ${p.total || c.secondaire?.serie.some(Boolean) ? graphique(c.periode, p.serie, c.secondaire) : ''}
 ${c.secondaire && (p.total || c.secondaire.serie.some(Boolean)) ? `<p class="legende"><i class="l1"></i>${e(p.titre)} <i class="l2"></i>${e(c.secondaire.titre)}</p>` : ''}
 ${c.aDecider.length ? `<div class="decider"><b>À décider</b><ul>${c.aDecider.map((t) => `<li>${e(t)}</li>`).join('')}</ul></div>` : ''}
 ${objectif}
 ${c.manque.length ? `<p class="manque">Pas encore branché : ${e(c.manque.join(', '))}</p>` : ''}
+${pied}
 </article>`;
 }
 
@@ -126,31 +164,9 @@ ${blocsJours.join('\n')}
 .entete-bd { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin:4px 0 10px; }
 .entete-bd h3 { margin:0; }
 .periode { margin:0; }
-.bd.gris { gap:4px; }
-.bds { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; }
-.bd { background:var(--carte); border:1px solid var(--bord); border-top:4px solid var(--bord); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
-.bd.vert { border-top-color:var(--ok); } .bd.orange { border-top-color:var(--attention); } .bd.rouge { border-top-color:var(--panne); }
-.bd h3 { margin:0; font-size:16px; }
-.bd h3 a { color:inherit; text-decoration:none; }
-.bd h3 a:hover { text-decoration:underline; }
-.bd h3 .fleche { color:var(--doux); font-weight:400; }
-.chiffres { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
-.chiffres div { display:flex; flex-direction:column; }
-.chiffres b { font-size:22px; line-height:1.1; }
-.chiffres .principal b { font-size:28px; }
-.chiffres span { font-size:13px; color:var(--doux); }
-.chiffres small { font-size:12px; color:var(--doux); }
-.graphe { width:100%; height:auto; }
-.graphe .b1 { fill:var(--ok); opacity:.55; } .graphe .b2 { fill:var(--texte); opacity:.85; }
-.graphe .axe { stroke:var(--bord); } .graphe text { font-size:9px; fill:var(--doux); }
-.legende { margin:0; font-size:12px; color:var(--doux); display:flex; gap:6px; align-items:center; }
-.legende i { width:10px; height:10px; border-radius:2px; display:inline-block; } .legende .l1 { background:var(--ok); opacity:.55; } .legende .l2 { background:var(--texte); margin-left:8px; }
-.decider { background:var(--fond); border-radius:8px; padding:8px 10px; font-size:14px; }
-.decider ul { margin:4px 0 0; padding-left:18px; }
-.obj { margin:0; font-size:13px; color:var(--doux); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-.obj input[type=number] { width:70px; font:inherit; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
-.obj button { padding:4px 10px; font-size:13px; }
-.manque { margin:0; font-size:12px; color:var(--doux); font-style:italic; }
+.bds { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+@media (max-width:900px) { .bds { grid-template-columns:1fr; } }
+${CSS_CARTE}
 .maj { font-size:12px; color:var(--doux); margin:6px 0 0; }
 .technique { margin-top:18px; }
 .technique > summary { cursor:pointer; font-weight:600; padding:8px 0; color:var(--doux); }
