@@ -5,7 +5,26 @@ const PASTILLE = { ok: '🟢', attention: '🟠', panne: '🔴', ignore: '⚪' }
 const LIBELLE = { ok: 'OK', attention: 'À surveiller', panne: 'En panne', ignore: 'Pas encore branché' };
 const heure = (iso) => (iso ? new Date(iso).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' }) : '—');
 
-export function pageEtat(config, etat, aRepondre = 0) {
+// Un bouton Pause / Reprendre par projet business (voir src/pauses.js).
+function blocProjets(projets, pauses, horsN8n) {
+  if (!projets?.length) return '';
+  const lignes = projets
+    .map((p) => {
+      const pause = pauses?.projets?.[p.id];
+      const action = pause ? 'reprendre' : 'pause';
+      const detail = pause
+        ? `en pause depuis le ${heure(pause.depuis)}${pause.workflows.length ? ` · ${pause.workflows.length} automatisation(s) n8n arrêtée(s)` : ''} · alertes coupées`
+        : 'actif';
+      const note = horsN8n[p.id] ? `<small>${e(horsN8n[p.id])}</small>` : '';
+      const confirmer = pause ? 'Relancer ce projet ?' : 'Mettre ce projet en pause ? Ses automatisations n8n seront arrêtées et ses alertes coupées.';
+      return `<li class="${pause ? 'pause' : ''}"><div><b>${pause ? '⏸️' : '▶️'} ${e(p.nom)}</b><span class="detail">${detail}</span>${note}</div>
+<form method="post" action="/projets/${action}" onsubmit="return confirm('${confirmer.replace(/'/g, '’')}')"><input type="hidden" name="projet" value="${e(p.id)}"><button>${pause ? 'Reprendre' : 'Pause'}</button></form></li>`;
+    })
+    .join('');
+  return `<h3>Tes projets</h3><ul class="projets">${lignes}</ul>`;
+}
+
+export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = null, horsN8n = {}, message } = {}) {
   const toutes = Object.values(etat.verifications);
   const pannes = toutes.filter((v) => v.etat === 'panne').length;
   const attentions = toutes.filter((v) => v.etat === 'attention').length;
@@ -42,11 +61,12 @@ export function pageEtat(config, etat, aRepondre = 0) {
         .join('')}</ul>`
     : '<p class="vide">Aucun incident enregistré pour l’instant.</p>';
 
-  const contenu = `<div class="actions"><button id="verifier">Vérifier maintenant</button></div>
+  const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}<div class="actions"><button id="verifier">Vérifier maintenant</button></div>
 <div class="resume" style="border-left-color:var(--${ton})">${PASTILLE[ton]} ${e(resume)}<small>Dernière vérification : ${heure(etat.derniereVerification)} · prochaine dans ${frequence(config.intervalleMinutes ?? 180)} au plus</small></div>
 <div class="grille">
 ${cartes}
 </div>
+${blocProjets(projets, pauses, horsN8n)}
 <h3>Derniers incidents</h3>
 ${journal}
 <script>
@@ -101,12 +121,21 @@ nav { display:flex; gap:6px; flex-wrap:wrap; }
 nav a { color:var(--texte); text-decoration:none; padding:7px 12px; border-radius:8px; border:1px solid transparent; }
 nav a.actif { background:var(--carte); border-color:var(--bord); font-weight:600; }
 .badge { display:inline-block; min-width:20px; padding:0 6px; border-radius:10px; background:var(--panne); color:#fff; font-size:12px; text-align:center; }
+.projets { list-style:none; padding:0; margin:0; background:var(--carte); border:1px solid var(--bord); border-radius:12px; }
+.projets li { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; border-top:1px solid var(--bord); }
+.projets li:first-child { border-top:0; }
+.projets li div { display:flex; flex-direction:column; }
+.projets li .detail { margin-left:0; }
+.projets li small { color:var(--doux); font-size:12px; }
+.projets li.pause { background:var(--fond); }
+.projets form { margin:0; }
+.message { background:var(--carte); border:1px solid var(--bord); border-left:4px solid var(--ok); padding:10px 14px; border-radius:8px; }
 .actions { display:flex; justify-content:flex-end; margin:-8px 0 12px; }
 </style>
 </head>
 <body>
 <main>
-<header><h1>🧠 Cerveau central</h1><nav>${lien('etat', '/', 'État')}${lien('journal', '/journal', 'Journal')}${lien('questions', '/questions', 'Questions du jour' + badge)}${lien('argent', '/argent', 'Argent')}${lien('serveurs', '/serveurs', 'Serveurs')}</nav></header>
+<header><h1>🧠 Cerveau central</h1><nav>${lien('etat', '/', 'État')}${lien('journal', '/journal', 'Journal')}${lien('questions', '/questions', 'Questions du jour' + badge)}${lien('argent', '/argent', 'Argent')}${lien('serveurs', '/serveurs', 'Serveurs')}${lien('discuter', '/discuter', 'Discuter')}</nav></header>
 ${contenu}
 </main>
 </body>
