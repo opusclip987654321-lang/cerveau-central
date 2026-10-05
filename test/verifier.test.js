@@ -39,7 +39,7 @@ test('scénario complet : panne, une seule alerte, puis rétablissement', async 
     enPanne = true;
     await lancer();
     assert.equal(envoyes.length, 1);
-    assert.match(envoyes[0], /🔴 <b>Nūr Meet<\/b> · Site\nEn panne : répond 502/);
+    assert.match(envoyes[0], /🔴 <b>Nūr Meet<\/b>\nLe site ne répond plus\..*\n<i>Site : répond 502<\/i>/);
 
     await lancer();
     assert.equal(envoyes.length, 1, 'pas de répétition tant que la panne dure');
@@ -47,12 +47,14 @@ test('scénario complet : panne, une seule alerte, puis rétablissement', async 
     enPanne = false;
     const { etat } = await lancer();
     assert.equal(envoyes.length, 2);
-    assert.match(envoyes[1], /🟢 .*\nRétabli après \d+ min/);
+    assert.match(envoyes[1], /🟢 .*\nRevenu à la normale après \d+ min, rien à faire/);
     assert.equal(etat.historique.length, 2);
 
     const html = pageEtat(config, etat);
     assert.match(html, /Tout tourne/);
     assert.match(html, /Derniers incidents/);
+    assert.equal(etat.historique[1].pour, 'Nūr Meet');
+    assert.match(html, /Le site ne répond plus/);
   } finally {
     serveur.close();
     await rm(dossier, { recursive: true });
