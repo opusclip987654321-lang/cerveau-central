@@ -495,6 +495,7 @@ const serveur = http.createServer(async (req, res) => {
         pageJournal(configJournal, await chargerJournal(fichierJournal), {
           projet,
           jours,
+          vue: url.searchParams.get('vue') === 'activite' ? 'activite' : 'pilotage',
           aRepondre,
           business: await chargerBusiness(fichierBusiness),
           pauses: await chargerPauses(fichierPauses),
@@ -570,7 +571,7 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/journal') {
       const champs = await lireCorps(req);
       const { erreur } = await avecJournal((j) => ajouterEvenement(j, configJournal, champs, { source: 'page' }));
-      res.writeHead(303, { location: `/journal?message=${encodeURIComponent(erreur ?? 'Note ajoutée')}` });
+      res.writeHead(303, { location: `/journal?${champs.vue === 'activite' ? 'vue=activite&' : ''}message=${encodeURIComponent(erreur ?? 'Note ajoutée')}` });
       return res.end();
     }
     if (req.method === 'GET' && url.pathname === '/api/journal') {
