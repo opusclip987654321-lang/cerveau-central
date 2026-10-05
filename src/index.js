@@ -26,6 +26,7 @@ import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from '.
 import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
 import { depenseIaDuMois } from './factures.js';
+import { chargerBusiness, sauverBusiness, synchroniserProspection, tableauDeBord, messageSilences, validerObjectif } from './business.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -43,6 +44,7 @@ const fichierJournal = env.FICHIER_JOURNAL ?? path.join(racine, 'data/journal.js
 const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
 const fichierPauses = path.join(path.dirname(fichierEtat), 'pauses.json');
 const fichierDiscussion = path.join(path.dirname(fichierEtat), 'discussion.json');
+const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -128,6 +130,7 @@ function fileDAttente(charger, sauver, fichier) {
 }
 const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
 const avecDiscussion = fileDAttente(chargerDiscussion, sauverDiscussion, fichierDiscussion);
+const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -154,6 +157,12 @@ async function synchroniserJournal() {
     }
     const histoires = await lireHistoires(dossierHistoires);
     await avecJournal((j) => synchroniserHistoires(j, configJournal, histoires));
+    // Tableau de bord : la prospection Nūr Meet (tableaux de données du n8n principal).
+    try {
+      await avecBusiness((b) => synchroniserProspection(b, instancesN8n.principal ?? {}));
+    } catch (err) {
+      console.error(`Tableau de bord (prospection) : ${err.message}`);
+    }
   } catch (err) {
     console.error(`Journal : ${err.message}`);
   }
@@ -191,6 +200,10 @@ async function rappelDuMatin() {
     await envoyer(resumeQuotidien(await chargerEtat(fichierEtat), n));
     const hier = await avecJournal((j) => messageHier(j, configJournal));
     if (hier) await envoyer(hier);
+    const silences = messageSilences(
+      tableauDeBord({ business: await chargerBusiness(fichierBusiness), journal: await chargerJournal(fichierJournal), configJournal, pauses: await chargerPauses(fichierPauses) }),
+    );
+    if (silences) await envoyer(silences);
     const rappels = await avecArgent((d) => rappelsARenvoyer(d, { joursAvant: configArgent.rappelJoursAvant ?? 3 }));
     if (rappels.length) await envoyer(messageRappels(rappels));
   } catch (err) {
@@ -437,7 +450,23 @@ const serveur = http.createServer(async (req, res) => {
       const projet = configJournal.projets.some((p) => p.id === url.searchParams.get('projet')) ? url.searchParams.get('projet') : null;
       const jours = url.searchParams.get('jours') === '30' ? 30 : 7;
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      return res.end(pageJournal(configJournal, await chargerJournal(fichierJournal), { projet, jours, aRepondre, message: url.searchParams.get('message') ?? undefined }));
+      return res.end(
+        pageJournal(configJournal, await chargerJournal(fichierJournal), {
+          projet,
+          jours,
+          aRepondre,
+          business: await chargerBusiness(fichierBusiness),
+          pauses: await chargerPauses(fichierPauses),
+          message: url.searchParams.get('message') ?? undefined,
+        }),
+      );
+    }
+    if (req.method === 'POST' && url.pathname === '/journal/objectif') {
+      const { projet, valeur } = await lireCorps(req, 2_000);
+      const connu = configJournal.projets.some((p) => p.id === projet && p.id !== 'autre');
+      const r = connu ? await avecBusiness((b) => validerObjectif(b, projet, valeur)) : { erreur: 'Projet inconnu.' };
+      res.writeHead(303, { location: `/journal?message=${encodeURIComponent(r.erreur ?? 'Objectif validé')}` });
+      return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/journal') {
       const champs = await lireCorps(req);

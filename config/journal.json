@@ -1,15 +1,66 @@
 {
   "_note": "Onglet Journal. « motifs » range chaque automatisation n8n (par son nom) dans un projet ; le premier qui correspond gagne. À ajuster avec les vrais noms des workflows.",
   "_instances": "Projet par défaut des automatisations d'un n8n quand leur nom ne correspond à aucun motif : le n8n du VPS YouTube ne sert qu'à L'extrait politique.",
-  "instances": { "actualite": "extrait-politique" },
+  "instances": {
+    "actualite": "extrait-politique"
+  },
   "projets": [
-    { "id": "nour-meet", "nom": "Nūr Meet", "motifs": ["nour", "n[uū]r", "restaurant", "carrousel"] },
-    { "id": "leviaro", "nom": "Leviaro", "motifs": ["leviaro"] },
-    { "id": "extrait-politique", "nom": "L'extrait politique", "motifs": ["extrait", "actualit", "politique"] },
-    { "id": "histoires-vraies", "nom": "Petites histoires vraies", "motifs": ["histoire"] },
-    { "id": "impacteur", "nom": "Impacteur Afrique / Frexit", "motifs": ["impacteur", "frexit", "afrique", "invit"] },
-    { "id": "cambodge", "nom": "Emploi Cambodge", "motifs": ["cambodge", "emploi"] },
-    { "id": "autre", "nom": "Autres automatisations", "motifs": [] }
+    {
+      "id": "nour-meet",
+      "nom": "Nūr Meet",
+      "motifs": [
+        "nour",
+        "n[uū]r",
+        "restaurant",
+        "carrousel"
+      ]
+    },
+    {
+      "id": "leviaro",
+      "nom": "Leviaro",
+      "motifs": [
+        "leviaro"
+      ]
+    },
+    {
+      "id": "extrait-politique",
+      "nom": "L'extrait politique",
+      "motifs": [
+        "extrait",
+        "actualit",
+        "politique"
+      ]
+    },
+    {
+      "id": "histoires-vraies",
+      "nom": "Petites histoires vraies",
+      "motifs": [
+        "histoire"
+      ]
+    },
+    {
+      "id": "impacteur",
+      "nom": "Impacteur Afrique / Frexit",
+      "motifs": [
+        "impacteur",
+        "frexit",
+        "afrique",
+        "invit"
+      ]
+    },
+    {
+      "id": "cambodge",
+      "nom": "Emploi Cambodge",
+      "motifs": [
+        "cambodge",
+        "emploi"
+      ]
+    },
+    {
+      "id": "autre",
+      "nom": "Autres automatisations",
+      "motifs": []
+    }
   ],
   "types": {
     "video": "🎬",
@@ -19,5 +70,24 @@
     "client": "💶",
     "note": "📝",
     "autre": "•"
+  },
+  "_tableau": "Tableau de bord : « joursMax » = au-delà de ce nombre de jours sans rien envoyé ni publié, le projet passe au rouge et louis est prévenu le matin. « publication » = motif des automatisations qui publient une vidéo.",
+  "tableau": {
+    "nour-meet": {
+      "joursMax": 3
+    },
+    "impacteur": {
+      "joursMax": 7
+    },
+    "extrait-politique": {
+      "joursMax": 2,
+      "publication": "publi"
+    },
+    "histoires-vraies": {
+      "joursMax": 7
+    },
+    "leviaro": {
+      "joursMax": 7
+    }
   }
 }

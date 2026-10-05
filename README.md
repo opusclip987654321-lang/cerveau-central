@@ -157,3 +157,11 @@ npm start              # la page d'état sur http://127.0.0.1:8090
 
 - **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, retient lesquelles, et coupe ses alertes Telegram. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, programme de Petites histoires vraies) n'est pas touché.
 - **Discuter** : louis pose une question, Claude (Sonnet) répond à partir des données du cerveau (état, argent, journal, serveurs). Il ne modifie rien. Le coût compte dans le plafond `PLAFOND_IA_DOLLARS`.
+
+## Tableau de bord business (onglet Journal)
+
+En tête du Journal : une carte par projet avec sa pastille (🟢 ça avance, 🟠 souci ou objectif pas atteint, 🔴 plus rien depuis trop longtemps, ⚪ pas encore branché), les chiffres de la période (7 ou 30 jours), un graphique par jour, ce qu'il y a « à décider » et un objectif hebdomadaire proposé que louis valide d'un clic. Le détail technique des automatisations est replié en bas.
+
+- Prospection Nūr Meet : lue chaque heure dans les tableaux de données n8n `np_prospects`, `np_envois`, `np_ouvertures` (API publique, clé `N8N_API_KEY`, lecture seule). Copie dans `data/business.json`.
+- L'extrait politique : exécutions réussies des automatisations dont le nom contient « publi » (réglable dans `config/journal.json`, `tableau`).
+- Le matin, Telegram signale les projets en rouge (`joursMax` par projet dans `config/journal.json`).
