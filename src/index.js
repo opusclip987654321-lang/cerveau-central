@@ -21,6 +21,11 @@ import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from '
 import { pageServeurs } from './page-serveurs.js';
 import { chargerJournal, sauverJournal, ajouterEvenement, synchroniserN8n, messageHier } from './journal.js';
 import { pageJournal } from './page-journal.js';
+import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N } from './pauses.js';
+import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from './discussion.js';
+import { pageDiscussion } from './page-discussion.js';
+import { contexteCerveau } from './contexte.js';
+import { depenseIaDuMois } from './factures.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -36,6 +41,8 @@ const clientClaude = creerClient(env.ANTHROPIC_API_KEY);
 const fichierServeurs = env.FICHIER_SERVEURS ?? path.join(racine, 'data/serveurs.json');
 const fichierJournal = env.FICHIER_JOURNAL ?? path.join(racine, 'data/journal.json');
 const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
+const fichierPauses = path.join(path.dirname(fichierEtat), 'pauses.json');
+const fichierDiscussion = path.join(path.dirname(fichierEtat), 'discussion.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -104,6 +111,23 @@ function avecServeurs(fn) {
   fileServeurs = suite.catch(() => {});
   return suite;
 }
+
+// Lecture / écriture d'un fichier de data/, une opération à la fois.
+function fileDAttente(charger, sauver, fichier) {
+  let queue = Promise.resolve();
+  return (fn) => {
+    const suite = queue.then(async () => {
+      const donnees = await charger(fichier);
+      const resultat = await fn(donnees);
+      await sauver(fichier, donnees);
+      return resultat;
+    });
+    queue = suite.catch(() => {});
+    return suite;
+  };
+}
+const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
+const avecDiscussion = fileDAttente(chargerDiscussion, sauverDiscussion, fichierDiscussion);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -206,7 +230,8 @@ function adresse(req) {
 
 let enCours = null;
 function verifier() {
-  enCours ??= toutVerifier({ config, fichierEtat, envoyer, options })
+  enCours ??= chargerPauses(fichierPauses)
+    .then((pauses) => toutVerifier({ config, fichierEtat, envoyer, options, enPause: alertesCoupees(pauses) }))
     .then(({ messages }) => console.log(`${new Date().toISOString()} vérification terminée, ${messages.length} alerte(s)`))
     .catch((err) => console.error(`Vérification échouée : ${err.stack}`))
     .finally(() => (enCours = null));
@@ -283,7 +308,56 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      return res.end(pageEtat(config, await chargerEtat(fichierEtat), aRepondre));
+      const pauses = await chargerPauses(fichierPauses);
+      const projets = configJournal.projets.filter((p) => p.id !== 'autre');
+      return res.end(pageEtat(config, await chargerEtat(fichierEtat), aRepondre, { projets, pauses, horsN8n: HORS_N8N, message: url.searchParams.get('message') ?? undefined }));
+    }
+    if (req.method === 'POST' && (url.pathname === '/projets/pause' || url.pathname === '/projets/reprendre')) {
+      const { projet } = await lireCorps(req, 4_000);
+      const p = configJournal.projets.find((x) => x.id === projet && x.id !== 'autre');
+      let message = 'Projet inconnu';
+      if (p && url.pathname === '/projets/pause') {
+        const r = await avecPauses((d) => pauserProjet(d, p.id, { instances: instancesN8n, configJournal }));
+        message = r.deja ? `${p.nom} était déjà en pause` : `${p.nom} en pause : ${r.coupes.length} automatisation(s) n8n arrêtée(s), alertes coupées${r.erreurs.length ? `. Problème : ${r.erreurs.join(' ; ')}` : ''}`;
+        console.log(`${new Date().toISOString()} pause ${p.id} : ${r.coupes?.map((w) => w.nom).join(', ') || 'aucune automatisation'}`);
+      } else if (p) {
+        const r = await avecPauses((d) => reprendreProjet(d, p.id, { instances: instancesN8n }));
+        message = r.deja ? `${p.nom} n'était pas en pause` : `${p.nom} relancé : ${r.relances.length} automatisation(s) n8n remise(s) en route${r.erreurs.length ? `. Pas relancé : ${r.erreurs.join(' ; ')} (le projet reste en pause, réessaie)` : ''}`;
+        console.log(`${new Date().toISOString()} reprise ${p.id}`);
+      }
+      res.writeHead(303, { location: '/?message=' + encodeURIComponent(message) });
+      return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/discuter') {
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      const depenseIa = depenseIaDuMois(await chargerArgent(fichierArgent, fichierArgentDepart));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageDiscussion(await chargerDiscussion(fichierDiscussion), { aRepondre, depenseIa, plafondIa }));
+    }
+    if (req.method === 'POST' && url.pathname === '/discuter') {
+      const question = String((await lireCorps(req, 16_000)).question ?? '').trim().slice(0, 2000);
+      if (question) {
+        const argent = await chargerArgent(fichierArgent, fichierArgentDepart);
+        let resultat;
+        if (depenseIaDuMois(argent) >= plafondIa) resultat = { erreur: `Plafond IA du mois atteint (${plafondIa} $) : je pourrai répondre le mois prochain.`, cout: 0 };
+        else {
+          const contexte = contexteCerveau({
+            etat: await chargerEtat(fichierEtat),
+            argent,
+            journal: await chargerJournal(fichierJournal),
+            serveurs: await chargerServeurs(fichierServeurs),
+            configServeurs,
+            configJournal,
+            pauses: await chargerPauses(fichierPauses),
+          });
+          const historique = (await chargerDiscussion(fichierDiscussion)).messages.filter((m) => !m.erreur);
+          resultat = await repondre(historique, question, { client: clientClaude, contexte });
+        }
+        if (resultat.cout) await avecArgent((d) => appliquerLecture(d, null, { lecture: null, erreur: null, cout: resultat.cout }));
+        await avecDiscussion((d) => ajouterEchange(d, question, resultat));
+      }
+      res.writeHead(303, { location: '/discuter' });
+      return res.end();
     }
     if (req.method === 'GET' && url.pathname === '/questions') {
       const n = url.searchParams.get('enregistre');

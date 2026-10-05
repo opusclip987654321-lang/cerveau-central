@@ -152,3 +152,8 @@ npm test               # les tests (Node 22, aucune dépendance)
 npm run verifier       # une vérification complète, résultat dans le terminal
 npm start              # la page d'état sur http://127.0.0.1:8090
 ```
+
+## Pause / Reprendre, et Discuter
+
+- **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, retient lesquelles, et coupe ses alertes Telegram. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, programme de Petites histoires vraies) n'est pas touché.
+- **Discuter** : louis pose une question, Claude (Sonnet) répond à partir des données du cerveau (état, argent, journal, serveurs). Il ne modifie rien. Le coût compte dans le plafond `PLAFOND_IA_DOLLARS`.

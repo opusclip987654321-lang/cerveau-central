@@ -108,3 +108,9 @@ test('automatisation sans motif : rangée dans le projet par défaut de son n8n'
   assert.deepEqual(journee(j, cfg, jour).map((x) => x.projet.id), ['extrait-politique']);
   assert.equal(projetDuWorkflow('IMPACTEUR - AGENT V17 TEST', cfg, 'principal'), 'impacteur');
 });
+
+test('noms réels des workflows de louis rangés dans le bon projet', () => {
+  assert.equal(projetDuWorkflow('Nour Meet 4 - Réponses reçues (stoppe les relances)', config, 'principal'), 'nour-meet');
+  assert.equal(projetDuWorkflow('IMPACTEUR E - TRACKING OUVERTURES', config, 'principal'), 'impacteur');
+  assert.equal(projetDuWorkflow('PUBLICATION 1 - Diffusion (YouTube privé + Facebook + Instagram auto, TikTok manuel)', { ...config }, 'actualite'), 'extrait-politique');
+});

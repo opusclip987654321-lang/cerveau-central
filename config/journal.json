@@ -3,7 +3,7 @@
   "_instances": "Projet par défaut des automatisations d'un n8n quand leur nom ne correspond à aucun motif : le n8n du VPS YouTube ne sert qu'à L'extrait politique.",
   "instances": { "actualite": "extrait-politique" },
   "projets": [
-    { "id": "nour-meet", "nom": "Nūr Meet", "motifs": ["n[uū]r", "restaurant", "carrousel"] },
+    { "id": "nour-meet", "nom": "Nūr Meet", "motifs": ["nour", "n[uū]r", "restaurant", "carrousel"] },
     { "id": "leviaro", "nom": "Leviaro", "motifs": ["leviaro"] },
     { "id": "extrait-politique", "nom": "L'extrait politique", "motifs": ["extrait", "actualit", "politique"] },
     { "id": "histoires-vraies", "nom": "Petites histoires vraies", "motifs": ["histoire"] },

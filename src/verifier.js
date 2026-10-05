@@ -21,7 +21,7 @@ const VERIFICATEURS = {
 
 export const cle = (projet, verif, i) => `${projet.id}/${verif.nom ?? verif.type}#${i}`;
 
-export async function toutVerifier({ config, fichierEtat, envoyer, options = {} }) {
+export async function toutVerifier({ config, fichierEtat, envoyer, options = {}, enPause = new Set() }) {
   const etat = await chargerEtat(fichierEtat);
   const maintenant = new Date().toISOString();
   const optionsPar = {
@@ -55,7 +55,8 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {} 
     const avant = etat.verifications[k];
     const type = changement(avant, resultat);
     if (type) {
-      messages.push(redigerAlerte(type, projet, verif, resultat, avant));
+      // Projet mis en pause par louis : on note le changement, sans le prévenir.
+      if (!enPause.has(projet.id)) messages.push(redigerAlerte(type, projet, verif, resultat, avant));
       etat.historique.unshift({ date: maintenant, projet: projet.nom, verification: verif.nom, type, detail: resultat.detail });
     }
     const memeEtat = avant && avant.etat === resultat.etat;

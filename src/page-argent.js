@@ -37,8 +37,9 @@ ${tuile('Factures', factures.length ? `${aJour} / ${r.lignes.length} à jour` : 
       const quand = l.frequence === 'une-fois' ? dateCourte(l.date) : echeance ? `prochain : ${dateCourte(echeance)}` : '<span class="doux">date à préciser</span>';
       return `<tr><td>${e(l.libelle)}<small>${e(nomProjet(l.projet))}</small></td><td class="num">${montantLisible(l.montant, l.devise)}<small>${FREQUENCES[l.frequence]}</small></td><td>${quand}</td><td>${statutFacture(l)}</td>
 <td><form method="post" action="/argent/supprimer" onsubmit="return confirm('Retirer « ${e(l.libelle).replace(/'/g, '’')} » de la liste ?')"><input type="hidden" name="id" value="${e(l.id)}"><button class="petit" title="Retirer">✕</button></form></td></tr>`;
-    })
-    .join('\n');
+    });
+  const lignesVisibles = lignes.slice(0, 3).join('\n');
+  const lignesCachees = lignes.slice(3).join('\n');
 
   const h = historique(donnees.lignes, jour);
   const ligneMois = (x) =>
@@ -112,8 +113,9 @@ ${corrections}
 <section class="bloc">
 <h3>Dépenses</h3>
 <div class="defile"><table class="depenses"><thead><tr><th>Dépense</th><th class="num">Montant</th><th>Quand</th><th>Facture</th><th></th></tr></thead><tbody>
-${lignes}
-</tbody></table></div>
+${lignesVisibles}
+</tbody>${lignesCachees ? `<tbody id="depenses-plus" hidden>${lignesCachees}</tbody>` : ''}</table></div>
+${lignesCachees ? `<button type="button" class="voir-plus" onclick="const t=document.getElementById('depenses-plus');t.hidden=!t.hidden;this.textContent=t.hidden?'Voir plus (${lignes.length - 3})':'Voir moins'">Voir plus (${lignes.length - 3})</button>` : ''}
 <details class="ajout"><summary>+ Ajouter une dépense</summary>
 <form method="post" action="/argent/ajouter" class="formulaire">
 <label>Nom<input name="libelle" required maxlength="80" placeholder="ex. Recharge OpenAI"></label>
@@ -174,6 +176,7 @@ button.petit { padding:2px 8px; font-size:13px; }
   .depenses td:nth-child(5) { grid-row:1; grid-column:3; }
 }
 .corrections { margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--fond); border:1px solid var(--bord); font-size:14px; }
+.voir-plus { margin:8px 0 4px; font-size:14px; padding:6px 12px; }
 .annees { display:flex; flex-wrap:wrap; gap:8px 18px; margin:12px 0 0; font-size:14px; }
 .plus > summary { cursor:pointer; list-style:none; display:inline-block; margin:8px 0 4px; padding:6px 12px; border:1px solid var(--bord); border-radius:8px; font-size:14px; }
 .plus > summary::-webkit-details-marker { display:none; }
