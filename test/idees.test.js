@@ -56,6 +56,9 @@ test('page projet Leviaro : détail, idées, surveillance', () => {
   assert.match(html, /en discussion/);
   assert.match(html, /Baisser le prix de l’offre A/);
   assert.match(html, /Mes idées de modifications/);
+  // Le petit ℹ️ qui explique les états en clair (demande de louis du 05/10).
+  assert.match(html, /Que veulent dire ces mots/);
+  assert.match(html, /ne correspond pas aux clients recherchés/);
   assert.match(html, /Surveillance technique \(1\)/);
   assert.match(html, /Retour au tableau de bord/);
   assert.equal(pageProjet(configJournal, 'inconnu', { business, journal: journalVide(), idees }), null);

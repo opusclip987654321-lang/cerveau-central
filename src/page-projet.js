@@ -21,13 +21,53 @@ const L = {
 };
 const lb = (table, v) => L[table]?.[v] ?? v ?? '—';
 
+// Ce que veulent dire ces états, en clair (le petit ℹ️ au-dessus des tableaux).
+const AIDE = {
+  leviaroEtat: [
+    ['découverte', 'l’agent vient de trouver cette entreprise, il ne l’a pas encore étudiée'],
+    ['analysée', 'l’agent a étudié l’entreprise, la suite arrive'],
+    ['à approfondir', 'cible qui semble intéressante, l’agent doit creuser avant de la contacter'],
+    ['hors périmètre', 'ne correspond pas aux clients recherchés, on laisse tomber'],
+    ['contact introuvable', 'bonne cible, mais aucune adresse mail trouvée'],
+    ['mail à valider', 'un mail est prêt, il attend ton accord avant de partir'],
+    ['prospection en cours', 'le premier mail est parti, les relances suivent toutes seules'],
+    ['en discussion', 'l’entreprise a répondu, un vrai échange est en cours'],
+    ['clôturée', 'l’échange est terminé'],
+    ['exclue', 'retirée de la prospection, on ne la contactera plus'],
+  ],
+  leviaroMail: [
+    ['brouillon', 'mail écrit par l’agent, pas encore proposé'],
+    ['à valider', 'attend ton accord avant l’envoi'],
+    ['autorisé', 'tu as dit oui, il part au prochain créneau'],
+    ['réservé', 'l’agent est en train de l’envoyer'],
+    ['envoyé', 'parti chez l’entreprise'],
+    ['annulé', 'abandonné avant de partir'],
+    ['rejeté', 'tu as dit non, il ne partira pas'],
+    ['erreur passagère', 'l’envoi a raté, l’agent réessaiera tout seul'],
+    ['échec définitif', 'l’adresse ne marche pas, l’agent n’insistera plus'],
+    ['livraison incertaine', 'parti, mais sans certitude qu’il soit bien arrivé'],
+  ],
+  reponse: [
+    ['vraie réponse', 'une personne a vraiment répondu : à lire'],
+    ['absence auto', 'simple message automatique d’absence, rien à faire'],
+    ['erreur technique', 'le mail n’est pas arrivé (adresse invalide, boîte pleine…)'],
+    ['opposition (stop)', 'l’entreprise demande qu’on arrête de la contacter'],
+  ],
+};
+const aide = (cle) =>
+  AIDE[cle]
+    ? `<details class="aide"><summary>ℹ️ Que veulent dire ces mots ?</summary><ul>${AIDE[cle]
+        .map(([t, x]) => `<li><b>${e(t)}</b> : ${e(x)}.</li>`)
+        .join('')}</ul></details>`
+    : '';
+
 // Un tableau replié : `visibles` lignes affichées, le reste derrière « Voir plus ».
-function table(titre, colonnes, lignes, { visibles = 8, vide = 'Rien pour l’instant.' } = {}) {
+function table(titre, colonnes, lignes, { visibles = 8, vide = 'Rien pour l’instant.', aide: blocAide = '' } = {}) {
   if (!lignes.length) return `<section class="bloc"><h3>${e(titre)}</h3><p class="vide">${e(vide)}</p></section>`;
   const ligne = (l) => `<tr>${colonnes.map((c) => `<td>${l[c.cle] ?? '—'}</td>`).join('')}</tr>`;
   const tete = `<tr>${colonnes.map((c) => `<th>${e(c.titre)}</th>`).join('')}</tr>`;
   const reste = lignes.slice(visibles);
-  return `<section class="bloc"><h3>${e(titre)} <small>(${lignes.length})</small></h3>
+  return `<section class="bloc"><h3>${e(titre)} <small>(${lignes.length})</small></h3>${blocAide}
 <table>${tete}${lignes.slice(0, visibles).map(ligne).join('')}${reste.length ? `<tbody class="plus" hidden>${reste.map(ligne).join('')}</tbody>` : ''}</table>
 ${reste.length ? `<button type="button" class="voir-plus" onclick="this.previousElementSibling.querySelector('.plus').hidden=false;this.remove()">Voir plus (${reste.length})</button>` : ''}
 </section>`;
@@ -82,11 +122,11 @@ function sections(id, { business, journal, histoires }) {
     if (!d) return `<p class="vide">Le détail arrive à la prochaine lecture (dans l’heure).</p>${fin(blocNotes)}`;
     return [
       table('Réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'c', titre: 'Type' }, { cle: 'x', titre: 'Extrait' }],
-        d.reponses.map((r) => ({ q: date(r.recu), n: e(r.entreprise || r.de), c: etiquette(lb('reponse', r.categorie), r.categorie === 'humaine' ? 'ok' : r.categorie === 'opposition' ? 'off' : ''), x: e((r.extrait ?? '').slice(0, 120)) }))),
+        d.reponses.map((r) => ({ q: date(r.recu), n: e(r.entreprise || r.de), c: etiquette(lb('reponse', r.categorie), r.categorie === 'humaine' ? 'ok' : r.categorie === 'opposition' ? 'off' : ''), x: e((r.extrait ?? '').slice(0, 120)) })), { aide: aide('reponse') }),
       table('Mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'o', titre: 'Objet' }, { cle: 'r', titre: 'Relance' }, { cle: 's', titre: 'État' }],
-        d.messages.map((m) => ({ q: date(m.envoye ?? m.cree), n: e(m.entreprise), o: e(m.objet ?? '—'), r: m.etape ? `relance ${m.etape}` : 'premier mail', s: etiquette(lb('leviaroMail', m.etat), m.etat === 'envoye' ? 'ok' : m.etat?.startsWith('erreur') || m.etat === 'rejete' ? 'off' : m.etat === 'attente_validation' ? 'attente' : '') }))),
+        d.messages.map((m) => ({ q: date(m.envoye ?? m.cree), n: e(m.entreprise), o: e(m.objet ?? '—'), r: m.etape ? `relance ${m.etape}` : 'premier mail', s: etiquette(lb('leviaroMail', m.etat), m.etat === 'envoye' ? 'ok' : m.etat?.startsWith('erreur') || m.etat === 'rejete' ? 'off' : m.etat === 'attente_validation' ? 'attente' : '') })), { aide: aide('leviaroMail') }),
       table('Entreprises prospectées', [{ cle: 'q', titre: 'Trouvée le' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'v', titre: 'Ville' }, { cle: 's', titre: 'Où ça en est' }],
-        d.entreprises.map((c) => ({ q: date(c.creee), n: e(c.nom), v: e(c.ville ?? '—'), s: etiquette(lb('leviaroEtat', c.etat), c.etat === 'discussion_active' ? 'ok' : ['exclue', 'cloturee', 'hors_perimetre'].includes(c.etat) ? 'off' : '') }))),
+        d.entreprises.map((c) => ({ q: date(c.creee), n: e(c.nom), v: e(c.ville ?? '—'), s: etiquette(lb('leviaroEtat', c.etat), c.etat === 'discussion_active' ? 'ok' : ['exclue', 'cloturee', 'hors_perimetre'].includes(c.etat) ? 'off' : '') })), { aide: aide('leviaroEtat') }),
       fin(blocNotes),
     ].join('');
   }
@@ -182,6 +222,10 @@ ${surveillance}
 .bloc td { padding:5px 10px 5px 0; border-bottom:1px solid var(--bord); vertical-align:top; }
 .bloc tr:last-child td { border-bottom:0; }
 .voir-plus { margin-top:8px; font-size:13px; }
+.aide { margin:0 0 8px; font-size:13px; color:var(--doux); }
+.aide summary { cursor:pointer; user-select:none; }
+.aide ul { margin:6px 0 4px; padding-left:18px; }
+.aide li { margin:2px 0; } .aide b { color:var(--texte); font-weight:600; }
 .etiq { display:inline-block; padding:1px 8px; border-radius:10px; background:var(--fond); border:1px solid var(--bord); font-size:12px; white-space:nowrap; }
 .etiq.ok { color:var(--ok); border-color:var(--ok); } .etiq.off { color:var(--doux); } .etiq.attente { color:var(--attention); border-color:var(--attention); }
 .idees textarea { width:100%; font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); box-sizing:border-box; }
