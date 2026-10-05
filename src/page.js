@@ -86,9 +86,9 @@ document.getElementById('verifier').onclick = async (ev) => {
 
 const frequence = (min) => (min % 60 === 0 ? `${min / 60} h` : `${min} min`);
 
-export function gabarit({ onglet, aRepondre = 0, contenu }) {
+export function gabarit({ onglet, aRepondre = 0, contenu, titre }) {
   const badge = aRepondre ? ` <span class="badge">${aRepondre}</span>` : '';
-  const TITRES = { etat: 'Surveillance', journal: 'Pilotage', actions: 'Actions', activite: 'Activité', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs', discuter: 'Discuter' };
+  const TITRES = { etat: 'Surveillance', journal: 'Pilotage', actions: 'Actions', activite: 'Activité', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs' };
   const lien = (id, href, symbole, texte) => `<a href="${href}" class="${onglet === id ? 'actif' : ''}" data-s="${symbole}">${texte}</a>`;
   return `<!doctype html>
 <html lang="fr">
@@ -177,11 +177,11 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 <div class="coquille">
 <aside class="menu">
 <a class="logo" href="/journal"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
-<nav>${lien('journal', '/journal', '◆', 'Pilotage')}${lien('actions', '/actions', '✓', 'Actions')}${lien('activite', '/journal?vue=activite', '☰', 'Activité')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('questions', '/questions', '✎', 'Questions du jour' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}${lien('etat', '/', '●', 'Surveillance')}${lien('discuter', '/discuter', '✦', 'Discuter')}</nav>
+<nav>${lien('journal', '/journal', '◆', 'Pilotage')}${lien('actions', '/actions', '✓', 'Actions')}${lien('activite', '/journal?vue=activite', '☰', 'Activité')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('questions', '/questions', '✎', 'Questions du jour' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}${lien('etat', '/', '●', 'Surveillance')}</nav>
 <div class="menu-pied"><a href="/deconnexion">Se déconnecter</a></div>
 </aside>
 <main>
-<div class="titre"><h1>${TITRES[onglet] ?? 'Cerveau central'}</h1></div>
+<div class="titre"><h1>${titre ?? TITRES[onglet] ?? 'Cerveau central'}</h1></div>
 ${contenu}
 </main>
 </div>

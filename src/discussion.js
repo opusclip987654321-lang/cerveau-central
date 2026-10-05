@@ -20,8 +20,16 @@ louis écrit en français, de façon courte. Réponds en français, simplement, 
 Appuie-toi uniquement sur les données ci-dessous ; si une information n'y est pas, dis-le au lieu d'inventer.
 Tu ne peux rien modifier toi-même depuis cette discussion. S'il demande un changement (code, serveur, nouvelle fonction), dis-lui de le demander dans son projet Claude, où il sera construit.`;
 
+// Pour la discussion attachée à une fiche d'action : le cerveau aide à résoudre CE problème.
+export const CONSIGNE_ACTION = `Tu es le « cerveau central » de louis : tu surveilles ses projets, leurs coûts et ses deux serveurs.
+Cette discussion porte sur UNE fiche d'action précise (un problème à résoudre), décrite dans les données sous « La fiche d'action discutée ».
+Aide louis à comprendre la cause et à décider : distingue les faits vérifiés des hypothèses, propose un diagnostic et des solutions concrètes qui améliorent ou rétablissent ses automatisations (jamais « fais-le à la main » comme seule réponse).
+Appuie-toi uniquement sur les données ci-dessous ; si une information manque, dis laquelle et comment l'obtenir, au lieu d'inventer.
+Rien ne se change tout seul : tu proposes, louis décide, et les corrections passent par Claude ou les outils après son accord.
+Réponds en français simple, sans jargon, 8 lignes au plus sauf s'il demande du détail.`;
+
 // `client` est injectable pour les tests. Renvoie { texte, cout } ou { erreur, cout }.
-export async function repondre(historique, question, { client, contexte, maxEchanges = 10 }) {
+export async function repondre(historique, question, { client, contexte, maxEchanges = 10, consigne = CONSIGNE }) {
   if (!client) return { erreur: 'La clé Claude n’est pas branchée sur le cerveau.', cout: 0 };
   const passes = historique.slice(-maxEchanges * 2).map((m) => ({ role: m.role === 'louis' ? 'user' : 'assistant', content: m.texte }));
   // L'API veut une alternance qui commence par louis : on fusionne les messages
@@ -41,7 +49,7 @@ export async function repondre(historique, question, { client, contexte, maxEcha
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
       output_config: { effort: 'low' },
-      system: `${CONSIGNE}\n\nDonnées du cerveau au ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })} :\n${contexte}`,
+      system: `${consigne}\n\nDonnées du cerveau au ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })} :\n${contexte}`,
       messages: [...passes, { role: 'user', content: question }],
     });
     cout = coutDollars(reponse.usage);

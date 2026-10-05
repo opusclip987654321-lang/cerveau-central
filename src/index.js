@@ -23,8 +23,9 @@ import { chargerJournal, sauverJournal, ajouterEvenement, synchroniserN8n, messa
 import { pageJournal } from './page-journal.js';
 import { pageActions } from './page-actions.js';
 import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N, SURVEILLANCE } from './pauses.js';
-import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from './discussion.js';
-import { pageDiscussion } from './page-discussion.js';
+import { repondre, CONSIGNE_ACTION } from './discussion.js';
+import { chargerActions, sauverActions, synchroniserActions, changerStatutAction, enregistrerEchange, dossierPourClaude } from './actions.js';
+import { pageAction } from './page-action.js';
 import { contexteCerveau } from './contexte.js';
 import { synchroniserYoutube } from './youtube.js';
 import { synchroniserStripe } from './stripe.js';
@@ -55,7 +56,8 @@ const fichierServeurs = env.FICHIER_SERVEURS ?? path.join(racine, 'data/serveurs
 const fichierJournal = env.FICHIER_JOURNAL ?? path.join(racine, 'data/journal.json');
 const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
 const fichierPauses = path.join(path.dirname(fichierEtat), 'pauses.json');
-const fichierDiscussion = path.join(path.dirname(fichierEtat), 'discussion.json');
+// data/discussion.json (l'ancien chat global) est gardé sur le disque mais n'est plus affiché.
+const fichierActions = path.join(path.dirname(fichierEtat), 'actions.json');
 const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
 const fichierIdees = path.join(path.dirname(fichierEtat), 'idees.json');
 const fichierSuivi = path.join(path.dirname(fichierEtat), 'suivi-reponses.json');
@@ -147,7 +149,7 @@ function fileDAttente(charger, sauver, fichier) {
   };
 }
 const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
-const avecDiscussion = fileDAttente(chargerDiscussion, sauverDiscussion, fichierDiscussion);
+const avecActions = fileDAttente(chargerActions, sauverActions, fichierActions);
 const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
 const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
@@ -428,20 +430,41 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(303, { location: '/?message=' + encodeURIComponent(message) });
       return res.end();
     }
-    if (req.method === 'GET' && url.pathname === '/discuter') {
+    // L'ancien chat global « Discuter » a été supprimé (demande de louis du 06/10) :
+    // les échanges avec l'IA se font sur la fiche de chaque action.
+    if (url.pathname === '/discuter') {
+      res.writeHead(302, { location: '/actions' });
+      return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/action') {
+      const donnees = await chargerActions(fichierActions);
+      const action = donnees.actions.find((a) => a.id === url.searchParams.get('id'));
+      if (!action) {
+        res.writeHead(302, { location: '/actions' });
+        return res.end();
+      }
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       const depenseIa = depenseIaDuMois(await chargerArgent(fichierArgent, fichierArgentDepart));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      return res.end(pageDiscussion(await chargerDiscussion(fichierDiscussion), { aRepondre, depenseIa, plafondIa }));
+      return res.end(pageAction(action, { aRepondre, actif: Boolean(clientClaude), depenseIa, plafondIa, message: url.searchParams.get('message') ?? undefined }));
     }
-    if (req.method === 'POST' && url.pathname === '/discuter') {
-      const question = String((await lireCorps(req, 16_000)).question ?? '').trim().slice(0, 2000);
-      if (question) {
+    if (req.method === 'POST' && url.pathname === '/action/statut') {
+      const { id, statut } = await lireCorps(req, 4_000);
+      const r = await avecActions((d) => changerStatutAction(d, id, statut));
+      res.writeHead(303, { location: r.erreur ? '/actions' : `/action?id=${encodeURIComponent(id)}&message=${encodeURIComponent(statut === 'resolu' ? 'Marqué résolu. Bien joué.' : 'Statut changé.')}` });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/action/discuter') {
+      const corps = await lireCorps(req, 16_000);
+      const id = String(corps.id ?? '');
+      const question = String(corps.question ?? '').trim().slice(0, 2000);
+      const action = (await chargerActions(fichierActions)).actions.find((a) => a.id === id);
+      if (action && question) {
         const argent = await chargerArgent(fichierArgent, fichierArgentDepart);
         let resultat;
         if (depenseIaDuMois(argent) >= plafondIa) resultat = { erreur: `Plafond IA du mois atteint (${plafondIa} $) : je pourrai répondre le mois prochain.`, cout: 0 };
         else {
-          const contexte = contexteCerveau({
+          const contexte = `${contexteCerveau({
             etat: await chargerEtat(fichierEtat),
             argent,
             journal: await chargerJournal(fichierJournal),
@@ -451,15 +474,24 @@ const serveur = http.createServer(async (req, res) => {
             pauses: await chargerPauses(fichierPauses),
             business: await chargerBusiness(fichierBusiness),
             reponses: await chargerReponses(fichierReponses),
-          });
-          const historique = (await chargerDiscussion(fichierDiscussion)).messages.filter((m) => !m.erreur);
-          resultat = await repondre(historique, question, { client: clientClaude, contexte });
+          })}\n\n## La fiche d'action discutée\n${dossierPourClaude(action)}`;
+          resultat = await repondre(action.discussion.filter((m) => !m.erreur), question, { client: clientClaude, contexte, consigne: CONSIGNE_ACTION });
         }
         if (resultat.cout) await avecArgent((d) => appliquerLecture(d, null, { lecture: null, erreur: null, cout: resultat.cout }));
-        await avecDiscussion((d) => ajouterEchange(d, question, resultat));
+        await avecActions((d) => enregistrerEchange(d, id, question, resultat));
       }
-      res.writeHead(303, { location: '/discuter' });
+      res.writeHead(303, { location: `/action?id=${encodeURIComponent(id)}` });
       return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/action/dossier') {
+      const donnees = await chargerActions(fichierActions);
+      const action = donnees.actions.find((a) => a.id === url.searchParams.get('id'));
+      if (!action) {
+        res.writeHead(302, { location: '/actions' });
+        return res.end();
+      }
+      res.writeHead(200, { 'content-type': 'text/markdown; charset=utf-8', 'content-disposition': `attachment; filename="action-${action.id}.md"` });
+      return res.end(dossierPourClaude(action));
     }
     if (req.method === 'GET' && url.pathname === '/questions') {
       const n = url.searchParams.get('enregistre');
@@ -570,12 +602,14 @@ const serveur = http.createServer(async (req, res) => {
         configJournal,
         pauses: await chargerPauses(fichierPauses),
       });
+      // Les fiches suivent les signaux réels (pannes, « À décider ») à chaque affichage.
+      const etatCourant = await chargerEtat(fichierEtat);
+      const actions = await avecActions((d) => synchroniserActions(d, { etat: etatCourant, cartes: tableau.cartes, config, configJournal }));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(
         pageActions({
-          config,
           configJournal,
-          etat: await chargerEtat(fichierEtat),
+          actions,
           cartes: tableau.cartes,
           idees: (await chargerIdees(fichierIdees)).idees,
           aRepondre,
