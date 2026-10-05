@@ -42,7 +42,7 @@ test('par projet : conteneurs, volumes de leur compose et dossiers rangés au bo
   assert.equal(p['Caddy (adresses web)'].conteneurs.length, 1);
   assert.equal(p['Nūr Meet'].conteneurs.length, 2);
   assert.equal(p['n8n (automatisations)'].disque, 2_100_000_000 + 1_300_000_000);
-  assert.equal(p['Agent vidéo Nūr'].disque, 8123456789);
+  assert.equal(p['Petites histoires vraies'].disque, 8123456789);
   assert.equal(p['Leviaro'].conteneurs[0].enMarche, false);
 });
 
@@ -81,7 +81,7 @@ test('deux serveurs déséquilibrés : proposition de déplacer le plus gros pro
   const analyses = { 'vps-nour': analyser(donnees.serveurs['vps-nour'], config), 'vps-youtube': analyser(donnees.serveurs['vps-youtube'], config) };
   const c = conseilsEntreServeurs(config, donnees, analyses);
   assert.equal(c.length, 1);
-  assert.match(c[0].texte, /Déplacer « Agent vidéo Nūr » \(7,6 Go\) vers VPS YouTube/);
+  assert.match(c[0].texte, /Déplacer « Petites histoires vraies » \(7,6 Go\) vers VPS YouTube/);
 });
 
 test('vérification : pas encore branché, à jour, puis silence', async () => {
