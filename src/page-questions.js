@@ -21,7 +21,7 @@ function champ(projet, q) {
   return `<textarea name="${nom}" rows="2" placeholder="Ta réponse, en quelques mots">${e(val)}</textarea>`;
 }
 
-export function pageQuestions(config, historique, { jour = jourParis(), message } = {}) {
+export function pageQuestions(config, historique, { jour = jourParis(), message, actions = [] } = {}) {
   const parProjet = questionsDuJour(config, historique, jour);
   const restantes = parProjet.reduce((n, p) => n + p.questions.filter((q) => q.reponse === undefined).length, 0);
   const total = parProjet.reduce((n, p) => n + p.questions.length, 0);
@@ -77,9 +77,18 @@ ${joursTries
         .join('\n')}`
     : '';
 
-  const contenu = `<form method="post" action="/questions">
+  // Les fiches d'action qui attendent une décision passent devant les questions
+  // du jour : c'est là que les réponses servent le plus directement.
+  const attendent = actions.filter((a) => a.statut === 'question_posee' || a.statut === 'proposition_a_valider');
+  const blocActions = attendent.length
+    ? `<section class="q-actions"><h3>Décisions attendues sur tes fiches d'action <small>(${attendent.length})</small></h3><ul>${attendent
+        .map((a) => `<li><a href="/action?id=${e(a.id)}">${e(a.titre.length > 120 ? `${a.titre.slice(0, 120)}…` : a.titre)}</a><small>${e(a.projet || 'Cerveau central')}</small></li>`)
+        .join('')}</ul></section>`
+    : '';
+
+  const contenu = `${blocActions}<form method="post" action="/questions">
 <div class="resume">${restantes ? '✍️' : '✅'} ${restantes ? `${restantes} question(s) sur ${total} pour ${jourLisible(jour)}` : `Tout est répondu pour ${jourLisible(jour)}, merci !`}
-<small>${message ? `<b class="confirmation">✓ ${e(message)}</b> · ` : ''}Réponds seulement à ce que tu veux, tu peux laisser vide. Le cerveau s'en servira pour comprendre où chaque projet peut progresser.</small></div>
+<small>${message ? `<b class="confirmation">✓ ${e(message)}</b> · ` : ''}Réponds seulement à ce que tu veux, tu peux laisser vide. Tes réponses sont gardées avec leur date et leur projet, et nourrissent le bilan du lundi, les fiches d'action et l'onglet Discuter de chaque fiche ; rien n'est analysé à la seconde.</small></div>
 <div class="grille">
 ${cartes}
 </div>
@@ -102,6 +111,13 @@ input:checked + span { background:var(--texte); color:var(--fond); border-color:
 input:focus-visible + span { outline:2px solid var(--attention); }
 .tendance { font-weight:400; font-size:13px; color:var(--doux); margin-left:6px; }
 .confirmation { color:var(--ok); }
+.q-actions { background:var(--or-doux); border:1px solid var(--bord); border-radius:12px; padding:12px 16px; margin-bottom:16px; }
+.q-actions h3 { margin:0 0 6px; font-size:15px; } .q-actions h3 small { color:var(--doux); font-weight:400; }
+.q-actions ul { list-style:none; margin:0; padding:0; }
+.q-actions li { display:flex; flex-direction:column; padding:6px 0; border-top:1px solid var(--bord); }
+.q-actions li:first-child { border-top:0; }
+.q-actions a { font-weight:600; text-decoration:none; }
+.q-actions small { color:var(--doux); font-size:12px; }
 .faites { margin-top:18px; }
 .faites > summary { cursor:pointer; font-weight:600; padding:8px 0; color:var(--doux); }
 .faites .grille { margin-top:10px; }

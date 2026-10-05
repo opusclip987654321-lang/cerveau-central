@@ -148,7 +148,18 @@
         "Chaque réponse porte un état dans « Réponses à traiter » de la page Nūr Meet : à lire, suivi en cours, en attente du restaurant, à relancer, traité, refus, opposition",
         "Changer un état n'envoie AUCUN mail et n'arrête aucune automatisation : c'est une étiquette pour t'y retrouver",
         "Traité, refus et opposition rangent la conversation dans « Réponses traitées »",
-        "La fiche montre aussi le parcours commercial en restaurants : trouvés, contactables, contactés, ont répondu, abonnés payants"
+        "La fiche montre aussi le parcours commercial en restaurants : trouvés, contactables, contactés, ont répondu, abonnés payants",
+        "Les réponses automatiques probables (absence, accusé de réception, erreur de livraison) sont rangées à part : le compteur « à traiter » ne garde que ce qui attend une vraie suite de toi",
+        "Une réponse détectée sans texte s'affiche « Réponse détectée, contenu indisponible » avec un lien pour la chercher dans Gmail : rien n'est inventé"
+      ]
+    },
+    {
+      "titre": "Mails, jour par jour",
+      "points": [
+        "La page Nūr Meet montre une seule ligne par journée d'envoi (« Voir les N mails ») ; chaque mail s'ouvre sur l'échange complet connu : premier mail, relances, réponses datées",
+        "Un « exemple du jour » est tiré au sort par date et reste le même à chaque consultation",
+        "Le texte des mails n'est pas encore copié depuis n8n : la page le dit (« contenu non récupéré ») et renvoie vers Gmail",
+        "Les vieux mails « jamais partis » se trient par lots (laisser en attente, à faire repartir après vérification, abandonner) : le cerveau note ta décision et n'envoie jamais rien ; un restaurant déjà servi est signalé « doublon possible »"
       ]
     }
   ],

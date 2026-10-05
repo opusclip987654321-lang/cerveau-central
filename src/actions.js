@@ -107,6 +107,35 @@ export function enregistrerEchange(donnees, id, question, reponse, maintenant = 
   return { action };
 }
 
+// Les connexions de revenus à préparer (chapitre 6 du document du 06/10).
+// Chacune s'ouvre UNE fois : si louis résout la fiche, elle ne revient pas.
+const REVENUS = [
+  {
+    cle: 'revenu:youtube',
+    projet: 'YouTube (3 chaînes)',
+    titre: 'Revenus YouTube / AdSense à brancher en priorité',
+    constat: 'Le cerveau lit les statistiques publiques des chaînes YouTube (vues, abonnés) mais pas leurs revenus : la clé actuelle ne le permet pas.',
+    consequence: 'Impossible de dire ce que les vidéos rapportent : les analyses restent aveugles sur l’argent qui rentre.',
+    piste: 'Il faut autoriser l’accès « YouTube Analytics / AdSense » (connexion OAuth) avec le compte Google propriétaire des chaînes — une autorisation à donner une fois, pas de saisie répétée. Dis-le dans ton projet Claude quand tu veux le faire, c’est une étape guidée.',
+  },
+  {
+    cle: 'revenu:tiktok',
+    projet: 'TikTok',
+    titre: 'Revenus TikTok : vérifier ce que ton compte permet',
+    constat: 'TikTok n’offre pas d’accès automatique simple aux revenus des créateurs : ce que ton compte permet exactement reste à vérifier.',
+    consequence: 'Tant que ce n’est pas vérifié, les revenus TikTok n’apparaissent nulle part dans le cerveau.',
+    piste: 'Première étape : regarder dans ton espace créateur TikTok si un export ou une page « revenus » existe. Si aucun accès automatique n’est possible, on documente la limite réelle et on met en place un relevé mensuel assisté — jamais une saisie à répéter chaque jour.',
+  },
+  {
+    cle: 'revenu:meta',
+    projet: 'Facebook / Instagram',
+    titre: 'Revenus Facebook et Instagram : vérifier ce que ton compte permet',
+    constat: 'Les revenus de monétisation Facebook/Instagram demandent un accès Meta Business dont la disponibilité dépend de ton compte : à vérifier.',
+    consequence: 'Les revenus (et même les vues) de Petites histoires vraies restent invisibles dans le cerveau.',
+    piste: 'Première étape : vérifier dans Meta Business Suite ce que ton compte expose (monétisation, statistiques). L’accès aux vues par vidéo passe par la même autorisation : une pierre deux coups. Si l’accès n’existe pas, on documente la limite et on prévoit un relevé mensuel assisté.',
+  },
+];
+
 // Met les fiches en face des signaux réels : pannes de la surveillance et
 // questions « À décider » des cartes projet. Un signal disparu ne résout rien
 // tout seul : la fiche passe en « Résultat à vérifier » et louis conclut.
@@ -137,6 +166,12 @@ export function synchroniserActions(donnees, { etat, cartes = [], config, config
   ];
 
   for (const s of signaux) ouvrirAction(donnees, s, maintenant);
+
+  for (const r of REVENUS)
+    if (!donnees.actions.some((a) => a.cle === r.cle)) {
+      const action = ouvrirAction(donnees, { cle: r.cle, projet: r.projet, titre: r.titre, constat: r.constat, consequence: r.consequence, source: { type: 'revenu' } }, maintenant);
+      ajouterEchangeAction(action, 'cerveau', r.piste, maintenant);
+    }
 
   const vivantes = new Set(signaux.map((s) => s.cle));
   for (const a of donnees.actions) {

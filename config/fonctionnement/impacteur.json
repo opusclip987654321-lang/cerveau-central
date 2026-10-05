@@ -3,65 +3,180 @@
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
   "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu tries sur Telegram, et les envois partent tout seuls, plafonnés à 5 par jour.",
   "journee": [
-    { "quand": "8 h 07", "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit), recherche du contact de l'auteur, invitation rédigée par Claude, fiche dans le Sheet.", "toi": "Trier sur Telegram : ✅ Valider / 🗑 Rejeter" },
-    { "quand": "8 h 33", "quoi": "Récap quotidien de la prospection sur Telegram.", "toi": "Le lire" },
-    { "quand": "10 h 07 et 15 h 07", "quoi": "Envois automatiques : les fiches prêtes (invitation conforme + e-mail trouvé) partent par Gmail, 5 par jour maximum.", "toi": "Rien" },
-    { "quand": "12 h 07", "quoi": "Découverte YouTube : les 40 chaînes que tu as choisies sont surveillées, Claude repère les invités d'interviews récentes et prépare des fiches.", "toi": "Trier sur Telegram : ✅ / 🗑" },
-    { "quand": "En continu", "quoi": "Chaque ouverture de mail est notée sur la fiche (image invisible).", "toi": "Répondre aux auteurs qui acceptent" }
+    {
+      "quand": "8 h 07",
+      "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit), recherche du contact de l'auteur, invitation rédigée par Claude, fiche dans le Sheet.",
+      "toi": "Trier sur Telegram : ✅ Valider / 🗑 Rejeter"
+    },
+    {
+      "quand": "8 h 33",
+      "quoi": "Récap quotidien de la prospection sur Telegram.",
+      "toi": "Le lire"
+    },
+    {
+      "quand": "10 h 07 et 15 h 07",
+      "quoi": "Envois automatiques : les fiches prêtes (invitation conforme + e-mail trouvé) partent par Gmail, 5 par jour maximum.",
+      "toi": "Rien"
+    },
+    {
+      "quand": "12 h 07",
+      "quoi": "Découverte YouTube : les 40 chaînes que tu as choisies sont surveillées, Claude repère les invités d'interviews récentes et prépare des fiches.",
+      "toi": "Trier sur Telegram : ✅ / 🗑"
+    },
+    {
+      "quand": "En continu",
+      "quoi": "Chaque ouverture de mail est notée sur la fiche (image invisible).",
+      "toi": "Répondre aux auteurs qui acceptent"
+    }
   ],
   "circuits": [
     {
       "titre": "Découverte de livres",
       "etapes": [
-        { "type": "auto", "texte": "8 h 07 : 5 requêtes au dépôt légal de la BnF (livres français récents, thèmes tournants, chaîne en alternance)" },
-        { "type": "securite", "texte": "Auteur vivant, pas déjà dans le Sheet ?", "sinon": "écarté avant toute dépense" },
-        { "type": "auto", "texte": "Recherche du contact de l'auteur sur le web (4 candidats max)" },
-        { "type": "auto", "texte": "Claude rédige l'invitation au nom de Walid (avec demande d'exemplaire de presse)" },
-        { "type": "auto", "texte": "Fiche « à vérifier » dans le Sheet + rapport de funnel à chaque run, même vide" },
-        { "type": "toi", "texte": "Notification Telegram par fiche : ✅ Valider · 🗑 Rejeter" }
+        {
+          "type": "auto",
+          "texte": "8 h 07 : 5 requêtes au dépôt légal de la BnF (livres français récents, thèmes tournants, chaîne en alternance)"
+        },
+        {
+          "type": "securite",
+          "texte": "Auteur vivant, pas déjà dans le Sheet ?",
+          "sinon": "écarté avant toute dépense"
+        },
+        {
+          "type": "auto",
+          "texte": "Recherche du contact de l'auteur sur le web (4 candidats max)"
+        },
+        {
+          "type": "auto",
+          "texte": "Claude rédige l'invitation au nom de Walid (avec demande d'exemplaire de presse)"
+        },
+        {
+          "type": "auto",
+          "texte": "Fiche « à vérifier » dans le Sheet + rapport de funnel à chaque run, même vide"
+        },
+        {
+          "type": "toi",
+          "texte": "Notification Telegram par fiche : ✅ Valider · 🗑 Rejeter"
+        }
       ]
     },
     {
       "titre": "Découverte YouTube",
       "etapes": [
-        { "type": "auto", "texte": "12 h 07 : lecture des flux des 40 chaînes choisies (20 Afrique, 20 Frexit), vidéos des 7 derniers jours" },
-        { "type": "auto", "texte": "Claude identifie les invités des interviews et choisit la chaîne cible selon le sujet" },
-        { "type": "auto", "texte": "Dédoublonnage, recherche de contact, invitation rédigée" },
-        { "type": "toi", "texte": "Fiche + notification Telegram : ✅ / 🗑" }
+        {
+          "type": "auto",
+          "texte": "12 h 07 : lecture des flux des 40 chaînes choisies (20 Afrique, 20 Frexit), vidéos des 7 derniers jours"
+        },
+        {
+          "type": "auto",
+          "texte": "Claude identifie les invités des interviews et choisit la chaîne cible selon le sujet"
+        },
+        {
+          "type": "auto",
+          "texte": "Dédoublonnage, recherche de contact, invitation rédigée"
+        },
+        {
+          "type": "toi",
+          "texte": "Fiche + notification Telegram : ✅ / 🗑"
+        }
       ]
     },
     {
       "titre": "Les envois",
       "note": "Décision de louis (fin septembre) : plus de validation avant envoi, les fiches conformes partent toutes seules.",
       "etapes": [
-        { "type": "auto", "texte": "10 h 07 et 15 h 07 : lecture des fiches prêtes (invitation conforme + e-mail trouvé, priorité aux adresses professionnelles)" },
-        { "type": "securite", "texte": "Plafond : 5 envois par jour, jamais deux fois le même auteur ou le même e-mail", "sinon": "fiche sans e-mail : notifiée sur Telegram, tu peux donner l'adresse avec /email" },
-        { "type": "auto", "texte": "Envoi par Gmail (compte Afrique ou Frexit selon la chaîne), avec image de suivi d'ouverture" },
-        { "type": "auto", "texte": "Fiche marquée « envoyé » avec la date" }
+        {
+          "type": "auto",
+          "texte": "10 h 07 et 15 h 07 : lecture des fiches prêtes (invitation conforme + e-mail trouvé, priorité aux adresses professionnelles)"
+        },
+        {
+          "type": "securite",
+          "texte": "Plafond : 5 envois par jour, jamais deux fois le même auteur ou le même e-mail",
+          "sinon": "fiche sans e-mail : notifiée sur Telegram, tu peux donner l'adresse avec /email"
+        },
+        {
+          "type": "auto",
+          "texte": "Envoi par Gmail (compte Afrique ou Frexit selon la chaîne), avec image de suivi d'ouverture"
+        },
+        {
+          "type": "auto",
+          "texte": "Fiche marquée « envoyé » avec la date"
+        }
       ]
     },
     {
       "titre": "Tes boutons Telegram",
       "etapes": [
-        { "type": "toi", "texte": "✅ Valider une fiche : elle est marquée validée et un brouillon est créé dans Gmail, prêt à partir" },
-        { "type": "toi", "texte": "🗑 Rejeter : la fiche est écartée définitivement" },
-        { "type": "toi", "texte": "/email CLE adresse : tu fournis l'e-mail manquant d'une fiche" },
-        { "type": "toi", "texte": "/inviter : tu proposes une personnalité de ton choix, l'agent prépare la fiche et l'invitation" }
+        {
+          "type": "toi",
+          "texte": "✅ Valider une fiche : elle est marquée validée et un brouillon est créé dans Gmail, prêt à partir"
+        },
+        {
+          "type": "toi",
+          "texte": "🗑 Rejeter : la fiche est écartée définitivement"
+        },
+        {
+          "type": "toi",
+          "texte": "/email CLE adresse : tu fournis l'e-mail manquant d'une fiche"
+        },
+        {
+          "type": "toi",
+          "texte": "/inviter : tu proposes une personnalité de ton choix, l'agent prépare la fiche et l'invitation"
+        }
       ]
     }
   ],
   "regles": [
-    { "titre": "Rythme", "points": ["Livres à 8 h 07, récap à 8 h 33, envois à 10 h 07 et 15 h 07, YouTube à 12 h 07", "5 envois par jour maximum, toutes chaînes confondues"] },
-    { "titre": "Contacts", "points": ["Priorité aux adresses professionnelles (éditeur, université…) plutôt que gmail/hotmail", "Jamais deux invitations au même auteur ou à la même adresse"] },
-    { "titre": "Invitations", "points": ["Rédigées par Claude au nom de Walid, avec un exemple d'interview en bas de mail", "Les informations douteuses ne bloquent rien : elles sont signalées sur la fiche à la validation"] }
+    {
+      "titre": "Rythme",
+      "points": [
+        "Livres à 8 h 07, récap à 8 h 33, envois à 10 h 07 et 15 h 07, YouTube à 12 h 07",
+        "5 envois par jour maximum, toutes chaînes confondues"
+      ]
+    },
+    {
+      "titre": "Contacts",
+      "points": [
+        "Priorité aux adresses professionnelles (éditeur, université…) plutôt que gmail/hotmail",
+        "Jamais deux invitations au même auteur ou à la même adresse"
+      ]
+    },
+    {
+      "titre": "Invitations",
+      "points": [
+        "Rédigées par Claude au nom de Walid, avec un exemple d'interview en bas de mail",
+        "Les informations douteuses ne bloquent rien : elles sont signalées sur la fiche à la validation"
+      ]
+    },
+    {
+      "titre": "Lecture par journée",
+      "points": [
+        "La page Impacteur regroupe les invités contactés par journée, avec les comptes Afrique et Frexit côte à côte",
+        "La « chaîne » affichée vient du Sheet : c'est une déclaration, pas une preuve du compte Gmail réellement utilisé, que l'automatisation n'enregistre pas encore",
+        "Le texte des mails n'est pas copié dans le cerveau : chaque fiche renvoie vers Gmail pour lire l'échange réel"
+      ]
+    }
   ],
   "role": {
-    "quotidien": ["Trier les fiches sur Telegram (✅ / 🗑)", "Répondre aux auteurs qui acceptent une interview"],
-    "parfois": ["Donner un e-mail manquant avec /email", "Proposer une personnalité avec /inviter", "Lire le récap de 8 h 33"]
+    "quotidien": [
+      "Trier les fiches sur Telegram (✅ / 🗑)",
+      "Répondre aux auteurs qui acceptent une interview"
+    ],
+    "parfois": [
+      "Donner un e-mail manquant avec /email",
+      "Proposer une personnalité avec /inviter",
+      "Lire le récap de 8 h 33"
+    ]
   },
   "vigilance": [
-    { "sujet": "Ouvertures", "detail": "L'indicateur « mail ouvert » est approximatif : certaines messageries bloquent l'image, d'autres la préchargent." },
-    { "sujet": "Coûts", "detail": "Chaque découverte utilise la recherche Brave et Claude (Haiku). La BnF et les flux YouTube sont gratuits." }
+    {
+      "sujet": "Ouvertures",
+      "detail": "L'indicateur « mail ouvert » est approximatif : certaines messageries bloquent l'image, d'autres la préchargent."
+    },
+    {
+      "sujet": "Coûts",
+      "detail": "Chaque découverte utilise la recherche Brave et Claude (Haiku). La BnF et les flux YouTube sont gratuits."
+    }
   ],
   "aCompleter": [
     "Les réponses des auteurs (acceptations d'interview) ne sont notées nulle part dans le Sheet : le cerveau ne peut pas encore les compter.",
