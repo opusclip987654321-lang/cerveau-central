@@ -343,7 +343,21 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
   } else {
     carte('leviaro', { titre: 'Prospects contactés', dates: evenements(journal, 'leviaro', ['mail']), unite: 'prospect contacté', branche: false, manque: ['prospects de leviaro.db'] });
   }
-  carte('cambodge', { titre: 'Candidatures envoyées', dates: evenements(journal, 'cambodge', ['mail']), unite: 'candidature', joursMax: 7, branche: false, manque: ['candidatures'] });
+  const cb = business.sources?.cambodge;
+  if (cb?.mails) {
+    const candidatures = cb.mails.filter((m) => m.deMoi).map((m) => m.jour);
+    const reponsesCb = cb.mails.filter((m) => !m.deMoi).map((m) => m.jour);
+    const c = carte('cambodge', {
+      titre: 'Candidatures envoyées',
+      dates: candidatures,
+      unite: 'candidature',
+      joursMax: 7,
+      extra: [{ titre: 'Réponses reçues', valeur: somme(parJour(periode, reponsesCb)), detail: `${nombre(reponsesCb.length)} depuis le début` }],
+    });
+    c.secondaire = { titre: 'Réponses', serie: parJour(periode, reponsesCb) };
+  } else {
+    carte('cambodge', { titre: 'Candidatures envoyées', dates: evenements(journal, 'cambodge', ['mail']), unite: 'candidature', joursMax: 7, branche: false, manque: ['candidatures'] });
+  }
 
   return { periode, cartes, maj: pr?.maj ?? null };
 }

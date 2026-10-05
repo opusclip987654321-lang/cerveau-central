@@ -27,6 +27,7 @@ import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
 import { synchroniserYoutube } from './youtube.js';
 import { synchroniserStripe } from './stripe.js';
+import { synchroniserCambodge } from './cambodge.js';
 import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
@@ -193,6 +194,11 @@ async function synchroniserJournal() {
       await avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE }));
     } catch (err) {
       console.error(`Tableau de bord (Stripe) : ${err.message}`);
+    }
+    try {
+      await avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON }));
+    } catch (err) {
+      console.error(`Tableau de bord (Cambodge) : ${err.message}`);
     }
   } catch (err) {
     console.error(`Journal : ${err.message}`);

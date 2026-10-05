@@ -1,14 +1,56 @@
 {
   "maj": "2026-10-05",
-  "source": "D'après louis le 05/10/2026 : tout est manuel",
-  "intro": "La recherche d'un emploi au Cambodge se fait entièrement à la main : tu envoies les candidatures toi-même, et chaque envoi reçoit un retour par mail. Rien ne tourne sur les serveurs pour ce projet.",
+  "source": "D'après louis le 05/10/2026 + l'automatisation « CERVEAU - lecture Cambodge » (n8n)",
+  "intro": "La recherche d'un emploi au Cambodge se fait à la main : tu envoies les candidatures toi-même depuis ta boîte Gmail, et chaque envoi reçoit un retour par mail. Le cerveau lit les mails que tu étiquettes « Cambodge » pour compter les candidatures et les réponses.",
   "journee": [
-    { "quand": "Quand tu prospectes", "quoi": "Tu envoies les candidatures depuis ta boîte mail.", "toi": "Tout : c'est toi l'agent" }
+    {
+      "quand": "Quand tu prospectes",
+      "quoi": "Tu envoies les candidatures depuis ta boîte mail et tu poses l'étiquette « Cambodge » dessus.",
+      "toi": "Tout : c'est toi l'agent"
+    },
+    {
+      "quand": "Toutes les heures",
+      "quoi": "Le cerveau relit la boîte étiquetée « Cambodge » et met la carte à jour.",
+      "toi": "Rien"
+    }
+  ],
+  "circuits": [
+    {
+      "titre": "Le suivi des candidatures",
+      "etapes": [
+        {
+          "type": "toi",
+          "texte": "Tu envoies une candidature (ou tu reçois une réponse) et tu poses l'étiquette « Cambodge » sur le mail"
+        },
+        {
+          "type": "auto",
+          "texte": "Une automatisation n8n lit ces mails dans ta boîte Gmail (lecture seule)",
+          "sinon": "Sans l'étiquette, le mail est invisible pour le cerveau"
+        },
+        {
+          "type": "auto",
+          "texte": "La carte Cambodge compte les candidatures envoyées et les réponses reçues ; la page montre chaque mail"
+        }
+      ]
+    }
+  ],
+  "regles": [
+    {
+      "titre": "Lecture seule",
+      "texte": "Le cerveau lit tes mails étiquetés, il n'envoie rien et ne touche à rien dans ta boîte."
+    },
+    {
+      "titre": "Une étiquette, une trace",
+      "texte": "Seuls les mails étiquetés « Cambodge » comptent : pense à étiqueter les réponses aussi."
+    }
   ],
   "role": {
-    "quotidien": ["Envoyer les candidatures", "Relancer les contacts intéressants"]
+    "quotidien": [
+      "Envoyer les candidatures et les relances",
+      "Étiqueter « Cambodge » chaque candidature et chaque réponse"
+    ]
   },
   "aCompleter": [
-    "Brancher la boîte mail des candidatures (en discussion avec louis) pour compter les envois et les réponses sur la carte Cambodge."
+    "Quand une candidature devient un entretien ou une offre, rien ne le distingue encore d'une simple réponse : dis-moi si tu veux un suivi « entretiens / offres »."
   ]
 }
