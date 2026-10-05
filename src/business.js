@@ -325,6 +325,12 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     if (lv.aValider) aDecider.push(`${nombre(lv.aValider)} mail(s) attendent ta validation.`);
     if (lv.recommandations) aDecider.push(`${nombre(lv.recommandations)} recommandation(s) de l'agent à accepter ou refuser.`);
     if (echecsPeriode) aDecider.push(`${nombre(echecsPeriode)} mail(s) en échec définitif cette période : vérifier les adresses.`);
+    // File d'étude : combien de fiches trouvées attendent encore l'analyse de l'agent.
+    const file = Object.entries(lv.fileEtude ?? {}).filter(([j]) => j <= jour);
+    const ilYA = file.filter(([j]) => j <= periode[0]).at(-1) ?? file[0];
+    const evolution = ilYA && file.length > 1 ? (lv.aEtudier ?? 0) - ilYA[1] : null;
+    const attente = lv.aEtudierDepuis ? Math.round((Date.parse(jour) - Date.parse(lv.aEtudierDepuis)) / 86400000) : null;
+    if (lv.aEtudier && evolution > 0 && attente >= 7) aDecider.push(`${nombre(lv.aEtudier)} entreprise(s) trouvée(s) attendent d'être étudiées, la file grossit (+${nombre(evolution)}) et la plus ancienne attend depuis ${attente} jours : augmenter le rythme d'étude ?`);
     const c = carte('leviaro', {
       titre: 'Prospects contactés',
       dates: premiers,
@@ -336,6 +342,14 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
         { titre: 'Réponses', valeur: somme(parJour(periode, reponses)), detail: `${pct(reponses.length, premiers.length) ?? 0} % de réponse depuis le début (${nombre(reponses.length)} sur ${nombre(premiers.length)})` },
         { titre: 'Relances envoyées', valeur: somme(parJour(periode, relances)) },
         { titre: 'Entreprises trouvées', valeur: somme(parJour(periode, lv.entreprises)), detail: `${nombre(lv.enDiscussion)} en discussion · coût IA du mois ${lv.coutMois.toLocaleString('fr-FR')} €` },
+        ...(lv.aEtudier === undefined ? [] : [{
+          titre: 'À étudier',
+          valeur: lv.aEtudier,
+          detail: [
+            evolution === null ? 'évolution visible dès demain' : evolution === 0 ? 'stable sur la période' : `${evolution > 0 ? '+' : ''}${nombre(evolution)} sur la période (${evolution > 0 ? 'la file grossit' : 'la file baisse'})`,
+            attente ? `la plus ancienne attend depuis ${attente} j` : null,
+          ].filter(Boolean).join(' · '),
+        }]),
       ],
       manque: ['clients signés'],
     });

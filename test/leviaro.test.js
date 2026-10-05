@@ -18,7 +18,7 @@ async function baseExemple() {
     create table replies (id integer primary key, company_id integer, from_email text default 'x@y.fr', subject text, snippet text, category text, received_at text, handled integer);
     create table agency_recs (id integer primary key, status text);
     create table costs (id integer primary key, month text, status text, amount_eur real);
-    insert into companies (name, state, created_at) values ('A', 'sequence_active', '2026-10-03 10:00:00'), ('B', 'discussion_active', '2026-09-20 10:00:00'), ('C', 'contact_introuvable', '2026-10-04 23:30:00');
+    insert into companies (name, state, created_at) values ('A', 'sequence_active', '2026-10-03 10:00:00'), ('B', 'discussion_active', '2026-09-20 10:00:00'), ('C', 'contact_introuvable', '2026-10-04 23:30:00'), ('D', 'decouverte', '2026-09-25 10:00:00'), ('E', 'decouverte', '2026-10-04 10:00:00');
     insert into messages (step, status, sent_at, created_at) values
       (0, 'envoye', '2026-10-03 09:00:00', '2026-10-03 08:00:00'),
       (0, 'envoye', '2026-10-04 09:00:00', '2026-10-04 08:00:00'),
@@ -41,12 +41,15 @@ test('synchroniserLeviaro lit une copie de la base et en tire les chiffres', asy
   const lv = b.sources.leviaro;
   assert.deepEqual(lv.envois.map((m) => [m.etape, m.jour]), [[0, '2026-10-03'], [0, '2026-10-04'], [1, '2026-10-04']]);
   assert.deepEqual(lv.reponses, [{ jour: '2026-10-04', traitee: false }]);
-  assert.deepEqual(lv.entreprises, ['2026-10-03', '2026-09-20', '2026-10-05']); // 23h30 UTC = lendemain à Paris
+  assert.deepEqual(lv.entreprises, ['2026-10-03', '2026-09-20', '2026-10-05', '2026-09-25', '2026-10-04']); // 23h30 UTC = lendemain à Paris
   assert.equal(lv.aValider, 1);
   assert.equal(lv.enDiscussion, 1);
   assert.equal(lv.recommandations, 1);
   assert.equal(lv.coutMois, 1.23);
-  assert.equal(lv.detail.entreprises[0].nom, 'C');
+  assert.equal(lv.detail.entreprises[0].nom, 'E');
+  assert.equal(lv.aEtudier, 2);
+  assert.equal(lv.aEtudierDepuis, '2026-09-25');
+  assert.deepEqual(lv.fileEtude, { '2026-10-05': 2 });
   assert.equal(lv.detail.messages.length, 5);
   assert.equal(lv.detail.reponses.length, 2); // humaine + absence : la page montre tout
 
@@ -62,4 +65,24 @@ test('synchroniserLeviaro lit une copie de la base et en tire les chiffres', asy
 test('synchroniserLeviaro : pas de base, rien à faire', async () => {
   const dossier = await mkdtemp(path.join(tmpdir(), 'lv-vide-'));
   assert.deepEqual(await synchroniserLeviaro({ sources: {} }, dossier), { ignore: true });
+});
+
+test('Leviaro : la file des entreprises à étudier, jour par jour', async () => {
+  const dossier = await baseExemple();
+  const b = { sources: { leviaro: { fileEtude: { '2026-09-28': 0, '2026-10-04': 1 } } }, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-05T12:00:00Z') });
+  assert.deepEqual(b.sources.leviaro.fileEtude, { '2026-09-28': 0, '2026-10-04': 1, '2026-10-05': 2 });
+  const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-05' }).cartes.find((c) => c.id === 'leviaro');
+  const ligne = carte.chiffres.find((x) => x.titre === 'À étudier');
+  assert.equal(ligne.valeur, 2);
+  assert.match(ligne.detail, /\+2 sur la période \(la file grossit\)/);
+  assert.match(ligne.detail, /depuis 10 j/);
+  assert.ok(carte.aDecider.some((t) => /2 entreprise\(s\) trouvée\(s\) attendent d'être étudiées/.test(t)));
+});
+
+test('Leviaro : file vide, rien à décider', () => {
+  const lv = { envois: [], reponses: [], echecs: [], entreprises: [], aValider: 0, enDiscussion: 0, recommandations: 0, coutMois: 0, aEtudier: 0, aEtudierDepuis: null, fileEtude: { '2026-10-05': 0 } };
+  const carte = tableauDeBord({ business: { sources: { leviaro: lv }, objectifs: {} }, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-05' }).cartes.find((c) => c.id === 'leviaro');
+  assert.equal(carte.chiffres.find((x) => x.titre === 'À étudier').detail, 'évolution visible dès demain');
+  assert.ok(!carte.aDecider.some((t) => /étudiées/.test(t)));
 });
