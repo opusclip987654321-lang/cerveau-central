@@ -537,8 +537,9 @@ const serveur = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/questions') {
       const n = url.searchParams.get('enregistre');
-      const message = n === null ? undefined : `${n} réponse(s) enregistrée(s)`;
-      const html = await avecReponses((h) => pageQuestions(configQuestions, h, { message }));
+      const message = n === null ? undefined : `${n} réponse(s) enregistrée(s). Le cerveau s'en sert au prochain bilan du lundi et dans les fiches d'action.`;
+      const actionsQ = (await chargerActions(fichierActions)).actions;
+      const html = await avecReponses((h) => pageQuestions(configQuestions, h, { message, actions: actionsQ }));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(html);
     }

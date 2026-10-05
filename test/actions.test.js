@@ -13,16 +13,22 @@ test('synchroniserActions : une panne ou un « à décider » = une fiche, ratta
   const etat = { verifications: { a: { projet: 'nour-meet', etat: 'panne', nom: 'Site', detail: 'répond 502', sens: 'Le site ne répond plus', depuis: '2026-10-05T10:00:00Z' } } };
   const cartes = [{ id: 'leviaro', aDecider: ['19 réponse(s) de prospect pas encore traitée(s).'] }];
   synchroniserActions(d, { etat, cartes, config, configJournal });
-  assert.equal(d.actions.length, 2);
+  // 2 signaux + les 3 fiches « revenus à brancher » ouvertes une seule fois.
+  assert.equal(d.actions.length, 5);
+  assert.ok(d.actions.some((a) => a.cle === 'revenu:youtube'));
   // Le même signal re-synchronisé ne crée pas de nouvelle fiche, même si les nombres bougent.
   synchroniserActions(d, { etat, cartes: [{ id: 'leviaro', aDecider: ['23 réponse(s) de prospect pas encore traitée(s).'] }], config, configJournal });
-  assert.equal(d.actions.length, 2);
+  assert.equal(d.actions.length, 5);
   const fiche = d.actions.find((a) => a.cle.startsWith('decider:'));
   assert.match(fiche.constat, /23 réponse/); // le constat suit le dernier état
   assert.equal(fiche.historique.filter((h) => h.type === 'occurrence').length, 1);
   // Le signal disparaît : la fiche passe « Résultat à vérifier », jamais « resolu » toute seule.
   synchroniserActions(d, { etat: { verifications: {} }, cartes: [], config, configJournal });
-  assert.ok(d.actions.every((a) => a.statut === 'resultat_a_verifier'));
+  assert.ok(d.actions.filter((a) => /^(panne:|decider:)/.test(a.cle)).every((a) => a.statut === 'resultat_a_verifier'));
+  // Une fiche revenus résolue par louis ne revient pas à la synchronisation suivante.
+  d.actions.find((a) => a.cle === 'revenu:youtube').statut = 'resolu';
+  synchroniserActions(d, { etat: { verifications: {} }, cartes: [], config, configJournal });
+  assert.equal(d.actions.filter((a) => a.cle === 'revenu:youtube').length, 1);
 });
 
 test('changerStatutAction et enregistrerEchange : seuls les événements réels bougent le statut', () => {
