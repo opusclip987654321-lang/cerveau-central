@@ -64,6 +64,9 @@ export async function synchroniserN8n(journal, { url, cle, instance = 'principal
     });
   const workflows = await appel('/api/v1/workflows?limit=250');
   const noms = new Map((workflows.data ?? []).map((w) => [String(w.id), w.name]));
+  // Retient de quel n8n vient chaque automatisation, pour la ranger dans le bon projet.
+  journal.n8n.instances ??= {};
+  for (const nom of noms.values()) journal.n8n.instances[nom] = instance;
   // Chaque n8n a sa propre suite d'identifiants ; le principal garde l'ancien champ.
   const curseurs = (journal.n8n.curseurs ??= {});
   const lu = instance === 'principal' ? journal.n8n.dernierId : curseurs[instance];
@@ -81,7 +84,6 @@ export async function synchroniserN8n(journal, { url, cle, instance = 'principal
       plusRecent = Math.max(plusRecent ?? id, id);
       const jour = jourParis(new Date(ex.startedAt));
       const nom = noms.get(String(ex.workflowId)) ?? `Automatisation ${ex.workflowId}`;
-      (journal.n8n.instances ??= {})[nom] = instance;
       const c = ((journal.n8n.jours[jour] ??= {})[nom] ??= { ok: 0, erreur: 0 });
       if (ex.status === 'success') c.ok++;
       else if (ex.status === 'error' || ex.status === 'crashed') c.erreur++;
