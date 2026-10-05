@@ -1,5 +1,7 @@
 // Page d'état : une page simple qui montre si tout tourne.
 
+import { expliquerAncien } from './sens.js';
+
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const PASTILLE = { ok: '🟢', attention: '🟠', panne: '🔴', ignore: '⚪' };
 const LIBELLE = { ok: 'OK', attention: 'À surveiller', panne: 'En panne', ignore: 'Pas encore branché' };
@@ -45,7 +47,7 @@ export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = n
   <h2>${PASTILLE[pire]} ${e(p.nom)}</h2>
   <ul>${lignes
     .map(
-      (v) => `<li class="${v.etat}"><span class="nom">${PASTILLE[v.etat]} ${e(v.nom)}</span><span class="detail">${e(v.detail)}</span>${
+      (v) => `<li class="${v.etat}"><span class="nom">${PASTILLE[v.etat]} ${e(v.nom)}</span>${v.sens ? `<span class="sens">${e(v.sens)}</span>` : ''}<span class="detail">${e(v.detail)}</span>${
         v.etat === 'panne' || v.etat === 'attention' ? `<span class="depuis">depuis ${heure(v.depuis)}</span>` : ''
       }</li>`,
     )
@@ -57,7 +59,10 @@ export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = n
   const historique = etat.historique.slice(0, 30);
   const journal = historique.length
     ? `<ul class="journal">${historique
-        .map((h) => `<li><time>${heure(h.date)}</time> ${PASTILLE[h.type === 'retabli' ? 'ok' : h.type === 'evenement' ? 'attention' : h.type]} <b>${e(h.projet)}</b> · ${e(h.verification)} : ${e(h.detail)}</li>`)
+        .map((h) => {
+          const { pour, texte } = h.sens ? { pour: h.pour, texte: h.sens } : expliquerAncien(h);
+          return `<li><time>${heure(h.date)}</time> ${PASTILLE[h.type === 'retabli' ? 'ok' : h.type === 'evenement' ? 'attention' : h.type]} <b>${e(pour)}</b> · ${e(texte)}<small class="technique">${e(h.verification)} : ${e(h.detail)}</small></li>`;
+        })
         .join('')}</ul>`
     : '<p class="vide">Aucun incident enregistré pour l’instant.</p>';
 
@@ -115,6 +120,8 @@ h3 { font-size:16px; margin:28px 0 10px; }
 .journal { list-style:none; padding:0; margin:0; background:var(--carte); border:1px solid var(--bord); border-radius:12px; }
 .journal li { padding:8px 14px; border-top:1px solid var(--bord); font-size:14px; }
 .journal li:first-child { border-top:0; }
+.journal small.technique { display:block; color:var(--doux); font-size:12px; margin-top:2px; }
+.carte .sens { margin-left:24px; font-size:14px; }
 time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 .vide { color:var(--doux); }
 nav { display:flex; gap:6px; flex-wrap:wrap; }

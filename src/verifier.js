@@ -7,6 +7,7 @@ import { verifierReleve } from './checks/releve.js';
 import { verifierHistoires } from './histoires.js';
 import { chargerEtat, sauverEtat, changement } from './etat.js';
 import { redigerAlerte } from './alertes.js';
+import { expliquer } from './sens.js';
 
 const VERIFICATEURS = {
   site: verifierSite,
@@ -57,7 +58,8 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {},
     if (type) {
       // Projet mis en pause par louis : on note le changement, sans le prévenir.
       if (!enPause.has(projet.id)) messages.push(redigerAlerte(type, projet, verif, resultat, avant));
-      etat.historique.unshift({ date: maintenant, projet: projet.nom, verification: verif.nom, type, detail: resultat.detail });
+      const { pour, texte } = expliquer(projet, verif, resultat, type);
+      etat.historique.unshift({ date: maintenant, projet: projet.nom, verification: verif.nom, type, detail: resultat.detail, pour, sens: texte });
     }
     const memeEtat = avant && avant.etat === resultat.etat;
     etat.verifications[k] = {
@@ -65,6 +67,8 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {},
       nom: verif.nom,
       etat: resultat.etat,
       detail: resultat.detail,
+      // Ce que ça veut dire pour le projet, quand quelque chose ne va pas.
+      sens: resultat.etat === 'panne' || resultat.etat === 'attention' ? expliquer(projet, verif, resultat).texte : undefined,
       ms: resultat.ms,
       verifie: maintenant,
       depuis: memeEtat ? avant.depuis : maintenant,
