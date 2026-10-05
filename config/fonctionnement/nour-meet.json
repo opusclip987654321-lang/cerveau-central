@@ -3,60 +3,163 @@
   "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Toi, tu lis les réponses et tu transformes les intéressés en abonnés.",
   "journee": [
-    { "quand": "9 h 00", "quoi": "Recherche de nouveaux restaurants (Google Places, Île-de-France), lecture de leurs sites pour trouver un e-mail, rédaction et envoi des mails du jour.", "toi": "Rien" },
-    { "quand": "9 h 30", "quoi": "Relances automatiques des restaurants contactés qui n'ont pas répondu (relance 1, puis relance 2).", "toi": "Rien" },
-    { "quand": "10 h 30", "quoi": "Bilan quotidien de la prospection envoyé sur Telegram.", "toi": "Lire le bilan" },
-    { "quand": "En continu", "quoi": "Chaque réponse reçue stoppe les relances de ce restaurant ; son texte est gardé et affiché sur la page Nūr Meet. Chaque ouverture de mail est comptée (image invisible).", "toi": "Lire les réponses et répondre toi-même depuis la boîte mail" }
+    {
+      "quand": "9 h 00",
+      "quoi": "Recherche de nouveaux restaurants (Google Places, Île-de-France), lecture de leurs sites pour trouver un e-mail, rédaction et envoi des mails du jour.",
+      "toi": "Rien"
+    },
+    {
+      "quand": "9 h 30",
+      "quoi": "Relances automatiques des restaurants contactés qui n'ont pas répondu (relance 1, puis relance 2).",
+      "toi": "Rien"
+    },
+    {
+      "quand": "10 h 30",
+      "quoi": "Bilan quotidien de la prospection envoyé sur Telegram.",
+      "toi": "Lire le bilan"
+    },
+    {
+      "quand": "En continu",
+      "quoi": "Chaque réponse reçue stoppe les relances de ce restaurant ; son texte est gardé et affiché sur la page Nūr Meet. Chaque ouverture de mail est comptée (image invisible).",
+      "toi": "Lire les réponses et répondre toi-même depuis la boîte mail"
+    }
   ],
   "circuits": [
     {
       "titre": "Trouver et contacter",
       "etapes": [
-        { "type": "auto", "texte": "9 h : recherche Google Places du jour (restaurants d'Île-de-France, ouverts, jamais vus)" },
-        { "type": "auto", "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max" },
-        { "type": "securite", "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?", "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté" },
-        { "type": "auto", "texte": "Note sur la fiche (halal, sans alcool, privatisation, capacité…) et tri : les 50 meilleurs du jour" },
-        { "type": "auto", "texte": "Mail personnalisé envoyé depuis contact@nourmeet.com, signé Walid, avec le logo et le lien nourmeet.com/restaurateurs (pause entre chaque envoi)" },
-        { "type": "auto", "texte": "Fiche mise à jour : contacté, date d'envoi ; échec d'envoi noté" }
+        {
+          "type": "auto",
+          "texte": "9 h : recherche Google Places du jour (restaurants d'Île-de-France, ouverts, jamais vus)"
+        },
+        {
+          "type": "auto",
+          "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max"
+        },
+        {
+          "type": "securite",
+          "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
+          "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté"
+        },
+        {
+          "type": "auto",
+          "texte": "Note sur la fiche (halal, sans alcool, privatisation, capacité…) et tri : les 50 meilleurs du jour"
+        },
+        {
+          "type": "auto",
+          "texte": "Mail personnalisé envoyé depuis contact@nourmeet.com, signé Walid, avec le logo et le lien nourmeet.com/restaurateurs (pause entre chaque envoi)"
+        },
+        {
+          "type": "auto",
+          "texte": "Fiche mise à jour : contacté, date d'envoi ; échec d'envoi noté"
+        }
       ]
     },
     {
       "titre": "Les relances",
       "etapes": [
-        { "type": "auto", "texte": "9 h 30 : lecture des restaurants contactés sans réponse" },
-        { "type": "auto", "texte": "Choix de qui relancer aujourd'hui, avec une phrase personnalisée selon leur site (sans alcool, privatisation…)" },
-        { "type": "auto", "texte": "Envoi de la relance 1, puis de la relance 2 les jours suivants ; jamais plus de 2 relances" },
-        { "type": "auto", "texte": "Statuts mis à jour (relancé 1 fois, relancé 2 fois)" }
+        {
+          "type": "auto",
+          "texte": "9 h 30 : lecture des restaurants contactés sans réponse"
+        },
+        {
+          "type": "auto",
+          "texte": "Choix de qui relancer aujourd'hui, avec une phrase personnalisée selon leur site (sans alcool, privatisation…)"
+        },
+        {
+          "type": "auto",
+          "texte": "Envoi de la relance 1, puis de la relance 2 les jours suivants ; jamais plus de 2 relances"
+        },
+        {
+          "type": "auto",
+          "texte": "Statuts mis à jour (relancé 1 fois, relancé 2 fois)"
+        }
       ]
     },
     {
       "titre": "Les réponses",
       "note": "Les mails restent non lus dans la boîte : c'est Walid qui les lit et y répond.",
       "etapes": [
-        { "type": "auto", "texte": "Chaque mail reçu sur la boîte de prospection est analysé (expéditeur, objet, texte)" },
-        { "type": "securite", "texte": "Réponse automatique d'absence ou retour d'erreur ?", "sinon": "absence ignorée ; adresse invalide mise en exclusion" },
-        { "type": "auto", "texte": "« Stop » ou désinscription : le restaurant est exclu, ses envois en attente annulés" },
-        { "type": "auto", "texte": "Vraie réponse : relances stoppées, texte gardé et affiché sur la page Nūr Meet" },
-        { "type": "toi", "texte": "Tu lis la réponse et tu réponds toi-même pour transformer l'intérêt en abonnement" }
+        {
+          "type": "auto",
+          "texte": "Chaque mail reçu sur la boîte de prospection est analysé (expéditeur, objet, texte)"
+        },
+        {
+          "type": "securite",
+          "texte": "Réponse automatique d'absence ou retour d'erreur ?",
+          "sinon": "absence ignorée ; adresse invalide mise en exclusion"
+        },
+        {
+          "type": "auto",
+          "texte": "« Stop » ou désinscription : le restaurant est exclu, ses envois en attente annulés"
+        },
+        {
+          "type": "auto",
+          "texte": "Vraie réponse : relances stoppées, texte gardé et affiché sur la page Nūr Meet"
+        },
+        {
+          "type": "toi",
+          "texte": "Tu lis la réponse et tu réponds toi-même pour transformer l'intérêt en abonnement"
+        }
       ]
     }
   ],
   "regles": [
-    { "titre": "Ciblage", "points": ["Île-de-France seulement (75, 77, 78, 91, 92, 93, 94, 95)", "Restaurants ouverts uniquement", "Jamais deux fois le même restaurant ni le même e-mail", "Les exclusions (stop, adresses invalides) sont définitives"] },
-    { "titre": "Rythme", "points": ["Recherche à 9 h, relances à 9 h 30, bilan à 10 h 30", "50 nouveaux restaurants contactés par jour au maximum", "Pause entre chaque mail pour ne pas passer en spam"] },
-    { "titre": "Mails", "points": ["Expéditeur : Nūr Meet <contact@nourmeet.com>, signés Walid", "Logo en bas du mail, lien d'inscription nourmeet.com/restaurateurs", "Phrase d'accroche adaptée à ce que dit le site du restaurant"] },
-    { "titre": "Arrêt", "points": ["Toute réponse stoppe immédiatement les relances", "Les ouvertures de mail sont comptées, mais c'est un indicateur approximatif"] }
+    {
+      "titre": "Ciblage",
+      "points": [
+        "Île-de-France seulement (75, 77, 78, 91, 92, 93, 94, 95)",
+        "Restaurants ouverts uniquement",
+        "Jamais deux fois le même restaurant ni le même e-mail",
+        "Les exclusions (stop, adresses invalides) sont définitives"
+      ]
+    },
+    {
+      "titre": "Rythme",
+      "points": [
+        "Recherche à 9 h, relances à 9 h 30, bilan à 10 h 30",
+        "50 nouveaux restaurants contactés par jour au maximum",
+        "Pause entre chaque mail pour ne pas passer en spam"
+      ]
+    },
+    {
+      "titre": "Mails",
+      "points": [
+        "Expéditeur : Nūr Meet <contact@nourmeet.com>, signés Walid",
+        "Logo en bas du mail, lien d'inscription nourmeet.com/restaurateurs",
+        "Phrase d'accroche adaptée à ce que dit le site du restaurant"
+      ]
+    },
+    {
+      "titre": "Arrêt",
+      "points": [
+        "Toute réponse stoppe immédiatement les relances",
+        "Les ouvertures de mail sont comptées, mais c'est un indicateur approximatif",
+        "Aucune validation avant envoi : c'est ton choix (05/10), les mails partent tout seuls"
+      ]
+    }
   ],
   "role": {
-    "quotidien": ["Lire les réponses sur la page Nūr Meet et y répondre depuis la boîte mail", "Transformer les restaurants intéressés en abonnés (c'est l'étape que rien n'automatise)"],
-    "parfois": ["Lire le bilan Telegram de 10 h 30", "Signaler à Claude un restaurant à exclure ou une tournure de mail à changer"]
+    "quotidien": [
+      "Lire les réponses sur la page Nūr Meet et y répondre depuis la boîte mail",
+      "Transformer les restaurants intéressés en abonnés (c'est l'étape que rien n'automatise)"
+    ],
+    "parfois": [
+      "Lire le bilan Telegram de 10 h 30",
+      "Signaler à Claude un restaurant à exclure ou une tournure de mail à changer"
+    ]
   },
   "vigilance": [
-    { "sujet": "Échecs d'envoi", "detail": "Environ 16 % des envois échouent (adresses invalides trouvées sur les sites). C'est noté sur chaque fiche." },
-    { "sujet": "Google Places", "detail": "La recherche consomme l'API Google Places chaque matin ; la clé est dans n8n." }
+    {
+      "sujet": "Échecs d'envoi",
+      "detail": "Environ 16 % des envois échouent (adresses invalides trouvées sur les sites). C'est noté sur chaque fiche."
+    },
+    {
+      "sujet": "Google Places",
+      "detail": "La recherche consomme l'API Google Places chaque matin ; la clé est dans n8n."
+    }
   ],
   "aCompleter": [
-    "L'automatisation « Nour Meet 2 - Validation Telegram » est éteinte : les envois partent sans validation. Les 35 fiches « mail à valider » datent d'avant ce choix ; à clarifier avec toi, puis je corrigerai le libellé sur le tableau.",
     "Les rendez-vous et démos ne sont suivis nulle part pour l'instant."
   ]
 }

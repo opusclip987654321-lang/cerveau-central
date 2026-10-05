@@ -38,7 +38,9 @@ test('le guide Nūr Meet signale ce qui reste à compléter, et la page projet p
   const guides = await chargerFonctionnement(dossier);
   const html = pageFonctionnement(configJournal, 'nour-meet', guides.get('nour-meet'));
   assert.match(html, /Pour compléter ce guide/);
-  assert.match(html, /Validation Telegram/);
+  assert.match(html, /rendez-vous et démos/);
+  // louis (05/10) : pas de validation avant envoi, c'est son choix.
+  assert.match(html, /Aucune validation avant envoi/);
 
   const projet = pageProjet(configJournal, 'nour-meet', {
     business: { sources: {}, objectifs: {} },
