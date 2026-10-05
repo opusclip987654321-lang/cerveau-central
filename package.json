@@ -4,11 +4,16 @@
   "private": true,
   "description": "Cerveau central : surveille les projets de louis, alerte sur Telegram et affiche leur état.",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node src/index.js",
     "verifier": "node src/index.js --une-fois",
     "mot-de-passe": "node src/mot-de-passe.js",
     "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0"
   }
 }

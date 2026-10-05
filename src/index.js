@@ -13,6 +13,9 @@ import { resumeQuotidien } from './resume.js';
 import { creerAcces, lireCookie, pageConnexion } from './acces.js';
 import { pageQuestions } from './page-questions.js';
 import { chargerReponses, sauverReponses, enAttente, enregistrerReponses, matinARappeler } from './questions.js';
+import { chargerArgent, sauverArgent, lireLigne, rappelsARenvoyer, messageRappels } from './argent.js';
+import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient } from './factures.js';
+import { pageArgent } from './page-argent.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -20,11 +23,17 @@ const fichierConfig = env.CONFIG ?? path.join(racine, 'config/surveillance.json'
 const fichierEtat = env.FICHIER_ETAT ?? path.join(racine, 'data/etat.json');
 const fichierQuestions = env.QUESTIONS ?? path.join(racine, 'config/questions.json');
 const fichierReponses = env.FICHIER_REPONSES ?? path.join(racine, 'data/reponses.json');
+const fichierArgent = env.FICHIER_ARGENT ?? path.join(racine, 'data/argent.json');
+const fichierArgentDepart = path.join(racine, 'config/argent.json');
+const dossierFactures = path.join(path.dirname(fichierEtat), 'factures');
+const plafondIa = Number(env.PLAFOND_IA_DOLLARS ?? 10);
+const clientClaude = creerClient(env.ANTHROPIC_API_KEY);
 const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
 const configQuestions = JSON.parse(await readFile(fichierQuestions, 'utf8'));
+const configArgent = JSON.parse(await readFile(fichierArgentDepart, 'utf8'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
 let file = Promise.resolve();
@@ -39,6 +48,45 @@ function avecReponses(fn) {
   return suite;
 }
 
+// Même principe pour les données de l'onglet Argent.
+let fileArgent = Promise.resolve();
+function avecArgent(fn) {
+  const suite = fileArgent.then(async () => {
+    const donnees = await chargerArgent(fichierArgent, fichierArgentDepart);
+    const resultat = await fn(donnees);
+    await sauverArgent(fichierArgent, donnees);
+    return resultat;
+  });
+  fileArgent = suite.catch(() => {});
+  return suite;
+}
+
+// Lit les factures pas encore lues, une à la fois, en tâche de fond.
+let lectureEnCours = null;
+function lireFacturesEnAttente() {
+  if (!clientClaude) return;
+  lectureEnCours ??= (async () => {
+    for (;;) {
+      const { donnees, facture } = await avecArgent((d) => ({ donnees: structuredClone(d), facture: d.factures?.find((f) => !f.lecture && !f.erreur) }));
+      if (!facture) break;
+      const resultat = await lireFacture(donnees, dossierFactures, facture, { client: clientClaude, plafondDollars: plafondIa });
+      await avecArgent((d) => appliquerLecture(d, facture.id, resultat));
+      if (!resultat.lecture && !resultat.erreur) break;
+    }
+  })()
+    .catch((err) => console.error(`Lecture des factures : ${err.message}`))
+    .finally(() => (lectureEnCours = null));
+}
+
+async function lireJson(req, limite) {
+  let corps = '';
+  for await (const morceau of req) {
+    corps += morceau;
+    if (corps.length > limite) throw Object.assign(new Error('trop long'), { statut: 413 });
+  }
+  return JSON.parse(corps);
+}
+
 async function lireCorps(req, limite = 64_000) {
   let corps = '';
   for await (const morceau of req) {
@@ -51,7 +99,10 @@ async function lireCorps(req, limite = 64_000) {
 async function rappelDuMatin() {
   try {
     const n = await avecReponses((h) => matinARappeler(configQuestions, h, { heure: Number(env.RESUME_HEURE ?? env.QUESTIONS_HEURE ?? 9) }));
-    if (n !== null) await envoyer(resumeQuotidien(await chargerEtat(fichierEtat), n));
+    if (n === null) return;
+    await envoyer(resumeQuotidien(await chargerEtat(fichierEtat), n));
+    const rappels = await avecArgent((d) => rappelsARenvoyer(d, { joursAvant: configArgent.rappelJoursAvant ?? 3 }));
+    if (rappels.length) await envoyer(messageRappels(rappels));
   } catch (err) {
     console.error(`Résumé du matin impossible : ${err.message}`);
   }
@@ -147,6 +198,64 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(303, { location: `/questions?enregistre=${n}` });
       return res.end();
     }
+    if (req.method === 'GET' && url.pathname === '/argent') {
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      const html = await avecArgent((d) =>
+        pageArgent(configArgent, d, { message: url.searchParams.get('message') ?? undefined, aRepondre, lectureActive: Boolean(clientClaude), plafondIa }),
+      );
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(html);
+    }
+    if (req.method === 'POST' && url.pathname === '/argent/ajouter') {
+      const champs = await lireCorps(req);
+      const message = await avecArgent((d) => {
+        const { ligne, erreur } = lireLigne(champs, configArgent.projets);
+        if (erreur) return erreur;
+        d.lignes.push(ligne);
+        const f = d.factures?.find((x) => x.id === champs.facture);
+        if (f?.lecture) f.lecture.ligne = ligne.id;
+        return `« ${ligne.libelle} » ajouté`;
+      });
+      res.writeHead(303, { location: `/argent?message=${encodeURIComponent(message)}` });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/argent/supprimer') {
+      const { id } = await lireCorps(req, 4_000);
+      await avecArgent((d) => {
+        d.lignes = d.lignes.filter((l) => l.id !== id);
+        for (const f of d.factures ?? []) if (f.lecture?.ligne === id) f.lecture.ligne = '';
+      });
+      res.writeHead(303, { location: '/argent?message=' + encodeURIComponent('Dépense retirée') });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/argent/factures') {
+      const fichier = await lireJson(req, 15_000_000);
+      const { erreur } = await avecArgent((d) => deposerFacture(d, dossierFactures, fichier));
+      if (erreur) {
+        res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end(erreur);
+      }
+      lireFacturesEnAttente();
+      res.writeHead(204);
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/argent/factures/supprimer') {
+      const { id } = await lireCorps(req, 4_000);
+      await avecArgent((d) => supprimerFacture(d, dossierFactures, id));
+      res.writeHead(303, { location: '/argent?message=' + encodeURIComponent('Facture supprimée') });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/argent/factures/relire') {
+      const { id } = await lireCorps(req, 4_000);
+      await avecArgent((d) => appliquerLecture(d, id, { lecture: null, erreur: null, cout: 0 }));
+      lireFacturesEnAttente();
+      res.writeHead(303, { location: '/argent?message=' + encodeURIComponent('Nouvelle lecture en cours') });
+      return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/api/argent') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(await chargerArgent(fichierArgent, fichierArgentDepart)));
+    }
     if (req.method === 'GET' && url.pathname === '/api/reponses') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify(await chargerReponses(fichierReponses)));
@@ -163,6 +272,10 @@ const serveur = http.createServer(async (req, res) => {
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
     res.end('Page introuvable');
   } catch (err) {
+    if (err.statut === 413) {
+      res.writeHead(413, { 'content-type': 'text/plain; charset=utf-8' });
+      return res.end('Fichier trop lourd (10 Mo au plus).');
+    }
     console.error(err);
     res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
     res.end('Erreur interne');
@@ -176,6 +289,7 @@ serveur.listen(port, hote, () =>
 );
 
 verifier();
+lireFacturesEnAttente();
 setInterval(verifier, intervalleMinutes * 60_000);
 rappelDuMatin();
 setInterval(rappelDuMatin, 10 * 60_000);

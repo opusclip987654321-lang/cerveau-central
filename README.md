@@ -37,6 +37,12 @@ Le résumé Telegram du matin (9 h par défaut, `RESUME_HEURE`) rappelle combien
 
 Les questions se modifient dans [`config/questions.json`](config/questions.json) (types : `note`, `nombre`, `choix`, `texte`).
 
+## Argent
+
+L'onglet **Argent** liste les abonnements et recharges (pré-remplis avec le récap du 05/10/2026, dans `config/argent.json`, puis modifiables depuis la page) : total du mois, coût fixe, répartition par projet, rappel Telegram 3 jours avant un renouvellement quand sa date est connue.
+
+On peut y **déposer ses factures** (PDF ou photo). Si `ANTHROPIC_API_KEY` est dans `.env`, le cerveau les lit avec Claude Sonnet 5.5 (environ 1 centime par facture), les rapproche de la liste et montre ce qui est à jour, ce qui manque et les montants différents. La dépense IA est plafonnée par mois (`PLAFOND_IA_DOLLARS`, 10 $ par défaut). Les factures restent sur le serveur, dans le volume `data/factures`.
+
 ## Installer sur le VPS
 
 Prérequis : Docker (déjà présent sur le serveur).

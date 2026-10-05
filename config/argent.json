@@ -1,0 +1,29 @@
+{
+  "_note": "Point de départ de l'onglet Argent (récap de louis du 05/10/2026). Copié dans data/argent.json au premier démarrage ; ensuite tout se modifie depuis la page.",
+  "rappelJoursAvant": 3,
+  "projets": [
+    { "id": "commun", "nom": "Commun (plusieurs projets)" },
+    { "id": "nour-meet", "nom": "Nūr Meet" },
+    { "id": "leviaro", "nom": "Leviaro" },
+    { "id": "extrait-politique", "nom": "L'extrait politique" },
+    { "id": "histoires-vraies", "nom": "Petites histoires vraies" },
+    { "id": "impacteur", "nom": "Impacteur Afrique / Frexit" },
+    { "id": "cambodge", "nom": "Emploi Cambodge" }
+  ],
+  "lignes": [
+    { "libelle": "VPS Nūr (OVH)", "projet": "commun", "montant": 14, "devise": "€", "frequence": "mois" },
+    { "libelle": "VPS YouTube automatisation (OVH)", "projet": "extrait-politique", "montant": 12, "devise": "€", "frequence": "mois" },
+    { "libelle": "Claude (abonnement)", "projet": "commun", "montant": 100, "devise": "€", "frequence": "mois" },
+    { "libelle": "ChatGPT (abonnement)", "projet": "commun", "montant": 20, "devise": "€", "frequence": "mois" },
+    { "libelle": "ElevenLabs", "projet": "extrait-politique", "montant": 7, "devise": "€", "frequence": "mois" },
+    { "libelle": "Domaine nourmeet.com", "projet": "nour-meet", "montant": 13, "devise": "€", "frequence": "an" },
+    { "libelle": "Domaine actualitevideo.fr", "projet": "extrait-politique", "montant": 7, "devise": "€", "frequence": "an" },
+    { "libelle": "Domaine leviaro.fr", "projet": "leviaro", "montant": 9, "devise": "€", "frequence": "an" },
+    { "libelle": "Twilio (recharge)", "projet": "nour-meet", "montant": 20, "devise": "€", "frequence": "une-fois", "date": "2026-09-22" },
+    { "libelle": "OpenAI API (recharge)", "projet": "commun", "montant": 12, "devise": "€", "frequence": "une-fois", "date": "2026-09-24" },
+    { "libelle": "xAI / Grok (recharge)", "projet": "commun", "montant": 20, "devise": "€", "frequence": "une-fois", "date": "2026-09-25" },
+    { "libelle": "xAI / Grok (recharge)", "projet": "commun", "montant": 22, "devise": "€", "frequence": "une-fois", "date": "2026-09-26" },
+    { "libelle": "Google AI Studio (recharge)", "projet": "nour-meet", "montant": 20, "devise": "€", "frequence": "une-fois", "date": "2026-09-27" },
+    { "libelle": "IPRoyal (proxy YouTube)", "projet": "extrait-politique", "montant": 50, "devise": "$", "frequence": "une-fois", "date": "2026-10-04" }
+  ]
+}
