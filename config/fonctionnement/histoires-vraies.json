@@ -1,0 +1,37 @@
+{
+  "maj": "2026-10-05",
+  "source": "Lu dans /opt/nour-video-agent sur le serveur Nūr le 05/10/2026",
+  "intro": "Des petites histoires vraies en vidéo pour Instagram et Facebook. Depuis le 5 octobre, tu fais les vidéos à la main : la fabrication automatique est en pause (son décalé, voix robotique), mais le suivi continue.",
+  "journee": [
+    { "quand": "9 h 30", "quoi": "Relevé des performances des vidéos déjà publiées.", "toi": "Rien" },
+    { "quand": "Lundi", "quoi": "Rafraîchissement de la réserve d'histoires vraies.", "toi": "Rien" },
+    { "quand": "En pause", "quoi": "La fabrication automatique (une vidéo tous les 2 jours à 7 h) est arrêtée à ta demande.", "toi": "Faire les vidéos à la main et les noter via « Ajouter une note » du Journal" }
+  ],
+  "circuits": [
+    {
+      "titre": "La fabrication (en pause)",
+      "note": "Arrêtée le 05/10 : tu fais les vidéos toi-même pour le moment.",
+      "etapes": [
+        { "type": "auto", "texte": "Choisir une histoire dans la réserve" },
+        { "type": "auto", "texte": "Fabriquer la vidéo (images, voix, montage)" },
+        { "type": "auto", "texte": "Publier sur Instagram et Facebook" },
+        { "type": "auto", "texte": "Noter la publication (le cerveau la lit et l'affiche sur la page du projet)" }
+      ]
+    },
+    {
+      "titre": "Le suivi (actif)",
+      "etapes": [
+        { "type": "auto", "texte": "Le cerveau lit les publications du programme et les montre sur la page du projet, avec leurs liens" },
+        { "type": "toi", "texte": "Tes vidéos faites à la main : note-les avec « Ajouter une note » du Journal pour qu'elles comptent" }
+      ]
+    }
+  ],
+  "role": {
+    "quotidien": ["Faire les vidéos à la main", "Les noter dans le Journal avec leur lien"],
+    "parfois": ["Décider quand relancer la fabrication automatique (après amélioration du son et de la voix)"]
+  },
+  "aCompleter": [
+    "Les vues Instagram et Facebook ne sont pas branchées (il faudra un accès Meta).",
+    "Le détail du programme Python (choix des histoires, montage) reste à documenter précisément."
+  ]
+}

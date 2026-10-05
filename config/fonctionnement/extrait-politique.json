@@ -1,0 +1,91 @@
+{
+  "maj": "2026-10-05",
+  "source": "Guide « fonctionnement v4 » écrit avec louis le 04/10/2026",
+  "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique des Shorts et un zapping quotidien, les publie, puis apprend de ses résultats et de tes choix.",
+  "journee": [
+    { "quand": "Toutes les heures", "quoi": "Veille des 38 chaînes : Claude note les nouvelles vidéos et t'envoie les 5 meilleures sur Telegram.", "toi": "Trier : ✅ / ❌ / 🚫" },
+    { "quand": "Après ton ✅", "quoi": "Fabrication d'un Short (environ 1 min 30), envoyé sur Telegram.", "toi": "Valider, demander un autre moment, ou abandonner" },
+    { "quand": "Après ta validation", "quoi": "Publication programmée : 1 Short par heure au maximum (YouTube, Facebook, Instagram), plus la vidéo pour TikTok.", "toi": "Poster sur TikTok ; passer YouTube en public (jusqu'à l'audit)" },
+    { "quand": "18h → 19h", "quoi": "Fabrication puis publication du zapping quotidien (8 à 10 min), sans validation.", "toi": "Passer la vidéo YouTube en public (jusqu'à l'audit)" },
+    { "quand": "10h", "quoi": "Bilan : statistiques, détection des problèmes de droits, nouvelles leçons, rapport sur Telegram.", "toi": "Lire le rapport" }
+  ],
+  "circuits": [
+    {
+      "titre": "Les Shorts",
+      "etapes": [
+        { "type": "auto", "texte": "Veille toutes les heures des 38 chaînes YouTube" },
+        { "type": "auto", "texte": "Claude note chaque vidéo sur 10, avec tes goûts et les leçons apprises" },
+        { "type": "toi", "texte": "Telegram : les 5 meilleures (≥ 7/10) · ✅ Intéressant · ❌ Non · 🚫 Ignorer la source" },
+        { "type": "securite", "texte": "Source autorisée ?", "sinon": "Refus + message (règle anti-strike : TF1 et sources exclues)" },
+        { "type": "auto", "texte": "Transcription précise (Deepgram), choix du passage 62-70 s, titre, description" },
+        { "type": "auto", "texte": "Montage vertical 9:16 : titre, sous-titres, source" },
+        { "type": "toi", "texte": "Telegram : l'extrait · ✅ Valider · 🔁 Autre moment · 🗑 Abandonner" },
+        { "type": "auto", "texte": "Prochain créneau libre (1 Short par heure max) : YouTube (privé), Facebook, Reel Instagram" },
+        { "type": "toi", "texte": "La vidéo et la légende TikTok arrivent sur Telegram : à poster toi-même" }
+      ]
+    },
+    {
+      "titre": "Le zapping de 19h",
+      "note": "Tous les jours, sans validation de ta part. L'IA choisit seule, en tenant compte de tes ✅ et de ce qu'elle a appris.",
+      "etapes": [
+        { "type": "auto", "texte": "18h00 : vidéos des 30 dernières heures (sources autorisées, jamais utilisées dans un zapping)" },
+        { "type": "auto", "texte": "Jusqu'à 18 candidates, priorité à tes ✅, 3 max par chaîne" },
+        { "type": "auto", "texte": "Transcription légère (sous-titres YouTube, sinon Deepgram)" },
+        { "type": "auto", "texte": "Claude rédacteur en chef : 9 à 14 extraits · 8 à 10 min · risque élevé écarté · ≤ 2 extraits par chaîne TV · ~20 % d'essai" },
+        { "type": "auto", "texte": "Montage 16:9 : intro, bandeaux, sous-titres, sources, outro, chapitres, miniature" },
+        { "type": "auto", "texte": "19h00 : publication YouTube (privé) + Facebook" },
+        { "type": "auto", "texte": "Message Telegram : sommaire, liens, hypothèse testée du jour" }
+      ]
+    },
+    {
+      "titre": "L'apprentissage",
+      "note": "La boucle qui doit rapprocher la chaîne des 3 000 €/mois : tes choix sur Telegram + les résultats réels des vidéos publiées.",
+      "etapes": [
+        { "type": "auto", "texte": "10h : statistiques YouTube de chaque vidéo publiée (vues, likes, commentaires, statut)" },
+        { "type": "securite", "texte": "Vidéo retirée, rejetée ou bloquée ?", "sinon": "+1 pénalité à chaque source de la vidéo · exclue à 3 · alerte Telegram" },
+        { "type": "auto", "texte": "Claude réécrit les LEÇONS (prouvé / probable / à tester) ; les règles anti-strike ne s'assouplissent jamais" },
+        { "type": "auto", "texte": "Rapport Telegram ; leçons utilisées le jour même par la veille, les Shorts et le zapping" }
+      ]
+    }
+  ],
+  "apprentissage": {
+    "appris": [
+      "Tes goûts : sources, thèmes et formats que tu retiens ou écartes",
+      "Les vues, likes et commentaires de chaque vidéo publiée",
+      "Les sources qui posent problème côté droits d'auteur",
+      "Le résultat des essais quotidiens (environ 20 % du zapping)"
+    ],
+    "manque": [
+      "Rétention et revenus (API YouTube Analytics, 5 min de réglage de ton côté)",
+      "Statistiques Facebook et Instagram",
+      "Savoir précisément quelle chaîne a réclamé (YouTube ne le dit pas à l'API)"
+    ]
+  },
+  "regles": [
+    { "titre": "Rythme", "points": ["Veille : une fois par heure", "Shorts : 1 par heure au maximum, mis en file d'attente automatiquement", "Zapping : tous les jours, montage à 18h, publication à 19h", "Bilan et leçons : tous les jours à 10h"] },
+    { "titre": "Durées", "points": ["Shorts : 62 à 70 s visés (au-delà d'1 min, rémunération TikTok) ; 15 à 60 s si le moment est court ; jamais plus de 72 s", "Zapping : 8 à 10 min (pubs au milieu possibles à partir de 8 min)", "Extrait dans le zapping : 45 s max pour une chaîne TV, 60 s pour les autres"] },
+    { "titre": "Anti-strike", "points": ["TF1 : veille seulement, jamais d'extrait", "Au plus 2 extraits par chaîne TV dans un zapping", "Toujours un titre, une phrase de contexte et la source à l'écran", "Préférence pour les sources institutionnelles et les comptes officiels", "Problème détecté : la source prend une pénalité, elle est exclue à 3, et les publications continuent sans elle"] },
+    { "titre": "Anti-démonétisation", "points": ["Extraits à risque élevé écartés (violence, rumeurs, accusations non établies, grossièretés)", "Pas d'insulte dans les titres et miniatures, titres non trompeurs", "Sujet sensible : traité sobrement, jamais en ouverture ni en miniature", "Équilibre entre les camps politiques, ton neutre"] }
+  ],
+  "alertes": [
+    { "message": "Crédit du proxy épuisé", "sens": "Le proxy IPRoyal n'a plus de crédit : l'agent ne peut plus rien télécharger depuis YouTube. Shorts et zapping s'arrêtent.", "faire": "Recharger IPRoyal, puis dire à Claude de relancer les extraits en attente.", "niveau": "urgent" },
+    { "message": "YouTube bloque le téléchargement", "sens": "YouTube a détecté un robot, même à travers le proxy.", "faire": "Prévenir Claude. Souvent une mise à jour de l'outil de téléchargement suffit." },
+    { "message": "Source en « veille seulement »", "sens": "Tu as cliqué ✅ sur une vidéo d'une source interdite d'extrait (TF1, source exclue).", "faire": "Rien. Le sujet peut être repris depuis une autre chaîne." },
+    { "message": "Pas assez de matière pour le zapping", "sens": "Moins de 6 vidéos utilisables sur 30 h.", "faire": "Rien. Pas de zapping ce jour-là." },
+    { "message": "🚨 Alerte droits d'auteur", "sens": "Une vidéo publiée a été retirée, rejetée ou bloquée. Ses sources sont pénalisées.", "faire": "Regarder YouTube Studio, rubrique Droits d'auteur, et dire à Claude quelle chaîne a réclamé.", "niveau": "important" },
+    { "message": "Miniature non appliquée", "sens": "La chaîne n'est pas encore vérifiée par téléphone.", "faire": "YouTube Studio → Paramètres → Chaîne → Éligibilité aux fonctionnalités." },
+    { "message": "❌ Facebook ou ❌ Instagram dans un récap", "sens": "Publication refusée par Meta (jeton, format ou durée).", "faire": "Transmettre le message à Claude." }
+  ],
+  "role": {
+    "quotidien": ["Trier les propositions (ça entraîne l'agent)", "Valider les Shorts", "Poster sur TikTok (vidéo et légende fournies)", "Passer les vidéos YouTube en public, jusqu'à la validation de l'audit"],
+    "parfois": ["Recharger le proxy", "Lire le bilan de 10h", "Réagir aux alertes droits d'auteur", "Réautoriser Meta vers janvier 2027"],
+    "ameliorations": ["Rétention et revenus dans l'apprentissage", "Voix off pour la monétisation du zapping", "Publication YouTube en public dès l'audit validé", "Sources téléchargeables légalement (Assemblée, Sénat, podcasts)"]
+  },
+  "vigilance": [
+    { "sujet": "Proxy IPRoyal", "detail": "Environ 3 à 5 Go par mois avec le zapping quotidien. Surveiller le crédit restant." },
+    { "sujet": "Audit YouTube", "detail": "Envoyé le 4 octobre 2026 ; réponse sous quelques semaines. Ensuite, publication directe en public." },
+    { "sujet": "Accès Meta", "detail": "À réautoriser vers début janvier 2027 (environ 90 jours)." },
+    { "sujet": "Quota YouTube", "detail": "10 000 points par jour. Une mise en ligne coûte 1 600 points, soit environ 6 vidéos par jour au total (Shorts + zapping)." },
+    { "sujet": "Mémoire", "detail": "L'agent garde ses données sur ton serveur (tables vidéos, sources, publications, leçons). Claude repart du journal du projet et du dossier code_vps." }
+  ]
+}

@@ -27,6 +27,8 @@ import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
 import { synchroniserYoutube } from './youtube.js';
 import { synchroniserStripe } from './stripe.js';
+import { chargerFonctionnement } from './fonctionnement.js';
+import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
@@ -59,6 +61,7 @@ const configArgent = JSON.parse(await readFile(fichierArgentDepart, 'utf8'));
 const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serveurs.json'), 'utf8'));
 const configJournal = JSON.parse(await readFile(path.join(racine, 'config/journal.json'), 'utf8'));
 const configYoutube = JSON.parse(await readFile(path.join(racine, 'config/youtube.json'), 'utf8'));
+const guidesFonctionnement = await chargerFonctionnement(path.join(racine, 'config/fonctionnement'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
 let file = Promise.resolve();
@@ -491,6 +494,17 @@ const serveur = http.createServer(async (req, res) => {
         }),
       );
     }
+    if (req.method === 'GET' && url.pathname === '/fonctionnement') {
+      const id = url.searchParams.get('projet');
+      const guide = guidesFonctionnement.get(id);
+      const page = guide ? pageFonctionnement(configJournal, id, guide, { aRepondre: await avecReponses((h) => enAttente(configQuestions, h)) }) : null;
+      if (!page) {
+        res.writeHead(302, { location: '/journal' });
+        return res.end();
+      }
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(page);
+    }
     if (req.method === 'GET' && url.pathname === '/projet') {
       const id = url.searchParams.get('projet');
       if (!configJournal.projets.some((p) => p.id === id && p.id !== 'autre')) {
@@ -513,6 +527,7 @@ const serveur = http.createServer(async (req, res) => {
           verifications,
           aRepondre,
           message: url.searchParams.get('message') ?? undefined,
+          guide: guidesFonctionnement.has(id),
         }),
       );
     }
