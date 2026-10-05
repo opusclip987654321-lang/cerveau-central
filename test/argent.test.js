@@ -124,3 +124,27 @@ test('page Argent : tuiles, liste, facture orpheline proposée à l’ajout, tex
   assert.doesNotMatch(html, /<td><script>/);
   assert.match(html, /class="actif">Argent/);
 });
+
+test('correction automatique : vrai montant, date de paiement, doublon, une seule fois, annulable', async () => {
+  const { corrigerDepuisFactures, annulerCorrection, messageCorrections } = await import('../src/factures.js');
+  const donnees = {
+    lignes: [{ id: 'el', libelle: 'ElevenLabs', projet: 'commun', montant: 7, devise: '€', frequence: 'mois', date: null }],
+    factures: [
+      { id: 'f2', nom: 'Invoice.pdf', lecture: { estUneFacture: true, fournisseur: 'ElevenLabs', montant: 24, devise: '$', date: '2026-10-04', periode: '', ligne: 'el' } },
+      { id: 'f1', nom: 'Receipt.pdf', lecture: { estUneFacture: true, fournisseur: 'ElevenLabs ', montant: 24, devise: '$', date: '2026-10-04', periode: '', ligne: 'el' } },
+    ],
+  };
+  const c = corrigerDepuisFactures(donnees, '2026-10-05');
+  assert.equal(c.length, 1);
+  assert.deepEqual({ montant: donnees.lignes[0].montant, devise: donnees.lignes[0].devise, date: donnees.lignes[0].date }, { montant: 24, devise: '$', date: '2026-10-04' });
+  assert.equal(donnees.factures[0].doublonDe, 'Receipt.pdf');
+  assert.match(messageCorrections(c), /ElevenLabs : 7 € → 24 \$, date de paiement : 4 octobre/);
+  assert.equal(corrigerDepuisFactures(donnees, '2026-10-05').length, 0);
+
+  assert.equal(annulerCorrection(donnees, c[0].id), true);
+  assert.equal(donnees.lignes[0].montant, 7);
+  assert.equal(corrigerDepuisFactures(donnees, '2026-10-05').length, 0); // pas réappliquée après annulation
+
+  const html = pageArgent({ projets }, donnees, { jour: '2026-10-05' });
+  assert.match(html, /même paiement que Receipt.pdf/);
+});

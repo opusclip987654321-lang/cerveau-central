@@ -123,7 +123,7 @@ export const creerClient = (cle) => (cle ? new Anthropic({ apiKey: cle }) : null
 // Rapproche factures et dépenses : pour chaque ligne, la dernière facture reçue et
 // si elle couvre la période en cours ; plus les factures qui ne collent à aucune ligne.
 export function rapprochement(donnees, jour = jourParis()) {
-  const lues = (donnees.factures ?? []).filter((f) => f.lecture?.estUneFacture);
+  const lues = (donnees.factures ?? []).filter((f) => f.lecture?.estUneFacture && !f.doublonDe);
   const depuis = (jours) => jourParis(new Date(new Date(`${jour}T12:00:00Z`) - jours * 86_400_000));
   const lignes = donnees.lignes.map((l) => {
     const siennes = lues.filter((f) => f.lecture.ligne === l.id).sort((a, b) => b.lecture.date.localeCompare(a.lecture.date));
@@ -136,3 +136,60 @@ export function rapprochement(donnees, jour = jourParis()) {
   const orphelines = lues.filter((f) => !f.lecture.ligne);
   return { lignes, orphelines, enAttente: (donnees.factures ?? []).filter((f) => !f.lecture && !f.erreur).length };
 }
+
+// Corrige la liste d'après les factures lues : vrai montant et vraie devise, date du
+// paiement pour caler les rappels, et repère les doublons (reçu + facture d'un même
+// paiement). Chaque correction est notée, une seule fois par facture, et peut être annulée.
+export function corrigerDepuisFactures(donnees, jour = jourParis(), maintenant = new Date()) {
+  donnees.corrections ??= [];
+  const vues = new Map();
+  for (const f of [...(donnees.factures ?? [])].reverse()) {
+    const l = f.lecture;
+    if (!l?.estUneFacture) continue;
+    const cle = `${l.fournisseur.trim().toLowerCase()}|${l.montant}|${l.devise}|${l.date}`;
+    if (vues.has(cle)) f.doublonDe = vues.get(cle);
+    else {
+      vues.set(cle, f.nom);
+      delete f.doublonDe;
+    }
+  }
+
+  const traitees = new Set(donnees.corrections.map((c) => c.facture));
+  const nouvelles = [];
+  for (const { ligne, derniere, ecart } of rapprochement(donnees, jour).lignes) {
+    if (!derniere || traitees.has(derniere.id)) continue;
+    const lu = derniere.lecture;
+    if (!['€', '$'].includes(lu.devise) || !(lu.montant > 0)) continue;
+    const avant = { montant: ligne.montant, devise: ligne.devise, date: ligne.date ?? null };
+    const apres = { ...avant };
+    if (ecart) Object.assign(apres, { montant: lu.montant, devise: lu.devise });
+    const dateValide = /^\d{4}-\d{2}-\d{2}$/.test(lu.date ?? '');
+    if (dateValide && (ligne.frequence === 'une-fois' ? ecart : !ligne.date)) apres.date = lu.date;
+    if (apres.montant === avant.montant && apres.devise === avant.devise && apres.date === avant.date) continue;
+    Object.assign(ligne, apres);
+    const c = { id: randomBytes(6).toString('hex'), quand: maintenant.toISOString(), ligne: ligne.id, libelle: ligne.libelle, facture: derniere.id, avant, apres };
+    donnees.corrections.unshift(c);
+    nouvelles.push(c);
+  }
+  donnees.corrections = donnees.corrections.slice(0, 200);
+  return nouvelles;
+}
+
+export function annulerCorrection(donnees, id) {
+  const c = donnees.corrections?.find((x) => x.id === id && !x.annulee);
+  if (!c) return false;
+  const ligne = donnees.lignes.find((l) => l.id === c.ligne);
+  if (ligne) Object.assign(ligne, c.avant);
+  c.annulee = true;
+  return true;
+}
+
+const echapperHtml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+export function decrireCorrection(c) {
+  const parts = [];
+  if (c.avant.montant !== c.apres.montant || c.avant.devise !== c.apres.devise) parts.push(`${c.avant.montant} ${c.avant.devise} → ${c.apres.montant} ${c.apres.devise}`);
+  if (c.avant.date !== c.apres.date) parts.push(`date de paiement : ${new Date(`${c.apres.date}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' })}`);
+  return `${c.libelle} : ${parts.join(', ')}`;
+}
+export const messageCorrections = (liste) =>
+  ['✏️ <b>Liste des dépenses corrigée d’après tes factures</b>', ...liste.map((c) => `• ${echapperHtml(decrireCorrection(c))}`), 'Tu peux annuler depuis l’onglet Argent.'].join('\n');
