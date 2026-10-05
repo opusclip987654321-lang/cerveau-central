@@ -348,7 +348,9 @@ const serveur = http.createServer(async (req, res) => {
         res.writeHead(303, { location: '/', 'set-cookie': `${COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0` });
         return res.end();
       }
-      if (!acces.jetonValide(lireCookie(req, COOKIE))) {
+      // Le jeton des relevés ouvre aussi les API : c'est par là que Claude vient
+      // lire les idées (et le reste) sans mot de passe. Accord de louis du 05/10.
+      if (!acces.jetonValide(lireCookie(req, COOKIE)) && !(url.pathname.startsWith('/api/') && jetonReleveValide(req.headers.authorization ?? ''))) {
         if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
           res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
           return res.end(pageConnexion());
@@ -545,7 +547,7 @@ const serveur = http.createServer(async (req, res) => {
         const nom = configJournal.projets.find((p) => p.id === projet)?.nom ?? projet;
         envoyer(`💡 <b>Idée notée</b> (${nom})\n${r.idee.texte.slice(0, 300)}`).catch(() => {});
       }
-      res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Dis-le moi aussi dans notre discussion Claude pour que je m’y mette.')}` });
+      res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Claude vient lire les idées deux fois par jour et te répond dans votre discussion.')}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/idees/statut') {
