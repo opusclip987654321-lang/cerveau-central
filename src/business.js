@@ -57,6 +57,8 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
   business.sources.prospection = {
     maj: maintenant.toISOString(),
     prospects: prospects.filter(pasTest).map((l) => ({
+      nom: l.nom ? String(l.nom).slice(0, 80) : null,
+      ville: l.ville ? String(l.ville).slice(0, 40) : null,
       statut: l.statut ?? null,
       email: Boolean(l.email),
       decouvert: jourDe(l.date_decouverte),
@@ -64,7 +66,7 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
       dernier: jourDe(l.date_dernier_envoi),
       reponse: jourDe(l.date_reponse),
     })),
-    envois: (envois ?? []).filter(pasTest).map((l) => ({ statut: l.statut ?? null, jour: jourDe(l.date_decision) ?? jourDe(l.date_proposition) })),
+    envois: (envois ?? []).filter(pasTest).map((l) => ({ nom: l.nom ? String(l.nom).slice(0, 80) : null, objet: l.objet ? String(l.objet).slice(0, 120) : null, statut: l.statut ?? null, jour: jourDe(l.date_decision) ?? jourDe(l.date_proposition) })),
     // Un même mail peut être ouvert plusieurs fois : on garde la première ouverture de chaque envoi.
     ouvertures: [...new Map((ouvertures ?? []).map((l) => [String(l.envoi_id), jourDe(l.date)]).reverse()).values()].filter(Boolean),
   };
@@ -88,6 +90,8 @@ export async function synchroniserImpacteur(business, { url, jeton, delaiMs = 60
   business.sources.impacteur = {
     maj: maintenant.toISOString(),
     fiches: lignes.map((l) => ({
+      auteur: l.auteur ? String(l.auteur).slice(0, 80) : null,
+      livre: l.livre ? String(l.livre).slice(0, 120) : null,
       statut: String(l.statut),
       chaine: l.chaine ? String(l.chaine) : null,
       envoi: jourDe(l.date_envoi),

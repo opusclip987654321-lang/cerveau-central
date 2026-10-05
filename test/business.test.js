@@ -137,7 +137,7 @@ test('objectif validé : pourcentage atteint et couleur', () => {
 test('page Journal : tableau de bord en tête, détail technique replié', () => {
   const html = pageJournal(configJournal, journalVide(), { jour, business: businessExemple() });
   assert.match(html, /Tableau de bord/);
-  assert.match(html, /🟠 Nūr Meet/);
+  assert.match(html, /🟠 <a href="\/projet\?projet=nour-meet">Nūr Meet<\/a>/);
   assert.match(html, /À décider/);
   assert.match(html, /action="\/journal\/objectif"/);
   assert.match(html, /<svg viewBox/);
@@ -152,7 +152,7 @@ test('projet pas encore branché et sans note : gris, sans alerte ni objectif', 
   assert.equal(l.couleur, 'gris');
   assert.deepEqual(l.aDecider, []);
   const html = pageJournal(configJournal, journalVide(), { jour, business: businessExemple() });
-  assert.ok(html.indexOf('⚪ Emploi Cambodge') > html.indexOf('🟠 Nūr Meet'));
+  assert.ok(html.indexOf('⚪ <a href="/projet?projet=cambodge">Emploi Cambodge</a>') > html.indexOf('>Nūr Meet</a>'));
 });
 
 test('Impacteur : lecture du Sheet via n8n et carte', async () => {

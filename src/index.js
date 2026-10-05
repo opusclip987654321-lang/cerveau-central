@@ -21,10 +21,12 @@ import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from '
 import { pageServeurs } from './page-serveurs.js';
 import { chargerJournal, sauverJournal, ajouterEvenement, synchroniserN8n, messageHier } from './journal.js';
 import { pageJournal } from './page-journal.js';
-import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N } from './pauses.js';
+import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N, SURVEILLANCE } from './pauses.js';
 import { chargerDiscussion, sauverDiscussion, repondre, ajouterEchange } from './discussion.js';
 import { pageDiscussion } from './page-discussion.js';
 import { contexteCerveau } from './contexte.js';
+import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
+import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
 import { synchroniserLeviaro } from './leviaro.js';
 import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserImpacteur, tableauDeBord, messageSilences, validerObjectif } from './business.js';
@@ -46,6 +48,7 @@ const intervalleMinutes = Number(env.INTERVALLE_MINUTES ?? 180);
 const fichierPauses = path.join(path.dirname(fichierEtat), 'pauses.json');
 const fichierDiscussion = path.join(path.dirname(fichierEtat), 'discussion.json');
 const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
+const fichierIdees = path.join(path.dirname(fichierEtat), 'idees.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -132,6 +135,7 @@ function fileDAttente(charger, sauver, fichier) {
 const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
 const avecDiscussion = fileDAttente(chargerDiscussion, sauverDiscussion, fichierDiscussion);
 const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
+const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -473,6 +477,52 @@ const serveur = http.createServer(async (req, res) => {
           message: url.searchParams.get('message') ?? undefined,
         }),
       );
+    }
+    if (req.method === 'GET' && url.pathname === '/projet') {
+      const id = url.searchParams.get('projet');
+      if (!configJournal.projets.some((p) => p.id === id && p.id !== 'autre')) {
+        res.writeHead(302, { location: '/journal' });
+        return res.end();
+      }
+      const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      const etatCourant = await chargerEtat(fichierEtat);
+      // Les vérifications techniques rattachées à ce projet business (mêmes ids, voir pauses.js).
+      const idsSurveillance = new Set([id, ...(SURVEILLANCE[id] ?? [])]);
+      const verifications = Object.values(etatCourant.verifications).filter((v) => idsSurveillance.has(v.projet));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(
+        pageProjet(configJournal, id, {
+          business: await chargerBusiness(fichierBusiness),
+          journal: await chargerJournal(fichierJournal),
+          pauses: await chargerPauses(fichierPauses),
+          histoires: id === 'histoires-vraies' ? await lireHistoires(dossierHistoires).catch(() => null) : null,
+          idees: await chargerIdees(fichierIdees),
+          verifications,
+          aRepondre,
+          message: url.searchParams.get('message') ?? undefined,
+        }),
+      );
+    }
+    if (req.method === 'POST' && url.pathname === '/idees') {
+      const { projet, texte } = await lireCorps(req, 8_000);
+      const connu = configJournal.projets.some((p) => p.id === projet && p.id !== 'autre');
+      const r = connu ? await avecIdees((d) => ajouterIdee(d, projet, texte)) : { erreur: 'Projet inconnu.' };
+      if (r.idee) {
+        const nom = configJournal.projets.find((p) => p.id === projet)?.nom ?? projet;
+        envoyer(`💡 <b>Idée notée</b> (${nom})\n${r.idee.texte.slice(0, 300)}`).catch(() => {});
+      }
+      res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Dis-le moi aussi dans notre discussion Claude pour que je m’y mette.')}` });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/idees/statut') {
+      const { id, statut, projet } = await lireCorps(req, 4_000);
+      const r = await avecIdees((d) => changerStatutIdee(d, id, statut));
+      res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet ?? '')}&message=${encodeURIComponent(r.erreur ?? 'Suivi mis à jour')}` });
+      return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/api/idees') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(await chargerIdees(fichierIdees)));
     }
     if (req.method === 'POST' && url.pathname === '/journal/objectif') {
       const { projet, valeur } = await lireCorps(req, 2_000);
