@@ -7,6 +7,7 @@ import { sauverEtat as sauverJson } from './etat.js';
 import { jourParis } from './questions.js';
 import { projetDuWorkflow } from './journal.js';
 import { gainsPeriode } from './youtube.js';
+import { encaissePeriode } from './stripe.js';
 
 export async function chargerBusiness(fichier) {
   try {
@@ -213,8 +214,17 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
         { titre: 'Réponses', valeur: repPeriode, detail: `${pct(reponses.length, envoyes.length) ?? 0} % de réponse depuis le début (${nombre(reponses.length)} sur ${nombre(envoyes.length)})` },
         { titre: 'Mails ouverts', valeur: somme(parJour(periode, pr.ouvertures)) },
         { titre: 'Restaurants trouvés', valeur: somme(parJour(periode, pr.prospects.map((x) => x.decouvert))), detail: `${nombre(enRelance)} en relance` },
+        ...(business.sources?.stripe
+          ? [
+              { titre: 'Abonnements payés', valeur: business.sources.stripe.abonnements.actifs, detail: `${business.sources.stripe.abonnements.parMois.toLocaleString('fr-FR')} €/mois` },
+              {
+                titre: `Encaissé (${jours} j)`,
+                valeur: Object.entries(encaissePeriode(business.sources.stripe, periode)).map(([d, m]) => `${m.toLocaleString('fr-FR')} ${d === 'EUR' ? '€' : d}`).join(' + ') || '0 €',
+              },
+            ]
+          : []),
       ],
-      manque: ['rendez-vous / démos', 'abonnements payés (Stripe)'],
+      manque: ['rendez-vous / démos', ...(business.sources?.stripe ? [] : ['abonnements payés (Stripe)'])],
     });
     c.secondaire = { titre: 'Réponses', serie: parJour(periode, reponses) };
   } else {
