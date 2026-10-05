@@ -28,7 +28,23 @@ export function extraireLeviaro(db, maintenant = new Date()) {
     enDiscussion: un("select count(*) from companies where state = 'discussion_active'"),
     recommandations: un("select count(*) from agency_recs where status = 'proposee'"),
     coutMois: Math.round(un(`select coalesce(sum(amount_eur), 0) from costs where status = 'realise' and month = '${mois}'`) * 100) / 100,
+    // Le détail pour la page du projet : qui a été prospecté, quels mails, quelles réponses.
+    detail: detailLeviaro(db),
   };
+}
+
+// Si le schéma de leviaro-agent change, on perd le détail mais jamais les chiffres.
+function detailLeviaro(db) {
+  const tout = (sql) => db.prepare(sql).all();
+  try {
+    return {
+      entreprises: tout('select c.name nom, c.city ville, c.sector secteur, c.state etat, c.created_at creee from companies c order by c.id desc limit 300').map((x) => ({ ...x, creee: jour(x.creee) })),
+      messages: tout("select m.step etape, m.status etat, m.subject objet, m.sent_at envoye, m.created_at cree, coalesce(c.name, '?') entreprise from messages m left join companies c on c.id = m.company_id order by m.id desc limit 300").map((x) => ({ ...x, envoye: jour(x.envoye), cree: jour(x.cree) })),
+      reponses: tout("select r.from_email de, r.subject objet, r.snippet extrait, r.category categorie, r.received_at recu, r.handled traitee, coalesce(c.name, '') entreprise from replies r left join companies c on c.id = r.company_id order by r.id desc limit 200").map((x) => ({ ...x, recu: jour(x.recu), traitee: Boolean(x.traitee) })),
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 // Copie la base (et ses fichiers -wal/-shm) puis la lit : on ne touche jamais l'originale.

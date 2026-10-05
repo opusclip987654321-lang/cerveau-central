@@ -13,9 +13,9 @@ async function baseExemple() {
   const dossier = await mkdtemp(path.join(tmpdir(), 'lv-test-'));
   const db = new DatabaseSync(path.join(dossier, 'leviaro.db'));
   db.exec(`
-    create table companies (id integer primary key, name text, state text, created_at text);
-    create table messages (id integer primary key, step integer, status text, sent_at text, created_at text);
-    create table replies (id integer primary key, category text, received_at text, handled integer);
+    create table companies (id integer primary key, name text, city text, sector text not null default 'autre', state text, created_at text);
+    create table messages (id integer primary key, company_id integer, step integer, status text, subject text, sent_at text, created_at text);
+    create table replies (id integer primary key, company_id integer, from_email text default 'x@y.fr', subject text, snippet text, category text, received_at text, handled integer);
     create table agency_recs (id integer primary key, status text);
     create table costs (id integer primary key, month text, status text, amount_eur real);
     insert into companies (name, state, created_at) values ('A', 'sequence_active', '2026-10-03 10:00:00'), ('B', 'discussion_active', '2026-09-20 10:00:00'), ('C', 'contact_introuvable', '2026-10-04 23:30:00');
@@ -46,6 +46,9 @@ test('synchroniserLeviaro lit une copie de la base et en tire les chiffres', asy
   assert.equal(lv.enDiscussion, 1);
   assert.equal(lv.recommandations, 1);
   assert.equal(lv.coutMois, 1.23);
+  assert.equal(lv.detail.entreprises[0].nom, 'C');
+  assert.equal(lv.detail.messages.length, 5);
+  assert.equal(lv.detail.reponses.length, 2); // humaine + absence : la page montre tout
 
   const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-05' }).cartes.find((c) => c.id === 'leviaro');
   assert.equal(carte.principal.total, 2);

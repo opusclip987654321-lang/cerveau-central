@@ -166,3 +166,7 @@ En tête du Journal : une carte par projet avec sa pastille (🟢 ça avance, �
 - Prospection Nūr Meet : lue chaque heure dans les tableaux de données n8n `np_prospects`, `np_envois`, `np_ouvertures` (API publique, clé `N8N_API_KEY`, lecture seule). Copie dans `data/business.json`.
 - L'extrait politique : exécutions réussies des automatisations dont le nom contient « publi » (réglable dans `config/journal.json`, `tableau`).
 - Le matin, Telegram signale les projets en rouge (`joursMax` par projet dans `config/journal.json`).
+
+## Pages par projet et idées
+
+Chaque carte du tableau de bord mène à `/projet?projet=<id>` : la carte business du projet, puis son détail (Nūr Meet : réponses, mails à valider, derniers mails ; Leviaro : réponses avec extrait, mails, entreprises et où ça en est ; Impacteur : invités avec auteur/livre/état ; Petites histoires vraies : vidéos publiées avec lien), les notes du journal et la surveillance technique repliée. En haut, « Mes idées de modifications » : louis note ses idées, chacune suivie (proposée, en cours, faite, écartée) dans `data/idees.json`, et chaque nouvelle idée part aussi sur Telegram.

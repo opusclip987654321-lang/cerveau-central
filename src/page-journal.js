@@ -13,7 +13,7 @@ function titreJour(jour, aujourdhui) {
   return jour === aujourdhui ? `Aujourd'hui · ${date}` : jour === hier ? `Hier · ${date}` : date.charAt(0).toUpperCase() + date.slice(1);
 }
 
-const PASTILLES = { vert: '🟢', orange: '🟠', rouge: '🔴', pause: '⏸️', gris: '⚪' };
+export const PASTILLES = { vert: '🟢', orange: '🟠', rouge: '🔴', pause: '⏸️', gris: '⚪' };
 const jourCourt = (j) => new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric', timeZone: 'Europe/Paris' });
 
 // Petit graphique en barres (SVG) : série principale, et une seconde série en surimpression.
@@ -30,17 +30,17 @@ function graphique(periode, serie, secondaire) {
   return `<svg viewBox="0 0 300 92" class="graphe" role="img" aria-label="Évolution par jour">${barres}<line x1="0" y1="78.5" x2="300" y2="78.5" class="axe"/><text x="0" y="90">${jourCourt(periode[0])}</text><text x="300" y="90" text-anchor="end">${jourCourt(periode.at(-1))}</text></svg>`;
 }
 
-function carteProjet(c, jours) {
+export function carteProjet(c, jours) {
   const p = c.principal;
   // Projet pas encore branché et sans aucune note : une carte courte.
   if (c.couleur === 'gris')
-    return `<article class="bd gris"><h3>${PASTILLES.gris} ${e(c.nom)}</h3><p class="manque">Pas encore branché : ${e(c.manque.join(', '))}. En attendant, tu peux noter ce que tu fais avec « Ajouter une note ».</p></article>`;
+    return `<article class="bd gris"><h3>${PASTILLES.gris} <a href="/projet?projet=${e(c.id)}">${e(c.nom)}</a></h3><p class="manque">Pas encore branché : ${e(c.manque.join(', '))}. En attendant, tu peux noter ce que tu fais avec « Ajouter une note ».</p></article>`;
   const evolution = p.precedent || p.total ? (p.total >= p.precedent ? `▲ ${p.total - p.precedent}` : `▼ ${p.precedent - p.total}`) : '';
   const objectif = c.objectif.valide
     ? `<p class="obj">Objectif : ${c.objectif.valide} par semaine${p.objectif ? ` · ${Math.min(100, Math.round((p.total / p.objectif) * 100))} % atteint` : ''}</p>`
     : `<form method="post" action="/journal/objectif" class="obj"><input type="hidden" name="projet" value="${e(c.id)}"><span>Objectif proposé, par semaine :</span><input name="valeur" type="number" min="1" value="${c.objectif.propose}"><button type="submit">Valider</button></form>`;
   return `<article class="bd ${c.couleur}">
-<h3>${PASTILLES[c.couleur]} ${e(c.nom)}</h3>
+<h3>${PASTILLES[c.couleur]} <a href="/projet?projet=${e(c.id)}">${e(c.nom)}</a> <span class="fleche">›</span></h3>
 <div class="chiffres">
 <div class="principal"><b>${p.total}</b><span>${e(p.titre)} · ${jours} j</span>${evolution ? `<small>${evolution} vs ${jours} j avant</small>` : ''}</div>
 ${c.chiffres.map((x) => `<div><b>${x.valeur}</b><span>${e(x.titre)}</span>${x.detail ? `<small>${e(x.detail)}</small>` : ''}</div>`).join('')}
@@ -131,6 +131,9 @@ ${blocsJours.join('\n')}
 .bd { background:var(--carte); border:1px solid var(--bord); border-top:4px solid var(--bord); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
 .bd.vert { border-top-color:var(--ok); } .bd.orange { border-top-color:var(--attention); } .bd.rouge { border-top-color:var(--panne); }
 .bd h3 { margin:0; font-size:16px; }
+.bd h3 a { color:inherit; text-decoration:none; }
+.bd h3 a:hover { text-decoration:underline; }
+.bd h3 .fleche { color:var(--doux); font-weight:400; }
 .chiffres { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
 .chiffres div { display:flex; flex-direction:column; }
 .chiffres b { font-size:22px; line-height:1.1; }
