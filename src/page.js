@@ -56,7 +56,8 @@ export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = n
     })
     .join('\n');
 
-  const historique = etat.historique.slice(0, 30);
+  // Les retours à la normale (vert) ne sont pas des incidents : on ne liste que les problèmes.
+  const historique = etat.historique.filter((h) => h.type !== 'retabli').slice(0, 30);
   const journal = historique.length
     ? `<ul class="journal">${historique
         .map((h) => {

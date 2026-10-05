@@ -55,6 +55,7 @@ test('scénario complet : panne, une seule alerte, puis rétablissement', async 
     assert.match(html, /Derniers incidents/);
     assert.equal(etat.historique[1].pour, 'Nūr Meet');
     assert.match(html, /Le site ne répond plus/);
+    assert.doesNotMatch(html, /Revenu à la normale/, 'les retours au vert ne sont pas listés dans les incidents');
   } finally {
     serveur.close();
     await rm(dossier, { recursive: true });
