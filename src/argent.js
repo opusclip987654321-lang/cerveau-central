@@ -115,3 +115,40 @@ export function messageRappels(rappels) {
   const date = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
   return ['💶 <b>Renouvellements à venir</b>', ...rappels.map((r) => `• ${echapper(r.libelle)} : ${montantLisible(r.montant, r.devise)} le ${date(r.echeance)}`)].join('\n');
 }
+
+// Historique mois par mois, depuis la plus ancienne dépense datée : recharges du
+// mois + abonnements (domaines annuels lissés sur 12 mois). Un abonnement compte
+// depuis son mois `depuis` s'il est connu, sinon depuis le début de l'historique.
+export function historique(lignes, jour = jourParis()) {
+  const courant = jour.slice(0, 7);
+  const dates = lignes.filter((l) => l.frequence === 'une-fois' && l.date).map((l) => l.date.slice(0, 7));
+  let mois = [courant, ...dates].sort()[0];
+  const liste = [];
+  while (mois <= courant) {
+    const abonnements = {};
+    const recharges = {};
+    const total = {};
+    for (const l of lignes) {
+      if (l.frequence === 'une-fois') {
+        if (l.date?.startsWith(mois)) (ajouter(recharges, l.devise, l.montant), ajouter(total, l.devise, l.montant));
+      } else if (!l.depuis || l.depuis.slice(0, 7) <= mois) (ajouter(abonnements, l.devise, parMois(l)), ajouter(total, l.devise, parMois(l)));
+    }
+    liste.push({ mois, abonnements, recharges, total });
+    const [a, m] = mois.split('-').map(Number);
+    mois = m === 12 ? `${a + 1}-01` : `${a}-${String(m + 1).padStart(2, '0')}`;
+  }
+  liste.reverse();
+  const annees = {};
+  const depuisLeDebut = {};
+  for (const x of liste)
+    for (const [d, v] of Object.entries(x.total)) {
+      ajouter((annees[x.mois.slice(0, 4)] ??= {}), d, v);
+      ajouter(depuisLeDebut, d, v);
+    }
+  return { mois: liste, annees, depuisLeDebut, debut: liste.at(-1).mois };
+}
+
+export const moisLisible = (m) => {
+  const t = new Date(`${m}-15T12:00:00Z`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' });
+  return t[0].toUpperCase() + t.slice(1);
+};
