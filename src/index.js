@@ -348,7 +348,9 @@ const serveur = http.createServer(async (req, res) => {
         res.writeHead(303, { location: '/', 'set-cookie': `${COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0` });
         return res.end();
       }
-      if (!acces.jetonValide(lireCookie(req, COOKIE))) {
+      // Le jeton des relevés ouvre aussi les API : c'est par là que Claude vient
+      // lire les idées (et le reste) sans mot de passe. Accord de louis du 05/10.
+      if (!acces.jetonValide(lireCookie(req, COOKIE)) && !(url.pathname.startsWith('/api/') && jetonReleveValide(req.headers.authorization ?? ''))) {
         if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
           res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
           return res.end(pageConnexion());
