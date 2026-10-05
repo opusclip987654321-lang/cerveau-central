@@ -175,3 +175,28 @@ test('facture sans ligne : le cerveau ajoute la dépense, rattache les suivantes
   assert.equal(marquerOrphelinesARelire(donnees), 1); // l'ancienne lecture sans fréquence est relue
   assert.equal(donnees.factures[2].lecture, null);
 });
+
+test('recharges du même nom : une facture par ligne, la plus proche en date, la facture en trop ajoute une recharge', async () => {
+  const { corrigerDepuisFactures, rapprochement } = await import('../src/factures.js');
+  const ligne = (id, montant, date, devise = '€') => ({ id, libelle: 'xAI / Grok (recharge)', projet: 'commun', montant, devise, frequence: 'une-fois', date });
+  const lu = (montant, date) => ({ estUneFacture: true, fournisseur: 'X.AI LLC', montant, devise: '$', date, periode: '', ligne: 'x1' });
+  const donnees = {
+    // x1 a déjà été corrigée à tort avec la facture du 28/09 (ancienne version).
+    lignes: [ligne('x1', 25, '2026-09-28', '$'), ligne('x2', 22, '2026-09-26')],
+    factures: [
+      { id: 'b', nom: 'b.pdf', lecture: lu(25, '2026-09-28') },
+      { id: 'a', nom: 'a.pdf', lecture: lu(20, '2026-09-25') },
+      { id: 'c', nom: 'c.pdf', lecture: lu(30, '2026-10-03') },
+    ],
+    corrections: [{ id: 'old', facture: 'b', ligne: 'x1', libelle: 'xAI', avant: {}, apres: {} }],
+  };
+  const r = rapprochement(donnees, '2026-10-05');
+  assert.deepEqual(r.lignes.map((x) => x.derniere?.id), ['b', 'a']);
+  assert.deepEqual(r.orphelines.map((f) => f.id), ['c']);
+  const c = corrigerDepuisFactures(donnees, '2026-10-05');
+  assert.equal(c.length, 2);
+  assert.deepEqual(donnees.lignes.map((l) => [l.montant, l.devise, l.date]), [[25, '$', '2026-09-28'], [20, '$', '2026-09-25'], [30, '$', '2026-10-03']]);
+  assert.equal(donnees.lignes[2].libelle, 'xAI / Grok (recharge)');
+  assert.equal(corrigerDepuisFactures(donnees, '2026-10-05').length, 0);
+  assert.equal(rapprochement(donnees, '2026-10-05').lignes.every((x) => x.aJour), true);
+});
