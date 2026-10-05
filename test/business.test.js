@@ -43,7 +43,7 @@ test('synchroniserProspection lit tout, page par page, sans les tests ni les dou
       P('propose'),
     ],
     np_envois: [
-      { statut: 'envoye', date_decision: '2026-10-01T09:00:00Z' },
+      { statut: 'envoye', date_decision: '2026-10-01T09:00:00Z', corps: 'Bonjour, voici notre proposition.' },
       { statut: 'envoye', date_decision: '2026-09-29T09:00:00Z' },
       { statut: 'echec', date_proposition: '2026-10-03T09:00:00Z' },
       { statut: 'test', date_decision: '2026-10-03T09:00:00Z' },
@@ -63,6 +63,8 @@ test('synchroniserProspection lit tout, page par page, sans les tests ni les dou
   assert.equal(r.prospects, 5);
   const pr = b.sources.prospection;
   assert.deepEqual(pr.envois.map((e) => [e.statut, e.jour]), [['envoye', '2026-10-01'], ['envoye', '2026-09-29'], ['echec', '2026-10-03']]);
+  // Le texte envoyé est gardé quand np_envois le porte (colonne corps), sinon null, jamais inventé.
+  assert.deepEqual(pr.envois.map((e) => e.corps), ['Bonjour, voici notre proposition.', null, null]);
   assert.deepEqual(pr.ouvertures.sort(), ['2026-10-01', '2026-10-03']);
   assert.equal(pr.prospects.find((x) => x.statut === 'repondu').reponse, '2026-10-02');
   // Le texte des réponses est rattaché au bon restaurant via l'adresse, même écrite autrement.
@@ -171,7 +173,7 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
   assert.match(cheminImpacteur('abc'), /^cerveau-impacteur-[0-9a-f]{32}$/);
   const lignes = [
     { statut: 'CONFIG' },
-    { statut: 'ENVOYE', chaine: 'Afrique', date_envoi: '2026-10-03T10:00:00Z', ouvert_le: '2026-10-04T08:00:00Z' },
+    { statut: 'ENVOYE', chaine: 'Afrique', date_envoi: '2026-10-03T10:00:00Z', ouvert_le: '2026-10-04T08:00:00Z', corps: 'Bonjour, votre livre…', compte_envoi: 'afrique@gmail.com' },
     { statut: 'ENVOYE', chaine: 'Frexit', date_envoi: '2026-09-01T10:00:00Z', ouvert_le: '' },
     { statut: 'A_VERIFIER' },
     { statut: 'A_VERIFIER' },
@@ -180,6 +182,10 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
   ];
   const b = { sources: {}, objectifs: {} };
   assert.deepEqual(await synchroniserImpacteur(b, { appel: async () => lignes }), { fiches: 6 });
+  // corps et compte_envoi passent du Sheet à la fiche quand ils existent, sinon null.
+  const [avec, sans] = b.sources.impacteur.fiches;
+  assert.deepEqual([avec.corps, avec.compte], ['Bonjour, votre livre…', 'afrique@gmail.com']);
+  assert.deepEqual([sans.corps, sans.compte], [null, null]);
   const c = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour }).cartes.find((x) => x.id === 'impacteur');
   assert.equal(c.principal.total, 1);
   assert.equal(c.chiffres[0].valeur, 1);

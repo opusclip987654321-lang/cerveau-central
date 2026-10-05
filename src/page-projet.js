@@ -63,7 +63,7 @@ const AIDE = {
     ['refusé', 'tu avais dit non du temps de la validation Telegram'],
     ['jamais parti', 'préparé par l’ancien circuit de validation et resté en attente : à trier dans le bloc dédié'],
     ['★ exemple du jour', 'un mail de la journée tiré au sort, toujours le même pour une même date'],
-    ['Important', 'le texte des mails n’est pas encore copié dans le cerveau : « Chercher dans Gmail » ouvre l’échange réel, rien n’est inventé à la place'],
+    ['Important', 'le texte réel d’un mail s’affiche dès que l’automatisation le copie dans le cerveau ; tant qu’il manque, c’est dit tel quel et « Chercher dans Gmail » ouvre l’échange réel, rien n’est inventé à la place'],
   ],
   triMails: [
     ['Laisser en attente', 'rien ne change, tu décideras plus tard'],
@@ -78,7 +78,7 @@ const AIDE = {
     ['brouillon créé', 'le mail est prêt dans Gmail, pas encore envoyé'],
     ['envoyé', 'le mail d’invitation est parti'],
     ['bloqué (éligibilité)', 'la fiche ne remplit pas les critères, elle ne sera pas contactée'],
-    ['Important', 'la « chaîne » affichée vient du Sheet : c’est une déclaration, pas une preuve du compte Gmail réellement utilisé, que l’automatisation n’enregistre pas encore'],
+    ['Important', 'la « chaîne » affichée vient du Sheet : tant que l’automatisation n’enregistre pas le compte Gmail réellement utilisé, c’est une déclaration, pas une preuve ; dès qu’elle l’enregistre, le compte s’affiche sur chaque mail'],
   ],
   suivi: [
     ['À traiter', 'la liste compte les réponses qui attendent une suite de ta part ; les réponses automatiques probables (absence, accusé…) sont rangées à part'],
@@ -195,13 +195,19 @@ function sections(id, { business, journal, histoires, suivi, tri }) {
     const finies = lignes.filter((l) => ETATS_FINIS.has(l.suivi?.etat)).map((l) => ({ ...l, s: formSuivi(l) }));
 
     // L'échange complet d'un restaurant : premier mail, relances, réponses connues, dans l'ordre.
+    // Le texte envoyé s'affiche quand l'automatisation l'a copié (np_envois.corps) ; sinon c'est dit.
     const echange = (nomResto) => {
+      const envoisResto = envois.filter((x) => x.nom === nomResto);
       const fils = [
-        ...envois.filter((x) => x.nom === nomResto).map((x) => ({ j: x.jour, h: `→ ${date(x.jour)} · ${e(x.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '')}` })),
+        ...envoisResto.map((x) => ({
+          j: x.jour,
+          h: `→ ${date(x.jour)} · ${e(x.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '')}${x.corps ? `<span class="corps-mail">${texteCellule(x.corps)}</span>` : ''}`,
+        })),
         ...textes.filter((r) => r.nom === nomResto).map((r) => ({ j: r.jour, h: `← ${date(r.jour)} · réponse : ${texteCellule(r.texte)}` })),
       ].sort((a, b) => ((a.j ?? '') > (b.j ?? '') ? 1 : -1));
+      const manquants = envoisResto.filter((x) => !x.corps).length;
       return `<div class="echange-mail">${fils.map((f) => `<p>${f.h}</p>`).join('')}
-<p class="note-mail">Le texte envoyé n’est pas encore copié dans le cerveau (contenu non récupéré). <a href="${lienGmail(nomResto)}" target="_blank" rel="noopener">Chercher l’échange dans Gmail ›</a></p></div>`;
+${manquants ? `<p class="note-mail">Le texte de ${manquants === envoisResto.length ? (manquants === 1 ? 'ce mail' : 'ces mails') : `${manquants} mail(s)`} n’est pas copié dans le cerveau (contenu non récupéré). <a href="${lienGmail(nomResto)}" target="_blank" rel="noopener">Chercher l’échange dans Gmail ›</a></p>` : ''}</div>`;
     };
 
     // Une seule ligne par journée d'envoi ; chaque mail s'ouvre sur son échange.
@@ -286,7 +292,8 @@ ${liste
   .map(
     (f, i) => `<details class="mail"><summary>${i === ex ? '★ ' : ''}${e(f.auteur ?? '?')} — ${e(f.livre ?? 'livre non noté')} ${etiquette(f.chaine ?? 'chaîne non déclarée', 'or')} ${etiquette(lb('impacteur', f.statut), tonIm(f.statut))}${f.ouvert ? ` <small>ouvert le ${date(f.ouvert)}</small>` : ''}${i === ex ? ' <small class="ex">exemple du jour</small>' : ''}</summary>
 <div class="echange-mail"><p>→ ${date(f.envoi)} · invitation ${e(f.chaine ?? '?')} ${f.ouvert ? `· ouverte le ${date(f.ouvert)}` : '· pas d’ouverture enregistrée'}</p>
-<p class="note-mail">Compte d’envoi réellement utilisé : non enregistré par l’automatisation (la chaîne affichée vient du Sheet, c’est une déclaration, pas une preuve). Texte du mail non récupéré. <a href="${lienGmail(f.auteur)}" target="_blank" rel="noopener">Chercher dans Gmail ›</a></p></div></details>`,
+${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
+<p class="note-mail">${f.compte ? `Compte d’envoi enregistré par l’automatisation : ${e(f.compte)}.` : 'Compte d’envoi réellement utilisé : non enregistré par l’automatisation (la chaîne affichée vient du Sheet, c’est une déclaration, pas une preuve).'}${f.corps ? '' : ' Texte du mail non récupéré.'} <a href="${lienGmail(f.auteur)}" target="_blank" rel="noopener">Chercher dans Gmail ›</a></p></div></details>`,
   )
   .join('')}
 </details>`;
@@ -417,6 +424,8 @@ td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
 .mail small.ex { color:var(--or); font-weight:600; }
 .echange-mail { margin:6px 0 4px 16px; border-left:2px solid var(--bord); padding-left:12px; }
 .echange-mail p { margin:4px 0; font-size:13px; }
+.corps-mail { display:block; margin:4px 0 6px 14px; white-space:pre-wrap; color:var(--doux); }
+.corps-mail details.texte p { white-space:pre-wrap; }
 .note-mail { color:var(--doux); font-size:12px !important; }
 .barre-tri { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
 .barre-tri label { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--doux); }
