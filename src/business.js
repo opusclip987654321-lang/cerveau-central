@@ -286,8 +286,13 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     const ouverts = envoyes.filter((f) => f.ouvert).length;
     const parChaine = Object.entries(Object.groupBy(envoyes, (f) => f.chaine ?? '?')).map(([c, l]) => `${l.length} ${c}`).join(', ');
     const aDecider = [];
-    if (compte('A_VERIFIER')) aDecider.push(`${nombre(compte('A_VERIFIER'))} fiche(s) d'invités attendent ta vérification avant l'envoi.`);
-    if (compte('BROUILLON_CREE')) aDecider.push(`${nombre(compte('BROUILLON_CREE'))} brouillon(s) prêts dans Gmail, pas encore envoyés.`);
+    // Deux chaînes, deux comptes Gmail : on dit toujours de quelle chaîne il s'agit.
+    const parChaineStatut = (statut) => {
+      const l = Object.entries(Object.groupBy(im.fiches.filter((f) => f.statut === statut), (f) => f.chaine ?? 'chaîne non précisée'));
+      return l.length ? ` (${l.map(([ch, f]) => `${nombre(f.length)} ${/^(afrique|frexit)$/i.test(ch) ? `Impacteur ${ch}` : ch}`).join(', ')})` : '';
+    };
+    if (compte('A_VERIFIER')) aDecider.push(`${nombre(compte('A_VERIFIER'))} fiche(s) d'invités attendent ta vérification avant l'envoi${parChaineStatut('A_VERIFIER')}.`);
+    if (compte('BROUILLON_CREE')) aDecider.push(`${nombre(compte('BROUILLON_CREE'))} brouillon(s) prêts dans Gmail, pas encore envoyés${parChaineStatut('BROUILLON_CREE')}.`);
     if (compte('A_VERIFIER_DECES')) aDecider.push(`${nombre(compte('A_VERIFIER_DECES'))} auteur(s) peut-être décédé(s) : à vérifier avant de les contacter.`);
     carte('impacteur', {
       titre: 'Invités contactés',

@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-05",
+  "maj": "2026-10-06",
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
   "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu tries sur Telegram, et les envois partent tout seuls, plafonnés à 5 par jour.",
   "journee": [
@@ -152,6 +152,7 @@
       "titre": "Lecture par journée",
       "points": [
         "La page Impacteur regroupe les invités contactés par journée, avec les comptes Afrique et Frexit côte à côte",
+        "Sur le tableau de bord, les fiches à vérifier et les brouillons Gmail en attente sont comptés par chaîne (Impacteur Afrique ou Impacteur Frexit), pour savoir dans quel compte regarder",
         "La « chaîne » affichée vient du Sheet : tant que l'automatisation n'enregistre pas le compte Gmail réellement utilisé (colonne compte_envoi), c'est une déclaration, pas une preuve ; dès qu'elle l'enregistre, le compte s'affiche sur chaque mail",
         "Le texte du mail s'affiche sur la fiche dès que l'automatisation le copie dans le Sheet (colonne corps) ; tant qu'il manque, la fiche le dit et renvoie vers Gmail pour lire l'échange réel"
       ]

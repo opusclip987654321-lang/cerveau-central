@@ -182,8 +182,8 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
     { statut: 'CONFIG' },
     { statut: 'ENVOYE', chaine: 'Afrique', date_envoi: '2026-10-03T10:00:00Z', ouvert_le: '2026-10-04T08:00:00Z', corps: 'Bonjour, votre livre…', compte_envoi: 'afrique@gmail.com' },
     { statut: 'ENVOYE', chaine: 'Frexit', date_envoi: '2026-09-01T10:00:00Z', ouvert_le: '' },
-    { statut: 'A_VERIFIER' },
-    { statut: 'A_VERIFIER' },
+    { statut: 'A_VERIFIER', chaine: 'Afrique' },
+    { statut: 'A_VERIFIER', chaine: 'Frexit' },
     { statut: 'BROUILLON_CREE' },
     { statut: 'A_VERIFIER_DECES' },
   ];
@@ -199,8 +199,8 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
   assert.match(c.chiffres[0].detail, /50 % ouverts/);
   assert.equal(c.chiffres[1].valeur, 3);
   assert.equal(c.chiffres[2].detail, '1 Afrique, 1 Frexit');
-  assert.ok(c.aDecider.some((t) => /2 fiche\(s\) d'invités attendent ta vérification/.test(t)));
-  assert.ok(c.aDecider.some((t) => /1 brouillon/.test(t)));
+  assert.ok(c.aDecider.some((t) => /2 fiche\(s\) d'invités attendent ta vérification avant l'envoi \(1 Impacteur Afrique, 1 Impacteur Frexit\)/.test(t)));
+  assert.ok(c.aDecider.some((t) => /1 brouillon\(s\) prêts dans Gmail, pas encore envoyés \(1 chaîne non précisée\)/.test(t)));
   assert.ok(c.aDecider.some((t) => /décédé/.test(t)));
   assert.notEqual(c.couleur, 'gris');
   assert.deepEqual(await synchroniserImpacteur({ sources: {} }, {}), { ignore: true });
