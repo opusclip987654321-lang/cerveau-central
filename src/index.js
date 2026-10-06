@@ -464,7 +464,10 @@ const serveur = http.createServer(async (req, res) => {
       }
       // Le jeton des relevés ouvre aussi les API : c'est par là que Claude vient
       // lire les idées (et le reste) sans mot de passe. Accord de louis du 05/10.
-      if (!acces.jetonValide(lireCookie(req, COOKIE)) && !(url.pathname.startsWith('/api/') && jetonReleveValide(req.headers.authorization ?? ''))) {
+      // Les pages /oauth/youtube passent sans mot de passe : le cookie (SameSite=Strict)
+      // n'accompagne pas le retour depuis Google, et la page de connexion perdrait le
+      // code d'autorisation. Sans code valide, ces pages ne montrent rien de sensible.
+      if (!url.pathname.startsWith('/oauth/youtube') && !acces.jetonValide(lireCookie(req, COOKIE)) && !(url.pathname.startsWith('/api/') && jetonReleveValide(req.headers.authorization ?? ''))) {
         if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
           res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
           return res.end(pageConnexion());
