@@ -141,6 +141,26 @@ Sans ces deux valeurs, le cerveau tourne quand même et écrit les alertes dans 
 
 Dans n8n : *Settings → n8n API → Create an API key*, puis la mettre dans `N8N_API_KEY`. Le 2ᵉ n8n (n8n.actualitevideo.fr, VPS YouTube) se branche de la même façon avec `N8N_ACTUALITE_API_KEY`. Le cerveau ne fait que **lire** la liste des automatisations et des exécutions en erreur.
 
+## Sauvegarde des automatisations n8n
+
+Chaque nuit à 3 h 30, `scripts/sauvegarde-n8n.py` copie toutes les automatisations des deux n8n (n8n.nourmeet.com et n8n.actualitevideo.fr) dans le dépôt GitHub **privé** `sauvegarde-n8n`, un fichier par automatisation. Seuls les changements sont enregistrés, donc on peut retrouver n'importe quelle automatisation telle qu'elle était à une date passée. Lecture seule côté n8n ; une clé écrite en clair dans un nœud est remplacée par « à ressaisir ». Si la sauvegarde échoue, une alerte part sur Telegram.
+
+Installation, une fois, sur le VPS Nūr (il utilise les clés n8n du `.env` du cerveau) :
+
+```sh
+# 1. Sur GitHub : créer un dépôt PRIVÉ vide nommé sauvegarde-n8n (sans README).
+# 2. Créer la clé d'envoi du serveur et l'afficher
+ssh-keygen -t ed25519 -N "" -C sauvegarde-n8n -f ~/.ssh/sauvegarde_n8n && cat ~/.ssh/sauvegarde_n8n.pub
+# 3. Sur GitHub : sauvegarde-n8n > Settings > Deploy keys > Add deploy key, coller la clé, cocher « Allow write access ».
+# 4. Récupérer le dépôt sur le serveur
+GIT_SSH_COMMAND="ssh -i ~/.ssh/sauvegarde_n8n -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" git clone git@github.com:opusclip987654321-lang/sauvegarde-n8n.git ~/sauvegarde-n8n && git -C ~/sauvegarde-n8n config core.sshCommand "ssh -i ~/.ssh/sauvegarde_n8n -o IdentitiesOnly=yes" && git -C ~/sauvegarde-n8n config user.name "Sauvegarde n8n" && git -C ~/sauvegarde-n8n config user.email "sauvegarde@nourmeet.com"
+# 5. Première sauvegarde, puis chaque nuit
+python3 ~/cerveau-central/scripts/sauvegarde-n8n.py
+(crontab -l 2>/dev/null; echo "30 3 * * * python3 $HOME/cerveau-central/scripts/sauvegarde-n8n.py >> $HOME/sauvegarde-n8n.log 2>&1") | crontab -
+```
+
+Restaurer une automatisation : sur GitHub, ouvrir le fichier (bouton *History* pour une version plus ancienne), *Download raw file*, puis dans n8n *Import from file*. Les accès (Gmail, Telegram…) se rebranchent par leur nom ; ceux qui ont disparu avec un serveur sont à recréer.
+
 ## Si le serveur lui-même tombe
 
 Le cerveau tourne sur le serveur qu'il surveille : si le serveur tombe, il ne peut plus prévenir. Pour ça, ajouter un veilleur externe gratuit (par exemple UptimeRobot) qui vérifie `https://nourmeet.com` et `https://leviaro.fr` toutes les 5 minutes et prévient par mail ou Telegram.
