@@ -27,9 +27,10 @@ import urllib.request
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 # Une entrée par n8n : dossier dans la sauvegarde, variable de l'adresse, variable de la clé.
+# Adresse par défaut identique à celle du cerveau (src/index.js), qui ne l'exige pas dans le .env.
 INSTANCES = [
-    ("n8n-nourmeet", "N8N_URL", "N8N_API_KEY"),
-    ("n8n-actualite", "N8N_ACTUALITE_URL", "N8N_ACTUALITE_API_KEY"),
+    ("n8n-nourmeet", "N8N_URL", "N8N_API_KEY", "https://n8n.nourmeet.com"),
+    ("n8n-actualite", "N8N_ACTUALITE_URL", "N8N_ACTUALITE_API_KEY", "https://n8n.actualitevideo.fr"),
 ]
 # Ce qu'il faut pour réimporter une automatisation ; le reste (pinData, dates, statistiques) change sans raison.
 CHAMPS_GARDES = ["id", "name", "active", "nodes", "connections", "settings", "tags"]
@@ -153,9 +154,10 @@ def main():
         sys.exit(f"{dossier} n'est pas un dépôt git : voir « Sauvegarde des automatisations n8n » dans le README.")
 
     resume, erreurs = [], []
-    for sous_dossier, var_url, var_cle in INSTANCES:
-        base, cle = (env.get(var_url) or "").rstrip("/"), env.get(var_cle)
-        if not (base and cle):
+    for sous_dossier, var_url, var_cle, url_defaut in INSTANCES:
+        base, cle = (env.get(var_url) or url_defaut).rstrip("/"), env.get(var_cle)
+        if not cle:
+            resume.append(f"{sous_dossier} : ignoré, {var_cle} absent du .env")
             continue
         try:
             workflows = lire_workflows(base, cle)
