@@ -78,6 +78,9 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
       statut: l.statut ?? null,
       jour: jourDe(l.date_decision) ?? jourDe(l.date_proposition),
       corps: l.corps ? String(l.corps).slice(0, 4000) : null,
+      // `erreur` : la cause de l'échec, si l'automatisation la copie dans
+      // np_envois (colonne erreur). Absente = cause non enregistrée.
+      erreur: l.erreur ? String(l.erreur).slice(0, 300) : null,
     })),
     // Un même mail peut être ouvert plusieurs fois : on garde la première ouverture de chaque envoi.
     ouvertures: [...new Map((ouvertures ?? []).map((l) => [String(l.envoi_id), jourDe(l.date)]).reverse()).values()].filter(Boolean),
@@ -233,6 +236,19 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
       aDecider.push(`${nombre(sansEmail)} restaurants trouvés n'ont pas d'email (${pct(sansEmail, pr.prospects.length)} %) : chercher leur email autrement, ou les appeler ?`);
     const tauxEchec = pct(echecsPeriode, envPeriode + echecsPeriode);
     if (tauxEchec >= 10) aDecider.push(`${tauxEchec} % des envois échouent cette période : vérifier l'adresse d'envoi des mails.`);
+    // Les causes d'échec de la période, si l'automatisation les enregistre
+    // (colonne erreur de np_envois) : c'est ce qui dit si ce sont des adresses
+    // mortes (déchet normal) ou un blocage côté serveur d'envoi (urgent).
+    const causes = {};
+    let sansCause = 0;
+    for (const x of echecs.filter((y) => y.jour && periode.includes(y.jour))) {
+      if (x.erreur) causes[x.erreur] = (causes[x.erreur] ?? 0) + 1;
+      else sansCause += 1;
+    }
+    const topCauses = Object.entries(causes).sort((a, b) => b[1] - a[1]).slice(0, 2);
+    const detailEchecs = topCauses.length
+      ? [...topCauses.map(([t, n]) => `${nombre(n)} × « ${t.slice(0, 120)} »`), ...(sansCause ? [`${nombre(sansCause)} sans cause enregistrée`] : [])].join(' · ')
+      : 'cause non enregistrée par l’automatisation';
     const c = carte('nour-meet', {
       titre: 'Mails envoyés aux restaurants',
       dates: envoyes,
@@ -242,6 +258,7 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
       extra: [
         { titre: 'Réponses', valeur: repPeriode, detail: `${pct(reponses.length, envoyes.length) ?? 0} % de réponse depuis le début (${nombre(reponses.length)} sur ${nombre(envoyes.length)})` },
         { titre: 'Mails ouverts', valeur: somme(parJour(periode, pr.ouvertures)) },
+        ...(echecsPeriode ? [{ titre: `Échecs d'envoi (${jours} j)`, valeur: echecsPeriode, detail: detailEchecs }] : []),
         { titre: 'Restaurants trouvés', valeur: somme(parJour(periode, pr.prospects.map((x) => x.decouvert))), detail: `${nombre(enRelance)} en relance` },
         ...(business.sources?.stripe
           ? [
