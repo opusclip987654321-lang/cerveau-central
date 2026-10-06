@@ -20,7 +20,14 @@ import sys
 import urllib.request
 
 NOM = "IMPACTEUR C - ENVOIS AUTOMATIQUES"
-BRANCHES = {"AFRIQUE": ("GMAIL AFRIQUE - envoyer", "SAUVER ENVOI AFRIQUE"), "FREXIT": ("GMAIL FREXIT - envoyer", "SAUVER ENVOI FREXIT")}
+# Par branche : le nœud Gmail (porte le nom de l'accès), le nœud code qui prépare
+# la ligne du Sheet (c'est LUI qui doit porter corps et compte_envoi, car le nœud
+# d'écriture ne voit que ce qu'il produit), et le nœud d'écriture dans le Sheet.
+BRANCHES = {
+    "AFRIQUE": ("GMAIL AFRIQUE - envoyer", "MARQUER ENVOYE AFRIQUE", "SAUVER ENVOI AFRIQUE"),
+    "FREXIT": ("GMAIL FREXIT - envoyer", "MARQUER ENVOYE FREXIT", "SAUVER ENVOI FREXIT"),
+}
+ANCRE = "statut:'ENVOYE',"
 
 env = {}
 for ligne in (pathlib.Path(__file__).resolve().parent.parent / ".env").read_text().splitlines():
@@ -67,25 +74,33 @@ if not w:
 noeuds = {n["name"]: n for n in w["nodes"]}
 
 changements = []
-for branche, (nom_gmail, nom_sauver) in BRANCHES.items():
-    gmail = noeuds.get(nom_gmail)
-    sauver = noeuds.get(nom_sauver)
-    if not gmail or not sauver:
-        sys.exit(f"Nœud « {nom_gmail} » ou « {nom_sauver} » introuvable dans « {NOM} ».")
+for branche, (nom_gmail, nom_marqueur, nom_sauver) in BRANCHES.items():
+    gmail, marqueur, sauver = noeuds.get(nom_gmail), noeuds.get(nom_marqueur), noeuds.get(nom_sauver)
+    if not gmail or not marqueur or not sauver:
+        sys.exit(f"Nœud introuvable dans « {NOM} » ({nom_gmail} / {nom_marqueur} / {nom_sauver}).")
     compte = (gmail.get("credentials", {}).get("gmailOAuth2") or {}).get("name") or f"compte {branche}"
+    # 2a. Le nœud code ajoute corps (le texte vraiment passé au nœud Gmail) et
+    #     compte_envoi (le nom de l'accès Gmail de la branche) à la ligne produite.
+    code = marqueur["parameters"].get("jsCode", "")
+    deja = "corps:" in code
+    if not deja:
+        if ANCRE not in code:
+            sys.exit(f"Le code de « {nom_marqueur} » a changé (repère « {ANCRE} » introuvable) : à re-regarder avec Claude avant de patcher.")
+        litteral = compte.replace("\\", "\\\\").replace("'", "\\'")
+        marqueur["parameters"]["jsCode"] = code.replace(ANCRE, f"{ANCRE}\n  corps:String(o.message_html||''),compte_envoi:'{litteral}',", 1)
+    # 2b. Le nœud d'écriture recopie ces deux champs dans les colonnes du Sheet.
     valeurs = sauver["parameters"]["columns"].setdefault("value", {})
-    avant = {k: valeurs.get(k) for k in ("corps", "compte_envoi")}
-    valeurs["corps"] = "={{ $json.message_html }}"
-    valeurs["compte_envoi"] = compte
-    changements.append((branche, compte, avant))
+    valeurs["corps"] = "={{ $json.corps }}"
+    valeurs["compte_envoi"] = "={{ $json.compte_envoi }}"
+    changements.append((branche, compte, deja))
 
 comptes = [c for _, c, _ in changements]
 if len(set(comptes)) == 1:
     print(f"⚠ Les deux branches utilisent le même accès Gmail (« {comptes[0]} ») : à signaler à Claude, c'est louche.")
-
-for branche, compte, avant in changements:
-    deja = "(déjà en place, sera réécrit)" if avant.get("corps") else ""
-    print(f"{branche} : corps = texte envoyé, compte_envoi = « {compte} » {deja}")
+for branche, compte, deja in changements:
+    if compte.strip().lower() in ("gmail account", "gmail"):
+        print(f"ℹ {branche} : l'accès Gmail s'appelle juste « {compte} ». Tu peux le renommer dans n8n (Credentials) avant d'appliquer, pour une trace plus claire.")
+    print(f"{branche} : corps = texte envoyé, compte_envoi = « {compte} »{' (déjà en place, sera réécrit)' if deja else ''}")
 
 # 3. La structure complète de C, à coller dans le fil Claude : elle sert à
 #    préparer le garde-fou avant envoi (règles Afrique/Frexit validées le 06/10).
