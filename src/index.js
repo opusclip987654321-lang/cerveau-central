@@ -43,6 +43,7 @@ import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
 import { synchroniserLeviaro } from './leviaro.js';
 import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserImpacteur, tableauDeBord, messageSilences, validerObjectif } from './business.js';
+import { dossiersCode, listerCode, lireCode } from './code-source.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -817,6 +818,29 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/idees') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify(await chargerIdees(fichierIdees)));
+    }
+    // Lecture seule du code des agents montés dans le conteneur : Claude s'en sert
+    // pour tenir les guides « Comment ça marche » à jour sans rien demander à louis.
+    if (req.method === 'GET' && url.pathname === '/api/code') {
+      const projet = url.searchParams.get('projet') ?? '';
+      const dossier = dossiersCode(env)[projet];
+      const json = (code, corps) => {
+        res.writeHead(code, { 'content-type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify(corps));
+      };
+      if (!dossier) return json(404, { erreur: 'Projet inconnu (leviaro ou histoires-vraies).' });
+      try {
+        const fichier = url.searchParams.get('fichier');
+        if (fichier) {
+          const texte = await lireCode(dossier, fichier);
+          res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
+          return res.end(texte);
+        }
+        return json(200, { projet, fichiers: await listerCode(dossier) });
+      } catch (err) {
+        if (err.code === 'ENOENT') return json(404, { erreur: 'Introuvable (fichier absent, ou dossier pas encore monté sur ce serveur).' });
+        return json(err.code === 'REFUSE' ? 403 : 500, { erreur: err.message });
+      }
     }
     if (req.method === 'POST' && url.pathname === '/journal/objectif') {
       const { projet, valeur } = await lireCorps(req, 2_000);

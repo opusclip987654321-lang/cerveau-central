@@ -1,8 +1,18 @@
 {
   "maj": "2026-10-06",
-  "source": "Lu dans /opt/nour-video-agent sur le serveur Nūr le 05/10/2026",
-  "intro": "Des petites histoires vraies en vidéo pour Instagram et Facebook. Depuis le 5 octobre, tu fais les vidéos à la main : la fabrication automatique est en pause (son décalé, voix robotique), mais le suivi continue.",
+  "source": "Lu dans /opt/nour-video-agent le 05/10/2026, puis dans son mode d'emploi (INSTALL_FR.md, .env.example) le 06/10/2026",
+  "intro": "Des petites histoires vraies en vidéo. L'agent fabrique chaque vidéo étape par étape avec deux validations sur Telegram, puis c'est toi qui publies. Depuis le 5 octobre, la fabrication automatique est en pause (son décalé, voix robotique) : tu fais les vidéos à la main, le suivi continue.",
   "journee": [
+    {
+      "quand": "9 h, un jour sur deux",
+      "quoi": "Départ d'une fabrication (en pause depuis le 05/10 : la ligne du planificateur est coupée). /nouvelle sur Telegram lance une vidéo à la main à tout moment.",
+      "toi": "Rien tant que c'est en pause"
+    },
+    {
+      "quand": "En continu",
+      "quoi": "Le bot Telegram tourne en service sur le serveur : il reçoit tes ✅/❌ et tes commandes (/nouvelle, /regen, /status, /retry).",
+      "toi": "Répondre aux validations quand une vidéo se fabrique"
+    },
     {
       "quand": "9 h 30",
       "quoi": "Relevé des performances des vidéos déjà publiées.",
@@ -12,11 +22,6 @@
       "quand": "Lundi",
       "quoi": "Rafraîchissement de la réserve d'histoires vraies.",
       "toi": "Rien"
-    },
-    {
-      "quand": "En pause",
-      "quoi": "La fabrication automatique (une vidéo tous les 2 jours à 7 h) est arrêtée à ta demande.",
-      "toi": "Faire les vidéos à la main et les noter via « Ajouter une note » du Journal"
     }
   ],
   "circuits": [
@@ -26,19 +31,38 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Choisir une histoire dans la réserve"
+          "texte": "Une histoire de la réserve (un fichier par histoire, pris dans l'ordre) devient un script et 9 images (~0,60 $)",
+          "outil": "Grok Imagine (xAI)"
+        },
+        {
+          "type": "toi",
+          "texte": "Checkpoint 1 sur Telegram : script + 9 images ; /regen 3 refait l'image 3 (consigne possible) ; ✅ lance l'étape payante, ❌ annule",
+          "outil": "Telegram"
+        },
+        {
+          "type": "securite",
+          "texte": "Garde-fou de coût : au plus 110 secondes d'animation par vidéo",
+          "sinon": "le job est refusé avant de payer"
         },
         {
           "type": "auto",
-          "texte": "Fabriquer la vidéo (images, voix, montage)"
+          "texte": "Animation des scènes en 720p (~8,70 $ la vidéo, facturée à la seconde)",
+          "outil": "Grok (xAI)"
         },
         {
           "type": "auto",
-          "texte": "Publier sur Instagram et Facebook"
+          "texte": "Voix off française (voix choisie dans ta bibliothèque)",
+          "outil": "ElevenLabs"
         },
         {
           "type": "auto",
-          "texte": "Noter la publication (le cerveau la lit et l'affiche sur la page du projet)"
+          "texte": "Montage, sous-titres, musique de fond à bas volume et zoom final (gratuit, sur le serveur)",
+          "outil": "ffmpeg"
+        },
+        {
+          "type": "toi",
+          "texte": "Checkpoint 2 sur Telegram : ✅ = vidéo validée ; tu l'enregistres depuis Telegram et tu la publies toi-même",
+          "outil": "Telegram"
         }
       ]
     },
@@ -56,35 +80,60 @@
       ]
     }
   ],
+  "regles": [
+    {
+      "titre": "Publication",
+      "points": [
+        "L'agent ne publie jamais tout seul : la vidéo finale arrive sur Telegram et sur le serveur, c'est toi qui la publies (TikTok, Instagram)"
+      ]
+    },
+    {
+      "titre": "Budget",
+      "points": [
+        "Une vidéo ≈ 9 à 10 $ (images ~0,60 $ + animation 720p ~8,70 $), plus l'abonnement voix (~5 $/mois)",
+        "Le checkpoint 1 arrive AVANT l'étape payante : rien n'est animé sans ton ✅",
+        "/retry reprend une fabrication en erreur là où elle s'était arrêtée, sans repayer ce qui est déjà généré",
+        "Un mode à blanc (DRY_RUN) permet de tester toute la chaîne sans aucun appel payant"
+      ]
+    }
+  ],
   "role": {
     "quotidien": [
-      "Faire les vidéos à la main",
+      "Faire les vidéos à la main tant que la fabrication est en pause",
       "Les noter dans le Journal avec leur lien"
     ],
     "parfois": [
-      "Décider quand relancer la fabrication automatique (après amélioration du son et de la voix)"
+      "Décider quand relancer la fabrication automatique (après amélioration du son et de la voix)",
+      "Ajouter les prochaines histoires dans la réserve"
     ]
   },
   "aCompleter": [
-    "Les vues Instagram et Facebook ne sont pas branchées (il faudra un accès Meta).",
-    "Le détail du programme Python (choix des histoires, montage) reste à documenter précisément."
+    "Les vues TikTok et Instagram ne sont pas branchées (il faudra un accès Meta / TikTok)."
   ],
   "outils": [
     {
-      "nom": "Programme Python (/opt/nour-video-agent, VPS Nūr)",
-      "role": "La fabrication et le suivi des vidéos ; lancé par le planificateur du serveur (cron), pas par n8n"
+      "nom": "Grok Imagine (xAI, API)",
+      "role": "Les 9 images de chaque histoire, puis l'animation des scènes en 720p (facturée à la seconde)"
     },
     {
-      "nom": "Instagram et Facebook",
-      "role": "Où les vidéos sont publiées ; les vues ne sont pas encore branchées (accès Meta à faire)"
+      "nom": "ElevenLabs (API)",
+      "role": "La voix off française (modèle multilingue, voix choisie dans ta bibliothèque)"
+    },
+    {
+      "nom": "ffmpeg",
+      "role": "Montage, sous-titres, musique de fond et zoom final, gratuit sur le serveur"
+    },
+    {
+      "nom": "Telegram (bot dédié)",
+      "role": "Les deux validations ✅/❌ et les commandes /nouvelle, /regen, /status, /retry"
     },
     {
       "nom": "Journal du cerveau",
       "role": "Tes vidéos faites à la main comptent via « Ajouter une note »"
     },
     {
-      "nom": "Fabrication (voix, images, montage)",
-      "role": "Services exacts à vérifier à la reprise de la fabrication automatique"
+      "nom": "VPS Nūr (hébergement seulement)",
+      "role": "Le bot tourne en service permanent ; le départ automatique (un jour sur deux à 9 h) est une ligne du planificateur, coupée pendant la pause"
     }
   ],
   "alertes": [
