@@ -839,7 +839,8 @@ const serveur = http.createServer(async (req, res) => {
         return json(200, { projet, fichiers: await listerCode(dossier) });
       } catch (err) {
         if (err.code === 'ENOENT') return json(404, { erreur: 'Introuvable (fichier absent, ou dossier pas encore monté sur ce serveur).' });
-        return json(err.code === 'REFUSE' ? 403 : 500, { erreur: err.message });
+        if (err.code === 'REFUSE') return json(403, { erreur: err.message });
+        return json(500, { erreur: 'Lecture impossible.' });
       }
     }
     if (req.method === 'POST' && url.pathname === '/journal/objectif') {
