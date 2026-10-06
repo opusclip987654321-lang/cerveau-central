@@ -101,6 +101,12 @@
           "sinon": "fiche sans e-mail : notifiée sur Telegram, tu peux donner l'adresse avec /email"
         },
         {
+          "type": "securite",
+          "texte": "Contrôle du texte : l'invitation doit contenir l'exemple d'interview et finir par la signature Walid + nom de la chaîne",
+          "sinon": "retenue : rien ne part, la liste arrive sur Telegram (un message par tournée)",
+          "outil": "Telegram"
+        },
+        {
           "type": "auto",
           "texte": "Envoi par Gmail (compte Afrique ou Frexit selon la chaîne), avec image de suivi d'ouverture",
           "outil": "Gmail"
@@ -116,7 +122,7 @@
       "etapes": [
         {
           "type": "toi",
-          "texte": "✅ Valider une fiche : elle est marquée validée et un brouillon est créé dans Gmail, prêt à partir"
+          "texte": "✅ Valider une fiche : elle est marquée validée et un brouillon mis en forme (logo de la chaîne) est créé dans le compte Gmail de sa chaîne, prêt à partir"
         },
         {
           "type": "toi",
@@ -153,7 +159,8 @@
       "points": [
         "Rédigées par Claude au nom de Walid, avec un exemple d'interview en bas de mail",
         "Les informations douteuses ne bloquent rien : elles sont signalées sur la fiche à la validation",
-        "Les logos des deux chaînes (envoyés par toi le 06/10) sont gardés par le cerveau aux adresses publiques /logos/impacteur-afrique.png et /logos/impacteur-frexit.png : prêts pour la signature des mails et des brouillons, dès que le branchement n8n sera montré puis validé"
+        "Contrôle du texte avant envoi (depuis le 06/10) : une invitation qui ne correspond pas au modèle de sa chaîne (exemple d'interview + signature Walid + nom de la chaîne) ne part pas ; tu reçois sur Telegram la liste des fiches retenues, un seul message par tournée",
+        "Le brouillon Gmail créé au ✅ est, depuis le 06/10, un mail mis en forme avec le logo de la chaîne en signature (logos gardés par le cerveau aux adresses publiques /logos/impacteur-afrique.png et /logos/impacteur-frexit.png), créé dans le compte Gmail de sa chaîne"
       ]
     },
     {
@@ -188,12 +195,12 @@
       "detail": "Chaque découverte utilise la recherche Brave et Claude (Haiku). La BnF et les flux YouTube sont gratuits."
     },
     {
-      "sujet": "Brouillons côté Afrique",
-      "detail": "Constat du 06/10 : les brouillons créés au ✅ Telegram partent tous du compte Afrique, signature comprise. Correction en préparation (bon compte + logo de la chaîne, logos reçus le 06/10), montrée avant activation."
+      "sujet": "Exemple d'interview",
+      "detail": "L'exemple en bas des invitations est pour l'instant l'interview Afrique, pour les deux chaînes. Pour un exemple Frexit, donne à Claude le lien d'une interview Frexit."
     },
     {
       "sujet": "Nom de l'accès Gmail Afrique",
-      "detail": "L'accès s'appelle « Gmail account » et ce nom est écrit tel quel dans l'automatisation C depuis le 06/10 : si tu le renommes dans n8n, demander à Claude de re-patcher."
+      "detail": "L'accès s'appelle « Gmail account » et ce nom est écrit tel quel dans l'automatisation C depuis le 06/10 (le brouillon Afrique de D utilise le même accès) : si tu le renommes dans n8n, demander à Claude de re-patcher."
     }
   ],
   "aCompleter": [
@@ -243,7 +250,12 @@
     {
       "message": "N brouillon(s) prêts dans Gmail, pas encore envoyés",
       "sens": "Le ✅ crée un brouillon ; l'envoi reste à toi.",
-      "faire": "Ouvrir le compte Gmail indiqué et envoyer. Souci connu : les brouillons sont tous créés côté Afrique pour l'instant (correction en préparation)."
+      "faire": "Ouvrir le compte Gmail de la chaîne indiquée et envoyer (depuis le 06/10, chaque brouillon est créé dans le compte de sa chaîne, avec le logo en signature)."
+    },
+    {
+      "message": "⚠️ N invitation(s) retenue(s) avant envoi (message Telegram)",
+      "sens": "Le contrôle du texte a bloqué ces invitations : le texte ne correspond pas au modèle de la chaîne, rien n'est parti.",
+      "faire": "Corriger la fiche dans le Sheet, ou /valider CLE pour créer un brouillon à envoyer toi-même."
     },
     {
       "message": "N auteur(s) peut-être décédé(s)",
