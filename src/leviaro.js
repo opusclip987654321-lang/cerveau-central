@@ -1,6 +1,6 @@
 // Leviaro : la prospection tourne dans leviaro-agent (hors n8n) et range tout dans
 // une base SQLite. Le cerveau en lit une copie (lecture seule) chaque heure.
-import { copyFile, mkdtemp, rm, access } from 'node:fs/promises';
+import { copyFile, mkdtemp, rm, access, readdir, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { jourDe } from './business.js';
@@ -57,6 +57,20 @@ export function suivreFile(avant, jourCourant, valeur) {
   return Object.fromEntries(Object.entries(file).sort(([a], [b]) => a.localeCompare(b)).slice(-60));
 }
 
+// Bilans de la semaine que l'agent dépose dans data/bilans/AAAA-MM-JJ.md (texte libre).
+// On garde les 8 derniers, du plus récent au plus ancien.
+export async function lireBilans(dossier) {
+  const rep = path.join(dossier, 'bilans');
+  const noms = await readdir(rep).catch(() => []);
+  const fichiers = noms.filter((n) => /^\d{4}-\d{2}-\d{2}\.(md|txt)$/.test(n)).sort().reverse().slice(0, 8);
+  const bilans = [];
+  for (const n of fichiers) {
+    const texte = await readFile(path.join(rep, n), 'utf8').catch(() => null);
+    if (texte?.trim()) bilans.push({ jour: n.slice(0, 10), texte: texte.trim().slice(0, 8000) });
+  }
+  return bilans;
+}
+
 // Copie la base (et ses fichiers -wal/-shm) puis la lit : on ne touche jamais l'originale.
 export async function synchroniserLeviaro(business, dossier, { maintenant = new Date() } = {}) {
   const source = path.join(dossier, 'leviaro.db');
@@ -76,6 +90,7 @@ export async function synchroniserLeviaro(business, dossier, { maintenant = new 
       const avant = business.sources.leviaro?.fileEtude ?? {};
       business.sources.leviaro = extraireLeviaro(db, maintenant);
       business.sources.leviaro.fileEtude = suivreFile(avant, jourDe(maintenant.toISOString()), business.sources.leviaro.aEtudier);
+      business.sources.leviaro.bilans = await lireBilans(dossier);
     } finally {
       db.close();
     }

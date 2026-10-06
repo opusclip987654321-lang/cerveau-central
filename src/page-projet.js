@@ -261,7 +261,12 @@ ${aValider
   if (id === 'leviaro') {
     const d = business.sources?.leviaro?.detail;
     if (!d) return `<p class="vide">Le détail arrive à la prochaine lecture (dans l’heure).</p>${fin(blocNotes)}`;
+    const bilans = business.sources.leviaro.bilans ?? [];
+    const blocBilans = `<section class="bloc"><h3>Bilans de la semaine de l’agent</h3>${bilans.length
+      ? bilans.map((b, i) => `<details class="texte"${i === 0 ? ' open' : ''}><summary><b>Semaine finie le ${date(b.jour)}</b></summary><p style="white-space:pre-wrap">${e(b.texte)}</p></details>`).join('')
+      : '<p class="vide">L’agent n’a pas encore déposé de bilan (fichier data/bilans/AAAA-MM-JJ.md de leviaro-agent).</p>'}</section>`;
     return [
+      blocBilans,
       table('Réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'c', titre: 'Type' }, { cle: 'x', titre: 'Extrait' }],
         d.reponses.map((r) => ({ q: date(r.recu), n: e(r.entreprise || r.de), c: etiquette(lb('reponse', r.categorie), r.categorie === 'humaine' ? 'ok' : r.categorie === 'opposition' ? 'off' : ''), x: e((r.extrait ?? '').slice(0, 120)) })), { aide: aide('reponse') }),
       table('Mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'o', titre: 'Objet' }, { cle: 'r', titre: 'Relance' }, { cle: 's', titre: 'État' }],
