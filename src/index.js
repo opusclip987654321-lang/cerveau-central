@@ -403,6 +403,20 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'text/plain' });
       return res.end('ok');
     }
+    // Les logos des chaînes, publics (pas de mot de passe) : ils doivent être
+    // visibles dans les mails reçus par les invités, donc lisibles par n'importe qui.
+    if (req.method === 'GET' && url.pathname.startsWith('/logos/')) {
+      const nom = url.pathname.slice('/logos/'.length);
+      try {
+        if (!/^[a-z0-9-]+\.png$/.test(nom)) throw new Error('nom invalide');
+        const image = await readFile(path.join(racine, 'config/logos', nom));
+        res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' });
+        return res.end(image);
+      } catch {
+        res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Logo inconnu');
+      }
+    }
     if (req.method === 'POST' && url.pathname === '/api/releve') {
       const id = url.searchParams.get('serveur');
       if (!jetonReleveValide(req.headers.authorization ?? '')) {
