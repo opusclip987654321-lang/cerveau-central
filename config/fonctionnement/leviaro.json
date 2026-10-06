@@ -1,17 +1,32 @@
 {
   "maj": "2026-10-06",
-  "source": "Lu dans la base leviaro.db et les conteneurs du serveur Nūr le 05/10/2026",
-  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre, les étudie, leur écrit, les relance deux fois, et classe leurs réponses. Les mails partent seulement après ton accord.",
+  "source": "Lu dans la base leviaro.db le 05/10/2026, puis dans le README de l'agent (~/leviaro-agent) le 06/10/2026",
+  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, tu valides, l'agent envoie avec deux relances au maximum et s'arrête dès qu'une réponse arrive. Il démarre toujours en mode simulation : rien ne part tant que tu ne l'as pas décidé.",
   "journee": [
     {
-      "quand": "En continu",
-      "quoi": "Le conteneur « leviaro-cycle » fait tourner la prospection : découverte, analyse, préparation des mails, envois autorisés, lecture des réponses.",
-      "toi": "Valider les mails en attente"
+      "quand": "Toutes les 15 minutes",
+      "quoi": "Le cycle complet de l'agent : découverte si la file descend sous 5 entreprises, analyses du jour (3 par défaut, dans le budget), envois autorisés, relances, lecture des réponses.",
+      "toi": "Valider les mails en attente sur la page privée"
     },
     {
       "quand": "Chaque heure",
-      "quoi": "Le cerveau lit la base Leviaro et met à jour la carte et la page du projet, dont le compteur « À étudier » (entreprises trouvées pas encore étudiées).",
+      "quoi": "Le cerveau lit la base Leviaro et met à jour la carte et la page du projet, dont le compteur « À étudier ».",
       "toi": "Rien"
+    },
+    {
+      "quand": "8 h",
+      "quoi": "Diagnostic du jour envoyé par mail (mode, budget, erreurs des dernières 24 h), lu chaque matin par une routine Claude du projet Leviaro.",
+      "toi": "Rien"
+    },
+    {
+      "quand": "18 h",
+      "quoi": "Rapport du jour envoyé par mail.",
+      "toi": "Le lire"
+    },
+    {
+      "quand": "Lundi 8 h",
+      "quoi": "Récap des 7 jours sur Telegram et apprentissage : au plus 3 règles de rédaction et 3 recommandations pour l'agence.",
+      "toi": "Accepter, reporter ou refuser sur la page « Apprentissage »"
     }
   ],
   "circuits": [
@@ -20,43 +35,95 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Découverte d'entreprises, puis analyse : à approfondir, ou hors périmètre (écartée)"
+          "texte": "Découverte : entreprises de 3 à 49 salariés, par segments en rotation (un secteur × un département ; bâtiment, formation, maintenance)",
+          "outil": "Annuaire public des entreprises"
         },
         {
           "type": "auto",
-          "texte": "Recherche du contact ; sans adresse, la fiche s'arrête là (« contact introuvable »)"
+          "texte": "Analyse : Claude cherche le site officiel, lit 4 à 6 pages, construit le dossier (faits sourcés, offre, mail, relances), puis un second passage contrôle tout",
+          "outil": "Claude (API Anthropic)"
+        },
+        {
+          "type": "securite",
+          "texte": "Contrôles automatiques (prix, source non consultée, adresse non publiée…) et budget réservé avant chaque appel payant",
+          "sinon": "dossier bloqué, ou analyse refusée si le plafond du mois serait dépassé"
         },
         {
           "type": "toi",
-          "texte": "Mail rédigé par l'agent : il attend ta validation avant de partir"
+          "texte": "Validation sur la page privée : lire chaque dossier, modifier, valider en lot ou rejeter avec un motif",
+          "outil": "admin.leviaro.fr"
         },
         {
           "type": "auto",
-          "texte": "Envoi, puis relances 1 et 2 si pas de réponse (« prospection en cours »)"
+          "texte": "Envoi en jours et heures ouvrés, dans les quotas, avec signature légale et lien de désinscription, puis relances 1 et 2 si pas de réponse",
+          "outil": "Boîte mail (SMTP)"
         },
         {
           "type": "auto",
-          "texte": "Réponses classées : vraie réponse, absence automatique, erreur technique, ou opposition (stop)"
+          "texte": "Toute réponse arrête la séquence ; un « STOP » est appliqué tout de suite ; les autres réponses reçoivent un brouillon préparé",
+          "outil": "Boîte mail (IMAP)"
         },
         {
           "type": "toi",
-          "texte": "Tu lis les vraies réponses sur la page Leviaro et tu réponds pour conclure (« en discussion »)"
+          "texte": "Tu valides les brouillons de réponse sur la page et tu conclus (« en discussion »)"
+        }
+      ]
+    },
+    {
+      "titre": "Sans adresse e-mail",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Site avec formulaire de contact : message unique préparé (sans relance), envoyé aussi sur Telegram si branché",
+          "outil": "Telegram"
+        },
+        {
+          "type": "toi",
+          "texte": "C'est toi qui colles le texte dans le formulaire (aucun robot ne le remplit), puis bouton « Envoyé »"
+        },
+        {
+          "type": "auto",
+          "texte": "Bon dossier mais ni e-mail ni formulaire : « lettre possible », adresse du siège listée sur la page (export CSV)"
         }
       ]
     }
   ],
   "regles": [
     {
-      "titre": "Validation",
+      "titre": "Validation et modes",
       "points": [
-        "Aucun mail ne part sans ton accord (statut « mail à valider »)",
+        "Quatre modes : simulation (défaut, rien ne part), pilote (chaque mail part après ta validation), automatique (refusé tant que 10 premiers mails et 5 relances n'ont pas été validés et envoyés), pause",
+        "Les réponses aux prospects restent toujours validées par toi, même en automatique",
         "Une opposition (stop) arrête définitivement la fiche"
       ]
     },
     {
-      "titre": "Relances",
+      "titre": "Budget IA",
       "points": [
-        "Deux relances au maximum après le premier mail"
+        "Avant chaque appel payant, l'agent réserve son coût et refuse si le total du mois dépasserait le plafond (budget fixe, décision du 02/10/2026)",
+        "Plafond presque atteint : les analyses s'arrêtent jusqu'au 1er du mois (2 € gardés pour les brouillons de réponse) ; envois, relances et lecture des réponses continuent, sans coût IA",
+        "L'analyse s'arrête tôt (et ne paie pas le dossier) quand aucun site officiel n'est trouvé ou qu'aucune offre ne convient"
+      ]
+    },
+    {
+      "titre": "Relances et mesure",
+      "points": [
+        "Deux relances au maximum après le premier mail",
+        "Pas de pixel de suivi : les ouvertures ne sont pas mesurées"
+      ]
+    },
+    {
+      "titre": "Apprentissage du lundi",
+      "points": [
+        "Au plus 3 règles de rédaction et 3 recommandations par semaine ; une règle n'est appliquée qu'avec au moins 3 cas",
+        "Jamais de règle sur les prix, le budget, les quotas ou les désinscriptions : ces sujets restent ta décision",
+        "Chaque dossier garde la liste des règles utilisées pour le produire"
+      ]
+    },
+    {
+      "titre": "Passerelle Nūr Meet",
+      "points": [
+        "Une entreprise écartée, à l'identité confirmée et qui publie un e-mail, reçoit un seul mail modèle présentant Nūr Meet (à valider comme les autres, sans relance, sans coût IA)"
       ]
     },
     {
@@ -71,32 +138,45 @@
   "role": {
     "quotidien": [
       "Valider ou rejeter les mails en attente",
-      "Répondre aux entreprises en discussion"
+      "Répondre aux entreprises en discussion",
+      "Coller les messages « formulaire » préparés"
     ],
     "parfois": [
+      "Trancher les règles et recommandations du lundi",
       "Suivre le coût mensuel de l'agent (affiché sur la carte Leviaro)"
     ]
   },
   "aCompleter": [
-    "Les horaires exacts des cycles et l'endroit où tu valides (Telegram ?) restent à confirmer : il me faudrait le contenu de ~/leviaro-agent/README.md.",
-    "Le code de l'agent n'est pas sur GitHub : le cerveau ne lit que sa base de données."
+    "Le cerveau ne lit pas encore le diagnostic de l'agent (GET /diagnostic : mode, budget, erreurs 24 h) : branchement possible en ajoutant son jeton au .env du cerveau."
   ],
   "outils": [
     {
-      "nom": "Agent Leviaro (conteneurs sur le VPS Nūr)",
-      "role": "Découverte, étude, rédaction, relances et lecture des réponses ; son code n'est pas sur GitHub"
+      "nom": "Claude (API Anthropic)",
+      "role": "L'analyse : recherche du site officiel, lecture de 4 à 6 pages, dossier, mail et relances, puis second passage de contrôle ; le modèle se choisit dans la configuration de l'agent"
+    },
+    {
+      "nom": "Annuaire public des entreprises",
+      "role": "La découverte des entreprises (3 à 49 salariés, par secteur et département), gratuit"
+    },
+    {
+      "nom": "Boîte mail (SMTP et IMAP)",
+      "role": "Les envois, les relances, la lecture des réponses et des STOP"
+    },
+    {
+      "nom": "Page privée admin.leviaro.fr",
+      "role": "Validation des dossiers et des réponses, formulaires à copier, lettres possibles, apprentissage"
+    },
+    {
+      "nom": "Telegram (bot, facultatif)",
+      "role": "Formulaires prêts à copier, récap du lundi 8 h, abandon d'un segment qui ne donne rien"
     },
     {
       "nom": "Base leviaro.db",
-      "role": "La mémoire de l'agent, lue par le cerveau chaque heure"
+      "role": "La mémoire de l'agent ; le cerveau en lit une copie chaque heure, sans y écrire"
     },
     {
-      "nom": "IA de l'agent",
-      "role": "L'étude des entreprises coûte de l'IA (coût du mois affiché sur la carte) ; le service exact reste à vérifier (README du serveur)"
-    },
-    {
-      "nom": "admin.leviaro.fr",
-      "role": "L'interface d'administration de l'agent"
+      "nom": "VPS Nūr (hébergement seulement)",
+      "role": "Deux conteneurs Docker construits sur la même image : web (la page privée) et cycle (toutes les 15 minutes)"
     }
   ],
   "alertes": [

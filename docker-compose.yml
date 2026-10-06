@@ -17,6 +17,11 @@ services:
       - /opt/nour-video-agent/data:/sources/histoires:ro
       # Leviaro : le cerveau copie sa base (leviaro.db) pour en lire les chiffres, sans y écrire.
       - /home/ubuntu/leviaro-agent/data:/sources/leviaro:ro
+      # Code des deux agents (lecture seule) : servi par /api/code avec le jeton des
+      # relevés, pour que Claude tienne les guides à jour sans demander à louis.
+      # Les secrets (.env), bases et dossiers data en sont exclus par le cerveau.
+      - /home/ubuntu/leviaro-agent:/sources/leviaro-code:ro
+      - /opt/nour-video-agent:/sources/histoires-code:ro
     networks:
       - default
       - caddy
