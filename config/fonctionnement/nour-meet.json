@@ -163,7 +163,7 @@
         "La page Nūr Meet montre une seule ligne par journée d'envoi (« Voir les N mails ») ; chaque mail s'ouvre sur l'échange complet connu : premier mail, relances, réponses datées",
         "Un « exemple du jour » est tiré au sort par date et reste le même à chaque consultation",
         "Le texte réellement envoyé s'affiche dans l'échange dès que l'automatisation le copie dans np_envois (colonne corps) ; tant qu'il manque, la page le dit (« contenu non récupéré ») et renvoie vers Gmail, rien n'est inventé",
-        "La cause d'un échec d'envoi s'affiche à côté du mail dès que l'automatisation la copie dans np_envois (colonne erreur) ; la carte Nūr Meet additionne alors les causes de la période pour distinguer les adresses mortes (déchet normal de la recherche d'adresses) d'un blocage du serveur d'envoi (urgent) ; sans cause enregistrée, le cerveau le dit, il n'invente rien",
+        "La cause d'un échec d'envoi s'affiche à côté du mail (colonne erreur de np_envois, en place depuis le 06/10) ; la carte Nūr Meet additionne les causes de la période pour distinguer les adresses mortes (déchet normal de la recherche d'adresses) d'un blocage du serveur d'envoi (urgent) ; sans cause enregistrée, le cerveau le dit, il n'invente rien",
         "Les vieux mails « jamais partis » se trient par lots (laisser en attente, à faire repartir après vérification, abandonner) : le cerveau note ta décision et n'envoie jamais rien ; un restaurant déjà servi est signalé « doublon possible »"
       ]
     }
@@ -236,7 +236,7 @@
     {
       "message": "X % des envois échouent cette période",
       "sens": "Soit des adresses mortes (déchet normal des adresses trouvées sur les sites), soit un blocage du serveur d'envoi (grave).",
-      "faire": "Regarder la cause à côté des mails en échec (dès son branchement). La même cause partout = blocage : le dire à Claude tout de suite.",
+      "faire": "Regarder la cause à côté des mails en échec. La même cause partout = blocage : le dire à Claude tout de suite.",
       "niveau": "important"
     },
     {
