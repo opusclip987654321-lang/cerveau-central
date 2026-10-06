@@ -86,3 +86,23 @@ test('Leviaro : file vide, rien à décider', () => {
   assert.equal(carte.chiffres.find((x) => x.titre === 'À étudier').detail, 'évolution visible dès demain');
   assert.ok(!carte.aDecider.some((t) => /étudiées/.test(t)));
 });
+
+test('Leviaro : bilans de la semaine déposés par l\'agent', async () => {
+  const { writeFile, mkdir } = await import('node:fs/promises');
+  const dossier = await baseExemple();
+  await mkdir(path.join(dossier, 'bilans'));
+  await writeFile(path.join(dossier, 'bilans', '2026-09-29.md'), 'Semaine 0');
+  await writeFile(path.join(dossier, 'bilans', '2026-10-06.md'), 'BILAN LEVIARO\n- Envois : 0');
+  await writeFile(path.join(dossier, 'bilans', 'notes.txt'), 'ignoré');
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-06T12:00:00Z') });
+  assert.deepEqual(b.sources.leviaro.bilans.map((x) => x.jour), ['2026-10-06', '2026-09-29']);
+  assert.match(b.sources.leviaro.bilans[0].texte, /Envois : 0/);
+});
+
+test('Leviaro : pas de dossier bilans, liste vide', async () => {
+  const dossier = await baseExemple();
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-06T12:00:00Z') });
+  assert.deepEqual(b.sources.leviaro.bilans, []);
+});
