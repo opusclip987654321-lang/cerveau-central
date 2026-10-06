@@ -45,8 +45,17 @@
         },
         {
           "type": "auto",
-          "texte": "Analyse : Claude cherche le site officiel, lit 4 à 6 pages, construit le dossier (faits sourcés, offre, mail, relances), puis un second passage contrôle tout",
+          "texte": "Analyse : Claude Sonnet cherche le site officiel et ses pages (5 recherches, 6 pages), Claude Opus construit le dossier (faits sourcés, offre, mail, relances)",
           "outil": "Claude (API Anthropic)"
+        },
+        {
+          "type": "auto",
+          "texte": "Recherche gratuite de l'e-mail (depuis le 06/10/2026) : si le dossier n'a pas d'adresse, l'agent lit lui-même, sans IA, l'accueil du site puis ses pages Contact, Nous contacter, Mentions légales, À propos (6 pages max). Il garde l'adresse écrite telle quelle (de préférence contact@ ou info@ du domaine), jamais une adresse devinée ; à défaut, la page de formulaire",
+          "outil": "Site de l'entreprise"
+        },
+        {
+          "type": "auto",
+          "texte": "Contrôle par Claude sur 100 : à 80 ou plus, mail + 2 relances à valider ; écartée mais avec e-mail, mail Nūr Meet à valider ; bon dossier sans contact, « lettre possible »"
         },
         {
           "type": "securite",
@@ -137,6 +146,14 @@
         "La carte Leviaro affiche « À étudier » : les entreprises découvertes que l'agent n'a pas encore analysées (l'étude coûte de l'IA)",
         "Le cerveau garde ce nombre jour par jour pour voir si la file baisse ou s'accumule",
         "Si la file grossit et que la plus ancienne attend depuis 7 jours ou plus, il te pose la question dans « À décider » : augmenter le rythme d'étude ?"
+      ]
+    },
+    {
+      "titre": "Rattrapage des e-mails",
+      "points": [
+        "Constat du 06/10/2026 : sur 15 dossiers complets, seuls 4 avaient un contact écrit, car l'IA de recherche lisait surtout les pages d'activité et oubliait la page Contact (ex. contact@centrelapparent.org, sur /nous-contacter/, jamais lue)",
+        "À chaque tour (toutes les 15 minutes), 3 anciens dossiers sans e-mail sont relus de la même façon, gratuitement",
+        "Une « lettre possible » dont l'e-mail est trouvé passe en mail à valider par toi"
       ]
     }
   ],
