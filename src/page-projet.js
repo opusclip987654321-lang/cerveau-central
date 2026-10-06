@@ -9,6 +9,7 @@ import { jourParis } from './questions.js';
 import { lienVideo, depuisHeureParis } from './histoires.js';
 import { grouperParJour, exempleDuJour, reponseAutomatique, lienGmail } from './mails.js';
 import { DECISIONS_TRI, cleTri } from './tri-mails.js';
+import { CHOIX_VERIF, cleVerif } from './verifs-impacteur.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const date = (j) => (j ? new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—');
@@ -123,7 +124,7 @@ const texteCellule = (t) => {
 const tonProspect = (s) => (s === 'repondu' ? 'ok' : s === 'propose' ? 'attente' : ['exclu', 'ecarte', 'echec'].includes(s) ? 'off' : '');
 
 // Les sections de détail, selon le projet.
-function sections(id, { business, journal, histoires, suivi, tri }) {
+function sections(id, { business, journal, histoires, suivi, tri, verifs }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
   // Les chaînes YouTube du projet, quand elles sont branchées.
   const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
@@ -301,10 +302,37 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
   .join('')}</section>`
       : '';
 
-    const sansEnvoi = fiches.filter((f) => !f.envoi);
+    // La plateforme de vérification demandée par louis (idée du 05/10) : les fiches
+    // « à vérifier » avec Valider / Rejeter. Le choix est noté dans le cerveau ;
+    // le ✅/🗑 Telegram reste le vrai interrupteur tant que le branchement n8n
+    // n'est pas montré à louis puis activé (sa règle : rien d'automatique sans accord).
+    const aVerifier = fiches.filter((f) => f.statut?.startsWith('A_VERIFIER'));
+    const formVerif = (f, choix, texte) =>
+      `<form method="post" action="/verif-fiche" class="verif-form"><input type="hidden" name="auteur" value="${e(f.auteur ?? '')}"><input type="hidden" name="livre" value="${e(f.livre ?? '')}"><input type="hidden" name="choix" value="${choix}"><button type="submit">${texte}</button></form>`;
+    const blocVerifs = table(
+      'Fiches à vérifier avant envoi',
+      [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }, { cle: 'x', titre: 'Ton choix' }],
+      aVerifier.map((f) => {
+        const ch = (verifs?.choix ?? {})[cleVerif(f.auteur, f.livre)];
+        return {
+          a: e(f.auteur ?? '?'),
+          l: e(f.livre ?? '—'),
+          c: etiquette(f.chaine ?? 'chaîne non déclarée', 'or'),
+          s: etiquette(lb('impacteur', f.statut), tonIm(f.statut)),
+          x: `${ch ? `${etiquette(CHOIX_VERIF[ch.choix], ch.choix === 'valider' ? 'ok' : 'off')} <small>le ${date(ch.quand?.slice(0, 10))}</small> ` : ''}<span class="verif-boutons">${formVerif(f, 'valider', 'Valider')}${formVerif(f, 'rejeter', 'Rejeter')}</span>`,
+        };
+      }),
+      {
+        visibles: 15,
+        vide: 'Aucune fiche n’attend ta vérification avant envoi.',
+        aide: '<p class="note-mail">Ton choix est noté dans le cerveau, rien ne part d’ici : le ✅/🗑 sur Telegram reste le vrai interrupteur. Le branchement direct (Valider = brouillon créé dans la boîte Gmail de la chaîne, comme le ✅) est en préparation et te sera montré avant d’être activé.</p>',
+      },
+    );
+    const sansEnvoi = fiches.filter((f) => !f.envoi && !f.statut?.startsWith('A_VERIFIER'));
     return [
+      blocVerifs,
       blocJours,
-      table('Fiches sans envoi (à vérifier, brouillons, bloquées)', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }],
+      table('Fiches sans envoi (brouillons, bloquées)', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }],
         sansEnvoi.map((f) => ({ a: e(f.auteur ?? '?'), l: e(f.livre ?? '—'), c: e(f.chaine ?? '—'), s: etiquette(lb('impacteur', f.statut), tonIm(f.statut)) })), { visibles: 12, vide: 'Toutes les fiches du Sheet ont été traitées.' }),
       fin(blocNotes),
     ].join('');
@@ -342,7 +370,7 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
   return fin(blocNotes);
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   const tableau = tableauDeBord({ business, journal, configJournal, pauses, jour });
@@ -375,7 +403,7 @@ ${mesIdees.length ? `<ul>${mesIdees
 <p class="retour"><a href="/journal">‹ Retour au tableau de bord</a>${guide ? `<a class="guide-lien" href="/fonctionnement?projet=${e(id)}">⚙️ Comment ça marche</a>` : ''}</p>
 ${carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : ''}
 ${blocIdees}
-${sections(id, { business, journal, histoires, suivi, tri })}
+${sections(id, { business, journal, histoires, suivi, tri, verifs })}
 ${surveillance}
 <style>
 .retour { margin:0 0 10px; display:flex; justify-content:space-between; gap:10px; } .retour a { color:var(--doux); text-decoration:none; }
@@ -406,6 +434,9 @@ td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
 .suivi-form { display:flex; flex-direction:column; gap:4px; min-width:170px; }
 .suivi-form select, .suivi-form input { font:inherit; font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
 .suivi-form button { align-self:flex-start; padding:3px 10px; font-size:12px; }
+.verif-boutons { display:inline-flex; gap:6px; }
+.verif-form { display:inline; }
+.verif-form button { padding:3px 10px; font-size:12px; }
 .etiq { display:inline-block; padding:1px 8px; border-radius:10px; background:var(--fond); border:1px solid var(--bord); font-size:12px; white-space:nowrap; }
 .etiq.ok { color:var(--ok); border-color:var(--ok); } .etiq.off { color:var(--doux); } .etiq.attente { color:var(--attention); border-color:var(--attention); }
 .idees textarea { width:100%; font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); box-sizing:border-box; }

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { grouperParJour, exempleDuJour, reponseAutomatique, lienGmail } from '../src/mails.js';
 import { decider, cleTri, DECISIONS_TRI } from '../src/tri-mails.js';
+import { cleVerif } from '../src/verifs-impacteur.js';
 import { readFileSync } from 'node:fs';
 import { pageProjet } from '../src/page-projet.js';
 
@@ -142,4 +143,34 @@ test('page Impacteur : journées avec compte par chaîne, compte d’envoi non e
   assert.match(html, /Compte d’envoi enregistré par l’automatisation : afrique\.conteurs@gmail\.com\./);
   assert.match(html, /Fiches sans envoi/);
   assert.match(html, /C\. Attente/);
+});
+
+test('page Impacteur : plateforme de vérification des fiches, choix noté sans rien envoyer', () => {
+  const business = {
+    objectifs: {},
+    sources: {
+      impacteur: {
+        maj: '2026-10-05T18:00:00Z',
+        fiches: [
+          { auteur: 'C. Attente', livre: 'Livre C', chaine: 'Afrique', statut: 'A_VERIFIER' },
+          { auteur: 'D. Doute', livre: 'Livre D', chaine: 'Frexit', statut: 'A_VERIFIER_DECES' },
+        ],
+      },
+    },
+  };
+  const html = pageProjet(configJournal, 'impacteur', {
+    business,
+    journal: journalVide(),
+    jour: '2026-10-05',
+    idees: { idees: [] },
+    verifs: { choix: { [cleVerif('C. Attente', 'Livre C')]: { auteur: 'C. Attente', livre: 'Livre C', choix: 'valider', quand: '2026-10-05T10:00:00Z' } } },
+  });
+  // Le bloc liste les fiches à vérifier avec les deux boutons et la note honnête.
+  assert.match(html, /Fiches à vérifier avant envoi/);
+  assert.match(html, /action="\/verif-fiche"/);
+  assert.match(html, /rien ne part d’ici : le ✅\/🗑 sur Telegram reste le vrai interrupteur/);
+  // Le choix déjà noté s'affiche ; l'autre fiche attend, décès signalé.
+  assert.match(html, /Validée par toi/);
+  assert.match(html, /D\. Doute/);
+  assert.match(html, /décès à vérifier/);
 });

@@ -154,7 +154,8 @@
         "La page Impacteur regroupe les invités contactés par journée, avec les comptes Afrique et Frexit côte à côte",
         "Sur le tableau de bord, les fiches à vérifier et les brouillons Gmail en attente sont comptés par chaîne (Impacteur Afrique ou Impacteur Frexit), pour savoir dans quel compte regarder",
         "La « chaîne » affichée vient du Sheet : tant que l'automatisation n'enregistre pas le compte Gmail réellement utilisé (colonne compte_envoi), c'est une déclaration, pas une preuve ; dès qu'elle l'enregistre, le compte s'affiche sur chaque mail",
-        "Le texte du mail s'affiche sur la fiche dès que l'automatisation le copie dans le Sheet (colonne corps) ; tant qu'il manque, la fiche le dit et renvoie vers Gmail pour lire l'échange réel"
+        "Le texte du mail s'affiche sur la fiche dès que l'automatisation le copie dans le Sheet (colonne corps) ; tant qu'il manque, la fiche le dit et renvoie vers Gmail pour lire l'échange réel",
+        "Les fiches « à vérifier » s'affichent sur la page Impacteur avec Valider / Rejeter : ton choix est noté dans le cerveau et rien ne part d'ici ; le ✅/🗑 Telegram reste le vrai interrupteur tant que le branchement direct (préparé avec Claude, montré avant activation) n'est pas en place"
       ]
     }
   ],

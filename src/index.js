@@ -36,6 +36,7 @@ import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
 import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
 import { chargerTri, sauverTri, decider } from './tri-mails.js';
+import { chargerVerifs, sauverVerifs, choisirVerif, CHOIX_VERIF } from './verifs-impacteur.js';
 import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, lundiDe } from './bilan.js';
 import { pageAnalyses } from './page-analyses.js';
 import { pageProjet } from './page-projet.js';
@@ -64,6 +65,7 @@ const fichierBusiness = path.join(path.dirname(fichierEtat), 'business.json');
 const fichierIdees = path.join(path.dirname(fichierEtat), 'idees.json');
 const fichierSuivi = path.join(path.dirname(fichierEtat), 'suivi-reponses.json');
 const fichierTri = path.join(path.dirname(fichierEtat), 'tri-mails.json');
+const fichierVerifs = path.join(path.dirname(fichierEtat), 'verifs-impacteur.json');
 const fichierBilans = path.join(path.dirname(fichierEtat), 'bilans.json');
 const plafondBilans = Number(env.PLAFOND_BILAN_DOLLARS ?? 10);
 
@@ -154,6 +156,7 @@ function fileDAttente(charger, sauver, fichier) {
 const avecPauses = fileDAttente(chargerPauses, sauverPauses, fichierPauses);
 const avecActions = fileDAttente(chargerActions, sauverActions, fichierActions);
 const avecTri = fileDAttente(chargerTri, sauverTri, fichierTri);
+const avecVerifs = fileDAttente(chargerVerifs, sauverVerifs, fichierVerifs);
 const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusiness);
 const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
@@ -745,6 +748,7 @@ const serveur = http.createServer(async (req, res) => {
           idees: await chargerIdees(fichierIdees),
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
+          verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifications,
           aRepondre,
           message: url.searchParams.get('message') ?? undefined,
@@ -772,6 +776,16 @@ const serveur = http.createServer(async (req, res) => {
       const r = await avecTri((d) => decider(d, corps.getAll('noms'), corps.get('decision'), { dejaEnvoyes }));
       const message = r.erreur ?? `${r.nombre} décision(s) notée(s)${r.doublons ? ` · ⚠ ${r.doublons} doublon(s) possible(s) : déjà un mail envoyé, à vérifier avant de faire repartir` : ''}. Rien n'est envoyé d'ici.`;
       res.writeHead(303, { location: `/projet?projet=nour-meet&message=${encodeURIComponent(message)}` });
+      return res.end();
+    }
+    // Choix de louis sur une fiche d'invité « à vérifier » (Impacteur) : noté dans
+    // le cerveau, rien ne part d'ici ; le ✅/🗑 Telegram reste l'interrupteur tant
+    // que le branchement n8n n'est pas montré à louis puis activé par lui.
+    if (req.method === 'POST' && url.pathname === '/verif-fiche') {
+      const { auteur, livre, choix } = await lireCorps(req, 4_000);
+      const r = await avecVerifs((d) => choisirVerif(d, { auteur, livre, choix }));
+      const message = r.erreur ?? `Choix noté (${CHOIX_VERIF[r.choix]}). Rien ne part d'ici : le ✅/🗑 Telegram reste l'interrupteur tant que le branchement n'est pas activé.`;
+      res.writeHead(303, { location: `/projet?projet=impacteur&message=${encodeURIComponent(message)}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/suivi-reponse') {
