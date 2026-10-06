@@ -92,7 +92,7 @@
    {"nom": "Proxy IPRoyal", "role": "Fait passer les téléchargements YouTube ; crédit payant au Go (3 à 5 Go par mois), à recharger quand il est épuisé"},
    {"nom": "YouTube (API officielle)", "role": "La mise en ligne des vidéos ; quota de 10 000 points par jour, 1 600 par mise en ligne"},
    {"nom": "Meta (Facebook et Instagram)", "role": "La publication des vidéos ; accès à réautoriser vers début janvier 2027"},
-   {"nom": "TikTok (API officielle)", "role": "La publication directe est câblée dans l'atelier (avec ton autorisation TikTok) ; tant qu'elle n'est pas activée, tu postes toi-même"},
+   {"nom": "TikTok (API officielle)", "role": "La publication directe existe dans l'atelier mais n'est pas utilisée : tu postes toi-même les vidéos TikTok (confirmé le 06/10)"},
    {"nom": "Telegram (bot)", "role": "Le tri ✅/🗑 des vidéos et les récaps"}
   ],
   "vigilance": [
