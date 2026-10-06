@@ -71,6 +71,24 @@ export async function lireBilans(dossier) {
   return bilans;
 }
 
+// Diagnostic que l'agent réécrit à chaque tour (15 min) dans data/diagnostic.json :
+// mode, budget du mois et erreurs des dernières 24 h. Absent ou illisible : null.
+export async function lireDiagnostic(dossier) {
+  try {
+    const d = JSON.parse(await readFile(path.join(dossier, 'diagnostic.json'), 'utf8'));
+    const nb = (x) => (typeof x === 'number' && Number.isFinite(x) ? Math.round(x * 100) / 100 : null);
+    return {
+      genere: d.genere_le ?? null,
+      mode: d.mode ? String(d.mode).slice(0, 40) : null,
+      depense: nb(d.budget?.depense_mois_eur),
+      plafond: nb(d.budget?.plafond_eur),
+      erreurs24h: Array.isArray(d.erreurs_24h) ? d.erreurs_24h.length : 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // Copie la base (et ses fichiers -wal/-shm) puis la lit : on ne touche jamais l'originale.
 export async function synchroniserLeviaro(business, dossier, { maintenant = new Date() } = {}) {
   const source = path.join(dossier, 'leviaro.db');
@@ -91,6 +109,7 @@ export async function synchroniserLeviaro(business, dossier, { maintenant = new 
       business.sources.leviaro = extraireLeviaro(db, maintenant);
       business.sources.leviaro.fileEtude = suivreFile(avant, jourDe(maintenant.toISOString()), business.sources.leviaro.aEtudier);
       business.sources.leviaro.bilans = await lireBilans(dossier);
+      business.sources.leviaro.diagnostic = await lireDiagnostic(dossier);
     } finally {
       db.close();
     }

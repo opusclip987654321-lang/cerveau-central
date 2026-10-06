@@ -14,6 +14,11 @@
       "toi": "Rien"
     },
     {
+      "quand": "Toutes les 15 minutes",
+      "quoi": "L'agent réécrit son diagnostic (mode, budget du mois, erreurs des dernières 24 h) dans data/diagnostic.json ; le cerveau affiche le budget et le mode sur la carte Leviaro, et signale les erreurs dans « À décider ».",
+      "toi": "Rien, sauf s'il y a des erreurs"
+    },
+    {
       "quand": "Chaque semaine",
       "quoi": "L'agent dépose son bilan de la semaine (envois, entreprises traitées, meilleurs dossiers, budget, corrections) dans data/bilans/ ; le cerveau l'affiche en haut de la page Leviaro et garde les 8 derniers.",
       "toi": "Le lire"
@@ -169,7 +174,6 @@
     ]
   },
   "aCompleter": [
-    "Le cerveau ne lit pas encore le diagnostic de l'agent (GET /diagnostic : mode, budget, erreurs 24 h) : branchement possible en ajoutant son jeton au .env du cerveau."
   ],
   "outils": [
     {

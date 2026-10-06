@@ -374,6 +374,8 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     const ilYA = file.filter(([j]) => j <= periode[0]).at(-1) ?? file[0];
     const evolution = ilYA && file.length > 1 ? (lv.aEtudier ?? 0) - ilYA[1] : null;
     const attente = lv.aEtudierDepuis ? Math.round((Date.parse(jour) - Date.parse(lv.aEtudierDepuis)) / 86400000) : null;
+    const diag = lv.diagnostic;
+    if (diag?.erreurs24h) aDecider.push(`${nombre(diag.erreurs24h)} erreur(s) de l'agent ces dernières 24 h : à regarder dans le diagnostic.`);
     if (lv.aEtudier && evolution > 0 && attente >= 7) aDecider.push(`${nombre(lv.aEtudier)} entreprise(s) trouvée(s) attendent d'être étudiées, la file grossit (+${nombre(evolution)}) et la plus ancienne attend depuis ${attente} jours : augmenter le rythme d'étude ?`);
     const c = carte('leviaro', {
       titre: 'Prospects contactés',
@@ -386,6 +388,11 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
         { titre: 'Réponses', valeur: somme(parJour(periode, reponses)), detail: `${pct(reponses.length, premiers.length) ?? 0} % de réponse depuis le début (${nombre(reponses.length)} sur ${nombre(premiers.length)})` },
         { titre: 'Relances envoyées', valeur: somme(parJour(periode, relances)) },
         { titre: 'Entreprises trouvées', valeur: somme(parJour(periode, lv.entreprises)), detail: `${nombre(lv.enDiscussion)} en discussion · coût IA du mois ${lv.coutMois.toLocaleString('fr-FR')} €` },
+        ...(diag ? [{
+          titre: 'Budget IA du mois',
+          valeur: diag.depense === null ? '—' : `${diag.depense.toLocaleString('fr-FR')} €`,
+          detail: [diag.plafond === null ? null : `sur ${diag.plafond.toLocaleString('fr-FR')} €`, diag.mode ? `mode ${diag.mode}` : null].filter(Boolean).join(' · '),
+        }] : []),
         ...(lv.aEtudier === undefined ? [] : [{
           titre: 'À étudier',
           valeur: lv.aEtudier,
