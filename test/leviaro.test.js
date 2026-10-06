@@ -106,3 +106,26 @@ test('Leviaro : pas de dossier bilans, liste vide', async () => {
   await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-06T12:00:00Z') });
   assert.deepEqual(b.sources.leviaro.bilans, []);
 });
+
+test('Leviaro : diagnostic de l\'agent lu dans data/diagnostic.json', async () => {
+  const { writeFile } = await import('node:fs/promises');
+  const dossier = await baseExemple();
+  await writeFile(path.join(dossier, 'diagnostic.json'), JSON.stringify({ genere_le: '2026-10-06T21:00:00Z', mode: 'simulation', budget: { depense_mois_eur: 33.891, plafond_eur: 70, frais_fixes_eur: 17 }, erreurs_24h: [{ x: 1 }, { x: 2 }] }));
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-06T21:10:00Z') });
+  assert.deepEqual(b.sources.leviaro.diagnostic, { genere: '2026-10-06T21:00:00Z', mode: 'simulation', depense: 33.89, plafond: 70, erreurs24h: 2 });
+  const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-06' }).cartes.find((c) => c.id === 'leviaro');
+  const budget = carte.chiffres.find((x) => x.titre === 'Budget IA du mois');
+  assert.equal(budget.valeur, '33,89 €');
+  assert.equal(budget.detail, 'sur 70 € · mode simulation');
+  assert.ok(carte.aDecider.some((t) => /2 erreur\(s\) de l'agent/.test(t)));
+});
+
+test('Leviaro : pas de diagnostic, rien d\'affiché', async () => {
+  const dossier = await baseExemple();
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-06T21:10:00Z') });
+  assert.equal(b.sources.leviaro.diagnostic, null);
+  const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-06' }).cartes.find((c) => c.id === 'leviaro');
+  assert.ok(!carte.chiffres.some((x) => x.titre === 'Budget IA du mois'));
+});
