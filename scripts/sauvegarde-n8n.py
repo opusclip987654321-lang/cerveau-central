@@ -11,7 +11,8 @@ automatisation est cassée par erreur, ce dépôt permet de la réimporter telle
 
 Lecture seule côté n8n. Les accès (credentials) n'en sortent que par leur nom, jamais leur
 valeur ; une clé écrite en clair dans un nœud est remplacée par un repère « à ressaisir » ;
-les données d'essai épinglées (pinData, souvent de vrais mails) sont retirées.
+les données d'essai épinglées (pinData) et l'état interne (staticData) ne sont pas copiés, et les
+adresses e-mail hors des domaines de louis sont remplacées : le dépôt de sauvegarde est public.
 En cas d'échec, une alerte part sur le Telegram du cerveau.
 Réglage facultatif dans le .env : SAUVEGARDE_N8N_DOSSIER (par défaut ~/sauvegarde-n8n).
 """
@@ -66,11 +67,24 @@ def lire_workflows(base, cle):
 CHAMP_SECRET = re.compile(r"(api[_-]?key|apikey|token|secret|password|passwd|authorization|bearer)", re.I)
 VALEUR_SECRETE = re.compile(r"(\bBearer\s+\S{12,}|\bsk-[A-Za-z0-9_-]{16,}|\bxox[abp]-\S+|\bAIza[0-9A-Za-z_-]{30,}|\bghp_[A-Za-z0-9]{30,}|\b\d{8,10}:[A-Za-z0-9_-]{30,})")
 MASQUE = "[RETIRÉ DE LA SAUVEGARDE : à ressaisir]"
+# Le dépôt de sauvegarde est public : aucune adresse de prospect (restaurant, auteur) ne doit y paraître.
+# Seules restent les adresses des domaines de louis, utiles pour réimporter (expéditeur, réponses).
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,}")
+DOMAINES_GARDES = ("nourmeet.com", "leviaro.fr", "actualitevideo.fr", "retiree.invalid")
+
+
+def masquer_emails(texte, compte):
+    def remplacer(m):
+        if m.group(0).lower().endswith(DOMAINES_GARDES):
+            return m.group(0)
+        compte[1] += 1
+        return "adresse@retiree.invalid"
+    return EMAIL.sub(remplacer, texte)
 
 
 def masquer(valeur, nom="", compte=None):
     """Retire les clés écrites en clair dans les nœuds (en-têtes, champs « token »…) ; n8n s'en passe à l'import."""
-    compte = compte if compte is not None else [0]
+    compte = compte if compte is not None else [0, 0]
     if isinstance(valeur, dict):
         # Paire {name: "Authorization", value: "..."} des en-têtes et paramètres HTTP.
         if isinstance(valeur.get("name"), str) and CHAMP_SECRET.search(valeur["name"]) and isinstance(valeur.get("value"), str) and valeur["value"] and not valeur["value"].startswith("={{"):
@@ -86,7 +100,8 @@ def masquer(valeur, nom="", compte=None):
             return MASQUE
         if VALEUR_SECRETE.search(valeur):
             compte[0] += 1
-            return VALEUR_SECRETE.sub(MASQUE, valeur)
+            valeur = VALEUR_SECRETE.sub(MASQUE, valeur)
+        return masquer_emails(valeur, compte)
     return valeur
 
 
@@ -97,20 +112,22 @@ def nom_de_fichier(w):
 
 
 def ecrire_instance(dossier, workflows):
-    """Écrit un fichier par automatisation ; renvoie le nombre de clés retirées."""
+    """Écrit un fichier par automatisation ; renvoie [clés retirées, adresses retirées]."""
     dossier.mkdir(parents=True, exist_ok=True)
-    attendus, compte = set(), [0]
+    attendus, compte = set(), [0, 0]
     for w in workflows:
         nom = nom_de_fichier(w)
         attendus.add(nom)
         propre = {k: w[k] for k in CHAMPS_GARDES if k in w}
         propre["nodes"] = [{**n, "parameters": masquer(n.get("parameters", {}), "", compte)} for n in propre.get("nodes", [])]
-        (dossier / nom).write_text(json.dumps(propre, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        # Dernier passage sur tout le fichier (notes, noms de nœuds…), pas seulement les paramètres.
+        texte = masquer_emails(json.dumps(propre, ensure_ascii=False, indent=2, sort_keys=True), compte)
+        (dossier / nom).write_text(texte + "\n")
     # Une automatisation supprimée dans n8n disparaît aussi ici (elle reste dans l'historique git).
     for f in dossier.glob("*.json"):
         if f.name not in attendus:
             f.unlink()
-    return compte[0]
+    return compte
 
 
 def git(dossier, *args):
@@ -146,8 +163,8 @@ def main():
             # On ne touche pas aux fichiers de ce n8n : une panne ne doit pas effacer la sauvegarde.
             erreurs.append(f"{sous_dossier} : {e}")
             continue
-        retirees = ecrire_instance(dossier / sous_dossier, workflows)
-        resume.append(f"{sous_dossier} : {len(workflows)} automatisations" + (f" ({retirees} clés en clair retirées)" if retirees else ""))
+        cles, adresses = ecrire_instance(dossier / sous_dossier, workflows)
+        resume.append(f"{sous_dossier} : {len(workflows)} automatisations, {cles} clés et {adresses} adresses e-mail retirées")
 
     print("\n".join(resume + [f"ERREUR {e}" for e in erreurs]) or "Aucun n8n configuré dans .env.")
     if essai:
