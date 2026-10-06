@@ -99,6 +99,7 @@ test('page Nūr Meet : le texte réellement envoyé s’affiche quand l’automa
         envois: [
           { jour: '2026-10-04', nom: 'Chez Momo', objet: 'Soirée Nūr', statut: 'envoye', corps: 'Bonjour, on organise des soirées sans alcool…' },
           { jour: '2026-10-05', nom: 'Chez Momo', objet: 'Relance soirée', statut: 'envoye', corps: 'Je me permets de relancer mon précédent message.' },
+          { jour: '2026-10-05', nom: 'Chez Momo', objet: 'Essai raté', statut: 'echec', erreur: 'Mailbox full', corps: 'Texte du mail en échec.' },
         ],
         reponses: [],
       },
@@ -109,6 +110,8 @@ test('page Nūr Meet : le texte réellement envoyé s’affiche quand l’automa
   assert.match(html, /Je me permets de relancer mon précédent message\./);
   // Tous les textes sont là : plus de note « contenu non récupéré » sur cet échange.
   assert.doesNotMatch(html, /contenu non récupéré/);
+  // La cause d'un échec s'affiche à côté du mail quand np_envois la porte (colonne erreur).
+  assert.match(html, /cause : Mailbox full/);
 });
 
 test('page Impacteur : journées avec compte par chaîne, compte d’envoi non enregistré dit tel quel', () => {

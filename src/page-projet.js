@@ -58,7 +58,7 @@ const AIDE = {
   ],
   envoi: [
     ['envoyé', 'le mail est parti chez le restaurant'],
-    ['échec', 'l’envoi a raté (adresse invalide, boîte pleine…) ; la cause exacte est dans n8n, le cerveau ne l’invente pas'],
+    ['échec', 'l’envoi a raté ; quand l’automatisation enregistre la cause (adresse invalide, blocage du serveur…), elle s’affiche à côté du mail — sinon elle reste dans n8n, le cerveau ne l’invente pas'],
     ['en attente', 'préparé, il attend son créneau d’envoi'],
     ['refusé', 'tu avais dit non du temps de la validation Telegram'],
     ['jamais parti', 'préparé par l’ancien circuit de validation et resté en attente : à trier dans le bloc dédié'],
@@ -201,7 +201,7 @@ function sections(id, { business, journal, histoires, suivi, tri }) {
       const fils = [
         ...envoisResto.map((x) => ({
           j: x.jour,
-          h: `→ ${date(x.jour)} · ${e(x.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '')}${x.corps ? `<span class="corps-mail">${texteCellule(x.corps)}</span>` : ''}`,
+          h: `→ ${date(x.jour)} · ${e(x.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', x.statut), x.statut === 'envoye' ? 'ok' : x.statut === 'echec' ? 'off' : '')}${x.statut === 'echec' && x.erreur ? ` <small class="cause-echec">cause : ${e(x.erreur)}</small>` : ''}${x.corps ? `<span class="corps-mail">${texteCellule(x.corps)}</span>` : ''}`,
         })),
         ...textes.filter((r) => r.nom === nomResto).map((r) => ({ j: r.jour, h: `← ${date(r.jour)} · réponse : ${texteCellule(r.texte)}` })),
       ].sort((a, b) => ((a.j ?? '') > (b.j ?? '') ? 1 : -1));
@@ -220,7 +220,7 @@ ${parJour
     const echecs = liste.filter((x) => x.statut === 'echec').length;
     const ex = exempleDuJour(j, liste.length);
     return `<details class="jour-mails"><summary><b>${date(j)}</b> · ${envoyes} mail(s) envoyé(s)${echecs ? ` · <span class="etiq off">${echecs} échec(s)</span>` : ''}<span class="voir">Voir les ${liste.length} mails ›</span></summary>
-${liste.map((m, i) => `<details class="mail"><summary>${i === ex ? '★ ' : ''}${e(m.nom ?? '?')} — ${e(m.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', m.statut), m.statut === 'envoye' ? 'ok' : m.statut === 'echec' ? 'off' : '')}${i === ex ? ' <small class="ex">exemple du jour</small>' : ''}</summary>${echange(m.nom)}</details>`).join('')}
+${liste.map((m, i) => `<details class="mail"><summary>${i === ex ? '★ ' : ''}${e(m.nom ?? '?')} — ${e(m.objet ?? 'objet non enregistré')} ${etiquette(lb('envoi', m.statut), m.statut === 'envoye' ? 'ok' : m.statut === 'echec' ? 'off' : '')}${m.statut === 'echec' && m.erreur ? ` <small class="cause-echec">${e(m.erreur)}</small>` : ''}${i === ex ? ' <small class="ex">exemple du jour</small>' : ''}</summary>${echange(m.nom)}</details>`).join('')}
 </details>`;
   })
   .join('')}</section>`
@@ -425,6 +425,7 @@ td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
 .echange-mail { margin:6px 0 4px 16px; border-left:2px solid var(--bord); padding-left:12px; }
 .echange-mail p { margin:4px 0; font-size:13px; }
 .corps-mail { display:block; margin:4px 0 6px 14px; white-space:pre-wrap; color:var(--doux); }
+.cause-echec { color:var(--doux); font-style:italic; }
 .corps-mail details.texte p { white-space:pre-wrap; }
 .note-mail { color:var(--doux); font-size:12px !important; }
 .barre-tri { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }

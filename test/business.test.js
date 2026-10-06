@@ -45,7 +45,7 @@ test('synchroniserProspection lit tout, page par page, sans les tests ni les dou
     np_envois: [
       { statut: 'envoye', date_decision: '2026-10-01T09:00:00Z', corps: 'Bonjour, voici notre proposition.' },
       { statut: 'envoye', date_decision: '2026-09-29T09:00:00Z' },
-      { statut: 'echec', date_proposition: '2026-10-03T09:00:00Z' },
+      { statut: 'echec', date_proposition: '2026-10-03T09:00:00Z', erreur: 'Recipient address rejected: User unknown' },
       { statut: 'test', date_decision: '2026-10-03T09:00:00Z' },
     ],
     np_ouvertures: [
@@ -65,6 +65,8 @@ test('synchroniserProspection lit tout, page par page, sans les tests ni les dou
   assert.deepEqual(pr.envois.map((e) => [e.statut, e.jour]), [['envoye', '2026-10-01'], ['envoye', '2026-09-29'], ['echec', '2026-10-03']]);
   // Le texte envoyé est gardé quand np_envois le porte (colonne corps), sinon null, jamais inventé.
   assert.deepEqual(pr.envois.map((e) => e.corps), ['Bonjour, voici notre proposition.', null, null]);
+  // Pareil pour la cause d'un échec (colonne erreur).
+  assert.deepEqual(pr.envois.map((e) => e.erreur), [null, null, 'Recipient address rejected: User unknown']);
   assert.deepEqual(pr.ouvertures.sort(), ['2026-10-01', '2026-10-03']);
   assert.equal(pr.prospects.find((x) => x.statut === 'repondu').reponse, '2026-10-02');
   // Le texte des réponses est rattaché au bon restaurant via l'adresse, même écrite autrement.
@@ -86,7 +88,8 @@ function businessExemple() {
   const envois = [
     ...Array(8).fill({ statut: 'envoye', jour: '2026-10-03' }),
     ...Array(2).fill({ statut: 'envoye', jour: '2026-09-27' }),
-    ...Array(2).fill({ statut: 'echec', jour: '2026-10-03' }),
+    { statut: 'echec', jour: '2026-10-03', erreur: 'User unknown' },
+    { statut: 'echec', jour: '2026-10-03' },
   ];
   return { sources: { prospection: { maj: '2026-10-05T11:00:00Z', prospects, envois, ouvertures: ['2026-10-03', '2026-10-04'] } }, objectifs: {} };
 }
@@ -104,6 +107,10 @@ test('tableauDeBord : chiffres de prospection Nūr Meet sur 7 jours', () => {
   assert.ok(n.aDecider.some((t) => /1 mail\(s\) préparés ne sont jamais partis/.test(t)));
   assert.ok(n.aDecider.some((t) => /6 restaurants trouvés n'ont pas d'email \(75 %\)/.test(t)));
   assert.ok(n.aDecider.some((t) => /20 % des envois échouent/.test(t)));
+  // Les échecs de la période apparaissent avec leurs causes quand elles sont enregistrées.
+  const ech = n.chiffres.find((c) => /Échecs d'envoi/.test(c.titre));
+  assert.equal(ech.valeur, 2);
+  assert.match(ech.detail, /1 × « User unknown » · 1 sans cause enregistrée/);
   assert.equal(n.objectif.propose, 3); // 10 envois sur 4 semaines → 2,5/semaine × 1,2
   assert.deepEqual(n.manque, ['rendez-vous / démos', 'abonnements payés (Stripe)']);
 });
