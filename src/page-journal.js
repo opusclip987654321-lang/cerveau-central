@@ -56,17 +56,29 @@ export const CSS_CARTE = `.bd { background:var(--carte); border:1px solid var(--
 .pied small { font-size:12px; color:var(--doux); }`;
 
 // Petit graphique en barres (SVG) : série principale, et une seconde série en surimpression.
+// Au-delà de deux mois, une barre par jour serait illisible : on regroupe par semaine
+// (en partant de la fin, pour que la dernière barre se termine aujourd'hui).
 function graphique(periode, serie, secondaire) {
-  const max = Math.max(1, ...serie, ...(secondaire?.serie ?? []));
-  const l = 300 / periode.length;
-  const barres = periode
+  const somme = (s, a, b) => s.slice(a, b).reduce((x, y) => x + y, 0);
+  let [jours, s1, s2, pas] = [periode, serie, secondaire?.serie, ''];
+  if (periode.length > 60) {
+    const tranches = [];
+    for (let fin = periode.length; fin > 0; fin -= 7) tranches.unshift([Math.max(0, fin - 7), fin]);
+    jours = tranches.map(([a]) => periode[a]);
+    s1 = tranches.map(([a, b]) => somme(serie, a, b));
+    s2 = secondaire ? tranches.map(([a, b]) => somme(secondaire.serie, a, b)) : undefined;
+    pas = 'semaine du ';
+  }
+  const max = Math.max(1, ...s1, ...(s2 ?? []));
+  const l = 300 / jours.length;
+  const barres = jours
     .map((j, i) => {
-      const h = Math.round((serie[i] / max) * 70);
-      const h2 = secondaire ? Math.round((secondaire.serie[i] / max) * 70) : 0;
-      return `<g><title>${jourCourt(j)} : ${serie[i]}${secondaire ? ` · ${secondaire.titre.toLowerCase()} : ${secondaire.serie[i]}` : ''}</title><rect x="${(i * l + l * 0.15).toFixed(1)}" y="${78 - h}" width="${(l * 0.7).toFixed(1)}" height="${h}" rx="2" class="b1"/>${h2 ? `<rect x="${(i * l + l * 0.3).toFixed(1)}" y="${78 - h2}" width="${(l * 0.4).toFixed(1)}" height="${h2}" rx="2" class="b2"/>` : ''}</g>`;
+      const h = Math.round((s1[i] / max) * 70);
+      const h2 = s2 ? Math.round((s2[i] / max) * 70) : 0;
+      return `<g><title>${pas}${jourCourt(j)} : ${s1[i]}${secondaire ? ` · ${secondaire.titre.toLowerCase()} : ${s2[i]}` : ''}</title><rect x="${(i * l + l * 0.15).toFixed(1)}" y="${78 - h}" width="${(l * 0.7).toFixed(1)}" height="${h}" rx="2" class="b1"/>${h2 ? `<rect x="${(i * l + l * 0.3).toFixed(1)}" y="${78 - h2}" width="${(l * 0.4).toFixed(1)}" height="${h2}" rx="2" class="b2"/>` : ''}</g>`;
     })
     .join('');
-  return `<svg viewBox="0 0 300 92" class="graphe" role="img" aria-label="Évolution par jour">${barres}<line x1="0" y1="78.5" x2="300" y2="78.5" class="axe"/><text x="0" y="90">${jourCourt(periode[0])}</text><text x="300" y="90" text-anchor="end">${jourCourt(periode.at(-1))}</text></svg>`;
+  return `<svg viewBox="0 0 300 92" class="graphe" role="img" aria-label="Évolution ${pas ? 'par semaine' : 'par jour'}">${barres}<line x1="0" y1="78.5" x2="300" y2="78.5" class="axe"/><text x="0" y="90">${jourCourt(periode[0])}</text><text x="300" y="90" text-anchor="end">${jourCourt(periode.at(-1))}</text></svg>`;
 }
 
 export function carteProjet(c, jours) {
@@ -85,7 +97,7 @@ export function carteProjet(c, jours) {
 <div class="principal"><b>${p.total}</b><span>${e(p.titre)}</span>${evolution ? `<small>${evolution} vs ${jours} j avant</small>` : ''}</div>
 ${c.chiffres.length ? `<div class="secondaires">${c.chiffres.map((x) => `<span><b>${x.valeur}</b> ${e(x.titre)}${x.detail ? `<small>${e(x.detail)}</small>` : ''}</span>`).join('')}</div>` : ''}
 ${p.total || c.secondaire?.serie.some(Boolean) ? graphique(c.periode, p.serie, c.secondaire) : ''}
-${c.secondaire && (p.total || c.secondaire.serie.some(Boolean)) ? `<p class="legende"><i class="l1"></i>${e(p.titre)} <i class="l2"></i>${e(c.secondaire.titre)}</p>` : ''}
+${c.secondaire && (p.total || c.secondaire.serie.some(Boolean)) ? `<p class="legende"><i class="l1"></i>${e(p.titre)} : ${p.serie.reduce((a, b) => a + b, 0).toLocaleString('fr-FR')} <i class="l2"></i>${e(c.secondaire.titre)} : ${c.secondaire.serie.reduce((a, b) => a + b, 0).toLocaleString('fr-FR')}</p>` : ''}
 ${c.aDecider.length ? `<div class="decider"><b>À décider</b><ul>${c.aDecider.map((t) => `<li>${e(t)}</li>`).join('')}</ul></div>` : ''}
 ${objectif}
 ${c.manque.length ? `<p class="manque">Pas encore branché : ${e(c.manque.join(', '))}</p>` : ''}
@@ -202,7 +214,7 @@ ${blocBlocage}
 ${ajout}
 ${semaine ? `<div class="tuiles">${semaine}</div>` : ''}
 ${blocsJours.length ? blocsJours.join('\n') : '<p class="vide">Rien sur la période : pas d’incident, pas d’événement noté.</p>'}`
-    : `${entete('Tableau de bord')}
+    : `${entete('Tableau de bord', [7, 30, 365])}
 <div class="bds">${cartes.join('')}</div>
 ${tableau.maj ? `<p class="maj">Prospection Nūr Meet relue à ${new Date(tableau.maj).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}.</p>` : ''}
 ${ajout}
