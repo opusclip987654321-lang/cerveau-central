@@ -19,6 +19,36 @@ test('chaque projet du journal a son guide « Comment ça marche »', async () =
   assert.equal((await chargerFonctionnement('/nulle/part')).size, 0);
 });
 
+test('chaque guide respecte le format que la page sait afficher', async () => {
+  const guides = await chargerFonctionnement(dossier);
+  for (const [id, g] of guides) {
+    // Une règle rangée sous une autre clé que `points` s'afficherait en liste vide
+    // (c'est arrivé au guide Cambodge) : on vérifie le format de tout ce que la page lit.
+    for (const r of g.regles ?? []) assert.ok(Array.isArray(r.points) && r.points.length && r.points.every((p) => typeof p === 'string'), `règle « ${r.titre} » sans points affichables (${id})`);
+    for (const a of g.alertes ?? []) assert.ok(a.message && a.sens && a.faire, `alerte incomplète (${id})`);
+    for (const v of g.vigilance ?? []) assert.ok(v.sujet && v.detail, `vigilance incomplète (${id})`);
+    for (const o of g.outils ?? []) assert.ok(o.nom && o.role, `outil incomplet (${id})`);
+    for (const c of g.circuits ?? []) for (const et of c.etapes ?? []) assert.ok(et.texte, `étape sans texte (${id})`);
+    for (const l of g.journee ?? []) assert.ok(l.quand && l.quoi && l.toi !== undefined, `journée incomplète (${id})`);
+  }
+});
+
+test('le guide Cambodge affiche ses règles et chaque guide a ses outils', async () => {
+  const guides = await chargerFonctionnement(dossier);
+  const html = pageFonctionnement(configJournal, 'cambodge', guides.get('cambodge'));
+  // Le texte des règles est bien visible (bug du 06/10 : il était sous `texte`, la page lit `points`).
+  assert.match(html, /il n(’|&#39;|')envoie rien et ne touche à rien/);
+  assert.match(html, /Outils et API/);
+  for (const [id, g] of guides) {
+    assert.ok(g.outils?.length, `outils manquants pour ${id}`);
+    const page = pageFonctionnement(configJournal, id, g);
+    if (page) assert.match(page, /Outils et API/, `section outils absente de la page ${id}`);
+  }
+  // La puce d'outil sur une étape de circuit (Google Places sur la recherche Nūr Meet).
+  const nm = pageFonctionnement(configJournal, 'nour-meet', guides.get('nour-meet'));
+  assert.match(nm, /<span class="outil">Google Places<\/span>/);
+});
+
 test('la page du guide reprend le format du PDF v4', async () => {
   const guides = await chargerFonctionnement(dossier);
   const html = pageFonctionnement(configJournal, 'extrait-politique', guides.get('extrait-politique'));

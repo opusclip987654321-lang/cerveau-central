@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-05",
+  "maj": "2026-10-06",
   "source": "Lu dans la base leviaro.db et les conteneurs du serveur Nūr le 05/10/2026",
   "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre, les étudie, leur écrit, les relance deux fois, et classe leurs réponses. Les mails partent seulement après ton accord.",
   "journee": [
@@ -80,5 +80,51 @@
   "aCompleter": [
     "Les horaires exacts des cycles et l'endroit où tu valides (Telegram ?) restent à confirmer : il me faudrait le contenu de ~/leviaro-agent/README.md.",
     "Le code de l'agent n'est pas sur GitHub : le cerveau ne lit que sa base de données."
+  ],
+  "outils": [
+    {
+      "nom": "Agent Leviaro (conteneurs sur le VPS Nūr)",
+      "role": "Découverte, étude, rédaction, relances et lecture des réponses ; son code n'est pas sur GitHub"
+    },
+    {
+      "nom": "Base leviaro.db",
+      "role": "La mémoire de l'agent, lue par le cerveau chaque heure"
+    },
+    {
+      "nom": "IA de l'agent",
+      "role": "L'étude des entreprises coûte de l'IA (coût du mois affiché sur la carte) ; le service exact reste à vérifier (README du serveur)"
+    },
+    {
+      "nom": "admin.leviaro.fr",
+      "role": "L'interface d'administration de l'agent"
+    }
+  ],
+  "alertes": [
+    {
+      "message": "N réponse(s) de prospect pas encore traitée(s)",
+      "sens": "Une entreprise attend une suite.",
+      "faire": "Lire la réponse sur la page Leviaro et répondre."
+    },
+    {
+      "message": "N mail(s) attendent ta validation",
+      "sens": "L'agent n'envoie rien sans toi.",
+      "faire": "Les valider ou les rejeter."
+    },
+    {
+      "message": "N recommandation(s) de l'agent à accepter ou refuser",
+      "sens": "L'agent propose un changement (par exemple écarter une entreprise).",
+      "faire": "Trancher."
+    },
+    {
+      "message": "N mail(s) en échec définitif cette période",
+      "sens": "Des adresses qui ne marchent pas.",
+      "faire": "Vérifier les adresses de ces entreprises.",
+      "niveau": "important"
+    },
+    {
+      "message": "N entreprise(s) trouvée(s) attendent d'être étudiées, la file grossit",
+      "sens": "L'agent découvre plus vite qu'il n'étudie.",
+      "faire": "Décider : augmenter le rythme d'étude (ça augmente le coût IA) ou laisser."
+    }
   ]
 }

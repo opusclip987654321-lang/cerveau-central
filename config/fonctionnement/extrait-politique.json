@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-05",
+  "maj": "2026-10-06",
   "source": "Guide « fonctionnement v4 » écrit avec louis le 04/10/2026",
   "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique des Shorts et un zapping quotidien, les publie, puis apprend de ses résultats et de tes choix.",
   "journee": [
@@ -82,6 +82,15 @@
     "parfois": ["Recharger le proxy", "Lire le bilan de 10h", "Réagir aux alertes droits d'auteur", "Réautoriser Meta vers janvier 2027"],
     "ameliorations": ["Rétention et revenus dans l'apprentissage", "Voix off pour la monétisation du zapping", "Publication YouTube en public dès l'audit validé", "Sources téléchargeables légalement (Assemblée, Sénat, podcasts)"]
   },
+  "outils": [
+   {"nom": "n8n (n8n.actualitevideo.fr) + atelier (/opt/atelier)", "role": "L'agent complet sur le serveur YouTube : veille, montage, publication"},
+   {"nom": "Proxy IPRoyal", "role": "Fait passer les téléchargements YouTube ; crédit payant au Go (3 à 5 Go par mois), à recharger quand il est épuisé"},
+   {"nom": "Deepgram", "role": "La transcription précise de la vidéo, pour choisir le passage de 62 à 70 secondes"},
+   {"nom": "Claude (API Anthropic)", "role": "Note les vidéos de la veille et t'envoie les 5 meilleures sur Telegram"},
+   {"nom": "YouTube (API officielle)", "role": "La mise en ligne des vidéos ; quota de 10 000 points par jour, 1 600 par mise en ligne"},
+   {"nom": "Meta (Facebook et Instagram)", "role": "La publication des vidéos ; accès à réautoriser vers début janvier 2027"},
+   {"nom": "Telegram (bot)", "role": "Le tri ✅/🗑 des vidéos et les récaps"}
+  ],
   "vigilance": [
     { "sujet": "Proxy IPRoyal", "detail": "Environ 3 à 5 Go par mois avec le zapping quotidien. Surveiller le crédit restant." },
     { "sujet": "Audit YouTube", "detail": "Envoyé le 4 octobre 2026 ; réponse sous quelques semaines. Ensuite, publication directe en public." },

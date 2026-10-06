@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-05",
+  "maj": "2026-10-06",
   "source": "D'après louis le 05/10/2026 + l'automatisation « CERVEAU - lecture Cambodge » (n8n)",
   "intro": "La recherche d'un emploi au Cambodge se fait à la main : tu envoies les candidatures toi-même depuis ta boîte Gmail, et chaque envoi reçoit un retour par mail. Le cerveau lit les mails que tu étiquettes « Cambodge » pour compter les candidatures et les réponses.",
   "journee": [
@@ -37,15 +37,21 @@
   "regles": [
     {
       "titre": "Lecture seule",
-      "texte": "Le cerveau lit tes mails étiquetés, il n'envoie rien et ne touche à rien dans ta boîte."
+      "points": [
+        "Le cerveau lit tes mails étiquetés, il n'envoie rien et ne touche à rien dans ta boîte."
+      ]
     },
     {
       "titre": "Une étiquette, une trace",
-      "texte": "Seuls les mails étiquetés « Cambodge » comptent : pense à étiqueter les réponses aussi."
+      "points": [
+        "Seuls les mails étiquetés « Cambodge » comptent : pense à étiqueter les réponses aussi."
+      ]
     },
     {
       "titre": "Accusés ≠ réponses",
-      "texte": "Les mails automatiques « votre candidature a bien été envoyée » comptent comme des candidatures envoyées, pas comme des réponses. Une réponse, c’est un humain qui t’écrit."
+      "points": [
+        "Les mails automatiques « votre candidature a bien été envoyée » comptent comme des candidatures envoyées, pas comme des réponses. Une réponse, c’est un humain qui t’écrit."
+      ]
     }
   ],
   "role": {
@@ -56,5 +62,25 @@
   },
   "aCompleter": [
     "Quand une candidature devient un entretien ou une offre, rien ne le distingue encore d'une simple réponse : dis-moi si tu veux un suivi « entretiens / offres »."
+  ],
+  "outils": [
+    {
+      "nom": "Gmail",
+      "role": "La boîte du compte « Gmail Walid », lue en lecture seule via l'autorisation Google du projet « cerveau »"
+    },
+    {
+      "nom": "n8n (« CERVEAU - lecture Cambodge »)",
+      "role": "Relit la boîte toutes les heures et met la carte à jour"
+    },
+    {
+      "nom": "Étiquette Gmail « Cambodge »",
+      "role": "Le seul tri : un mail sans l'étiquette est invisible pour le cerveau"
+    }
+  ],
+  "vigilance": [
+    {
+      "sujet": "Accès Gmail",
+      "detail": "La lecture passe par l'autorisation Google du compte « Gmail Walid » (projet Google Cloud « cerveau »). Si elle expire, la carte s'arrête de bouger sans message d'erreur : si plus rien ne bouge alors que tu as postulé, le dire à Claude."
+    }
   ]
 }
