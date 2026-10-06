@@ -35,7 +35,8 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "8 h 07 : 5 requêtes au dépôt légal de la BnF (livres français récents, thèmes tournants, chaîne en alternance)"
+          "texte": "8 h 07 : 5 requêtes au dépôt légal de la BnF (livres français récents, thèmes tournants, chaîne en alternance)",
+          "outil": "BnF"
         },
         {
           "type": "securite",
@@ -44,11 +45,13 @@
         },
         {
           "type": "auto",
-          "texte": "Recherche du contact de l'auteur sur le web (4 candidats max)"
+          "texte": "Recherche du contact de l'auteur sur le web (4 candidats max)",
+          "outil": "Brave Search"
         },
         {
           "type": "auto",
-          "texte": "Claude rédige l'invitation au nom de Walid (avec demande d'exemplaire de presse)"
+          "texte": "Claude rédige l'invitation au nom de Walid (avec demande d'exemplaire de presse)",
+          "outil": "Claude (Haiku)"
         },
         {
           "type": "auto",
@@ -56,7 +59,8 @@
         },
         {
           "type": "toi",
-          "texte": "Notification Telegram par fiche : ✅ Valider · 🗑 Rejeter"
+          "texte": "Notification Telegram par fiche : ✅ Valider · 🗑 Rejeter",
+          "outil": "Telegram"
         }
       ]
     },
@@ -65,11 +69,13 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "12 h 07 : lecture des flux des 40 chaînes choisies (20 Afrique, 20 Frexit), vidéos des 7 derniers jours"
+          "texte": "12 h 07 : lecture des flux des 40 chaînes choisies (20 Afrique, 20 Frexit), vidéos des 7 derniers jours",
+          "outil": "RSS YouTube"
         },
         {
           "type": "auto",
-          "texte": "Claude identifie les invités des interviews et choisit la chaîne cible selon le sujet"
+          "texte": "Claude identifie les invités des interviews et choisit la chaîne cible selon le sujet",
+          "outil": "Claude (Haiku)"
         },
         {
           "type": "auto",
@@ -96,7 +102,8 @@
         },
         {
           "type": "auto",
-          "texte": "Envoi par Gmail (compte Afrique ou Frexit selon la chaîne), avec image de suivi d'ouverture"
+          "texte": "Envoi par Gmail (compte Afrique ou Frexit selon la chaîne), avec image de suivi d'ouverture",
+          "outil": "Gmail"
         },
         {
           "type": "auto",
@@ -179,10 +186,69 @@
     {
       "sujet": "Coûts",
       "detail": "Chaque découverte utilise la recherche Brave et Claude (Haiku). La BnF et les flux YouTube sont gratuits."
+    },
+    {
+      "sujet": "Brouillons côté Afrique",
+      "detail": "Constat du 06/10 : les brouillons créés au ✅ Telegram partent tous du compte Afrique, signature comprise. Correction en préparation (bon compte + logo de la chaîne, logos reçus le 06/10), montrée avant activation."
+    },
+    {
+      "sujet": "Nom de l'accès Gmail Afrique",
+      "detail": "L'accès s'appelle « Gmail account » et ce nom est écrit tel quel dans l'automatisation C depuis le 06/10 : si tu le renommes dans n8n, demander à Claude de re-patcher."
     }
   ],
   "aCompleter": [
     "Les réponses des auteurs (acceptations d'interview) ne sont notées nulle part dans le Sheet : le cerveau ne peut pas encore les compter.",
     "TikTok (@impacteur_afrique, @impacteur_frexit) n'est pas branché."
+  ],
+  "outils": [
+    {
+      "nom": "n8n (n8n.nourmeet.com)",
+      "role": "Orchestre les cinq automatisations IMPACTEUR (A à E)"
+    },
+    {
+      "nom": "Dépôt légal BnF",
+      "role": "Les nouveautés de livres français (gratuit)"
+    },
+    {
+      "nom": "Flux RSS YouTube",
+      "role": "Les vidéos récentes des 40 chaînes surveillées (gratuit)"
+    },
+    {
+      "nom": "Brave Search (API)",
+      "role": "La recherche du contact de l'auteur sur le web"
+    },
+    {
+      "nom": "Claude (Haiku, API Anthropic)",
+      "role": "Rédige les invitations et identifie les invités des interviews"
+    },
+    {
+      "nom": "Gmail (API)",
+      "role": "Les envois et les brouillons, sur deux comptes : « Gmail account » (Afrique) et « Gmail - Impacteur Frexit »"
+    },
+    {
+      "nom": "Google Sheets",
+      "role": "Les fiches d'invités (onglet Prospection), relues par le cerveau"
+    },
+    {
+      "nom": "Telegram (bot)",
+      "role": "Validation ✅/🗑, récap de 8 h 33, /email et /inviter"
+    }
+  ],
+  "alertes": [
+    {
+      "message": "N fiche(s) d'invités attendent ta vérification avant l'envoi",
+      "sens": "Des fiches prêtes ; personne n'est contacté sans ton accord.",
+      "faire": "Valider ou rejeter sur la page Impacteur, ou ✅/🗑 sur Telegram."
+    },
+    {
+      "message": "N brouillon(s) prêts dans Gmail, pas encore envoyés",
+      "sens": "Le ✅ crée un brouillon ; l'envoi reste à toi.",
+      "faire": "Ouvrir le compte Gmail indiqué et envoyer. Souci connu : les brouillons sont tous créés côté Afrique pour l'instant (correction en préparation)."
+    },
+    {
+      "message": "N auteur(s) peut-être décédé(s)",
+      "sens": "Le doute vient de la découverte automatique.",
+      "faire": "Vérifier avant tout contact, puis trier la fiche."
+    }
   ]
 }

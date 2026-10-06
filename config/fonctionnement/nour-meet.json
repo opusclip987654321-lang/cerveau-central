@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-05",
+  "maj": "2026-10-06",
   "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Toi, tu lis les réponses et tu transformes les intéressés en abonnés.",
   "journee": [
@@ -30,11 +30,13 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "9 h : recherche Google Places du jour (restaurants d'Île-de-France, ouverts, jamais vus)"
+          "texte": "9 h : recherche Google Places du jour (restaurants d'Île-de-France, ouverts, jamais vus)",
+          "outil": "Google Places"
         },
         {
           "type": "auto",
-          "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max"
+          "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max",
+          "outil": "sites des restaurants"
         },
         {
           "type": "securite",
@@ -47,7 +49,8 @@
         },
         {
           "type": "auto",
-          "texte": "Mail personnalisé envoyé depuis contact@nourmeet.com, signé Walid, avec le logo et le lien nourmeet.com/restaurateurs (pause entre chaque envoi)"
+          "texte": "Mail personnalisé envoyé depuis contact@nourmeet.com, signé Walid, avec le logo et le lien nourmeet.com/restaurateurs (pause entre chaque envoi)",
+          "outil": "SMTP OVH"
         },
         {
           "type": "auto",
@@ -82,7 +85,8 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Chaque mail reçu sur la boîte de prospection est analysé (expéditeur, objet, texte)"
+          "texte": "Chaque mail reçu sur la boîte de prospection est analysé (expéditeur, objet, texte)",
+          "outil": "IMAP OVH"
         },
         {
           "type": "securite",
@@ -187,5 +191,64 @@
   ],
   "aCompleter": [
     "Les rendez-vous et démos ne sont suivis nulle part pour l'instant."
+  ],
+  "outils": [
+    {
+      "nom": "n8n (n8n.nourmeet.com)",
+      "role": "Enchaîne tout : recherche du matin, envois, relances, lecture des réponses, bilan Telegram"
+    },
+    {
+      "nom": "Google Places (Google Maps Platform)",
+      "role": "Trouve les restaurants d'Île-de-France chaque matin ; payant à l'usage, clé dans n8n"
+    },
+    {
+      "nom": "Lecture des sites des restaurants",
+      "role": "Cherche l'e-mail sur l'accueil et la page contact (gratuit) ; bientôt aussi mentions légales, réservation et page Facebook (validé le 06/10)"
+    },
+    {
+      "nom": "Mail OVH (contact@nourmeet.com)",
+      "role": "L'envoi des mails (SMTP) et la lecture des réponses (IMAP), signés Walid"
+    },
+    {
+      "nom": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)",
+      "role": "La mémoire de la prospection, lue par le cerveau"
+    },
+    {
+      "nom": "Telegram (bot)",
+      "role": "Le bilan quotidien de 10 h 30"
+    },
+    {
+      "nom": "Stripe",
+      "role": "Les abonnements payés, affichés sur la carte"
+    }
+  ],
+  "alertes": [
+    {
+      "message": "N mail(s) préparés ne sont jamais partis",
+      "sens": "Des restes de l'ancien circuit de validation ; aucun ne part tout seul.",
+      "faire": "Les trier sur la page Nūr Meet : laisser en attente, faire repartir après vérification, ou abandonner."
+    },
+    {
+      "message": "N restaurants trouvés n'ont pas d'email (X %)",
+      "sens": "L'adresse est introuvable sur l'accueil et la page contact du site.",
+      "faire": "Rien : la recherche élargie validée le 06/10 fouillera plus de pages. Les appeler reste possible pour les plus intéressants."
+    },
+    {
+      "message": "X % des envois échouent cette période",
+      "sens": "Soit des adresses mortes (déchet normal des adresses trouvées sur les sites), soit un blocage du serveur d'envoi (grave).",
+      "faire": "Regarder la cause à côté des mails en échec (dès son branchement). La même cause partout = blocage : le dire à Claude tout de suite.",
+      "niveau": "important"
+    },
+    {
+      "message": "Plus aucun mail envoyé depuis N jours",
+      "sens": "L'automatisation n'envoie plus : panne, pause, ou plus de restaurants à contacter.",
+      "faire": "Vérifier la pause sur la page ; sinon prévenir Claude.",
+      "niveau": "urgent"
+    },
+    {
+      "message": "Le cerveau n'arrive plus à lire tes automatisations",
+      "sens": "n8n ne répond plus : impossible de savoir si la prospection tourne.",
+      "faire": "Si ça dure plus d'une heure, regarder le serveur."
+    }
   ]
 }

@@ -9,7 +9,7 @@ const TYPES = { auto: 'automatique', toi: 'toi', securite: 'contrôle de sécuri
 function circuit(c, i) {
   const etapes = (c.etapes ?? [])
     .map(
-      (et) => `<div class="etape ${e(et.type ?? 'auto')}">${e(et.texte)}${et.sinon ? `<span class="sinon">si non : ${e(et.sinon)}</span>` : ''}</div>`,
+      (et) => `<div class="etape ${e(et.type ?? 'auto')}">${e(et.texte)}${et.outil ? ` <span class="outil">${e(et.outil)}</span>` : ''}${et.sinon ? `<span class="sinon">si non : ${e(et.sinon)}</span>` : ''}</div>`,
     )
     .join('<div class="fleche">↓</div>');
   return `<section class="bloc circuit" id="circuit-${i + 1}">
@@ -47,6 +47,15 @@ ${g.journee.map((l) => `<tr><td><b>${e(l.quand)}</b></td><td>${e(l.quoi)}</td><t
     ? `<section class="bloc"><h3>Les règles appliquées</h3><div class="deux">${g.regles
         .map((r) => `<div class="carte-mini regle"><h4>${e(r.titre)}</h4>${liste(r.points)}</div>`)
         .join('')}</div></section>`
+    : '';
+
+  // Demande de louis (06/10) : les logiciels et API que le projet utilise,
+  // seulement ce qui est vérifié ; le reste va dans « Pour compléter ce guide ».
+  const outils = g.outils?.length
+    ? `<section class="bloc"><h3>Outils et API</h3><table>
+<tr><th>Outil</th><th>À quoi il sert</th></tr>
+${g.outils.map((o) => `<tr><td><b>${e(o.nom)}</b></td><td>${e(o.role)}</td></tr>`).join('')}
+</table></section>`
     : '';
 
   const alertes = g.alertes?.length
@@ -87,6 +96,7 @@ ${journee}
 ${circuits}
 ${apprentissage}
 ${regles}
+${outils}
 ${alertes}
 ${role}
 ${vigilance}
@@ -108,6 +118,7 @@ ${vigilance}
 .etape.toi { background:color-mix(in srgb, var(--attention) 14%, var(--carte)); border-color:color-mix(in srgb, var(--attention) 45%, var(--bord)); }
 .etape.securite { background:color-mix(in srgb, var(--panne) 12%, var(--carte)); border-color:color-mix(in srgb, var(--panne) 40%, var(--bord)); }
 .etape .sinon { display:block; margin-top:4px; font-size:12px; color:var(--panne); }
+.etape .outil { display:inline-block; background:var(--fond); border:1px solid var(--bord); border-radius:8px; padding:0 7px; font-size:11px; color:var(--doux); white-space:nowrap; }
 .fleche { color:var(--doux); line-height:1.3; font-size:15px; }
 .legende-circuit { margin:10px 0 0; font-size:12px; color:var(--doux); display:flex; gap:12px; align-items:center; justify-content:center; }
 .legende-circuit i { width:10px; height:10px; border-radius:2px; display:inline-block; margin-right:4px; }
