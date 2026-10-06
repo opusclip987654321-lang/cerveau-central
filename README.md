@@ -143,12 +143,12 @@ Dans n8n : *Settings → n8n API → Create an API key*, puis la mettre dans `N8
 
 ## Sauvegarde des automatisations n8n
 
-Chaque nuit à 3 h 30, `scripts/sauvegarde-n8n.py` copie toutes les automatisations des deux n8n (n8n.nourmeet.com et n8n.actualitevideo.fr) dans le dépôt GitHub **privé** `sauvegarde-n8n`, un fichier par automatisation. Seuls les changements sont enregistrés, donc on peut retrouver n'importe quelle automatisation telle qu'elle était à une date passée. Lecture seule côté n8n ; une clé écrite en clair dans un nœud est remplacée par « à ressaisir ». Si la sauvegarde échoue, une alerte part sur Telegram.
+Chaque nuit à 3 h 30, `scripts/sauvegarde-n8n.py` copie toutes les automatisations des deux n8n (n8n.nourmeet.com et n8n.actualitevideo.fr) dans le dépôt GitHub `sauvegarde-n8n`, un fichier par automatisation. Seuls les changements sont enregistrés, donc on peut retrouver n'importe quelle automatisation telle qu'elle était à une date passée. Lecture seule côté n8n. Le dépôt étant public, une clé écrite en clair dans un nœud est remplacée par « à ressaisir », les adresses e-mail de prospects sont retirées (seules restent celles de nourmeet.com, leviaro.fr, actualitevideo.fr), et les données d'essai (pinData) ne sont pas copiées. Si la sauvegarde échoue, une alerte part sur Telegram.
 
 Installation, une fois, sur le VPS Nūr (il utilise les clés n8n du `.env` du cerveau) :
 
 ```sh
-# 1. Sur GitHub : créer un dépôt PRIVÉ vide nommé sauvegarde-n8n (sans README).
+# 1. Sur GitHub : créer un dépôt vide nommé sauvegarde-n8n (sans README).
 # 2. Créer la clé d'envoi du serveur et l'afficher
 ssh-keygen -t ed25519 -N "" -C sauvegarde-n8n -f ~/.ssh/sauvegarde_n8n && cat ~/.ssh/sauvegarde_n8n.pub
 # 3. Sur GitHub : sauvegarde-n8n > Settings > Deploy keys > Add deploy key, coller la clé, cocher « Allow write access ».
