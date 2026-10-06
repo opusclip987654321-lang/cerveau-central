@@ -1,16 +1,21 @@
 {
   "maj": "2026-10-06",
-  "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026",
+  "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Toi, tu lis les réponses et tu transformes les intéressés en abonnés.",
   "journee": [
     {
       "quand": "9 h 00",
-      "quoi": "Recherche de nouveaux restaurants (Google Places, Île-de-France), lecture de leurs sites pour trouver un e-mail, rédaction et envoi des mails du jour.",
+      "quoi": "Recherche de nouveaux restaurants (Google Places, Île-de-France), lecture de leurs sites pour trouver un e-mail (accueil, contact, et si besoin mentions légales, réservation, Facebook), rédaction et envoi des mails du jour.",
       "toi": "Rien"
     },
     {
       "quand": "9 h 30",
       "quoi": "Relances automatiques des restaurants contactés qui n'ont pas répondu (relance 1, puis relance 2).",
+      "toi": "Rien"
+    },
+    {
+      "quand": "11 h 07",
+      "quoi": "Repêchage : 40 restaurants déjà notés « sans e-mail » sont relus avec la recherche élargie (en rotation, pour couvrir tout le stock). Un e-mail trouvé suit le circuit d'envoi normal.",
       "toi": "Rien"
     },
     {
@@ -35,13 +40,13 @@
         },
         {
           "type": "auto",
-          "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max",
-          "outil": "sites des restaurants"
+          "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max ; si rien, lecture aussi des mentions légales, de la page de réservation et de la page Facebook",
+          "outil": "sites des restaurants et Facebook"
         },
         {
           "type": "securite",
           "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
-          "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté"
+          "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté, mais il sera retenté au repêchage de 11 h 07"
         },
         {
           "type": "auto",
@@ -54,7 +59,32 @@
         },
         {
           "type": "auto",
-          "texte": "Fiche mise à jour : contacté, date d'envoi ; échec d'envoi noté"
+          "texte": "Fiche mise à jour : contacté, date d'envoi, page où l'adresse a été trouvée ; échec d'envoi noté"
+        }
+      ]
+    },
+    {
+      "titre": "Le repêchage (11 h 07)",
+      "note": "Ajouté le 06/10 : les restaurants « sans e-mail » ne sont plus perdus, ils sont retentés par petits lots.",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Lecture du stock des fiches « sans e-mail » dans np_prospects, 40 par jour en rotation",
+          "outil": "Tables n8n"
+        },
+        {
+          "type": "auto",
+          "texte": "Relecture de leur site avec la recherche élargie : accueil, contact, mentions légales, réservation, page Facebook",
+          "outil": "sites des restaurants et Facebook"
+        },
+        {
+          "type": "securite",
+          "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
+          "sinon": "la fiche reste « sans e-mail », elle repassera à un prochain tour"
+        },
+        {
+          "type": "auto",
+          "texte": "E-mail trouvé : le restaurant suit le circuit normal (tri, mail personnalisé, envoi) et sa fiche est mise à jour, jamais dupliquée"
         }
       ]
     },
@@ -125,7 +155,7 @@
     {
       "titre": "Rythme",
       "points": [
-        "Recherche à 9 h, relances à 9 h 30, bilan à 10 h 30",
+        "Recherche à 9 h, relances à 9 h 30, bilan à 10 h 30, repêchage des « sans e-mail » à 11 h 07 (40 par jour, en rotation)",
         "50 nouveaux restaurants contactés par jour au maximum",
         "Pause entre chaque mail pour ne pas passer en spam"
       ]
@@ -203,7 +233,7 @@
     },
     {
       "nom": "Lecture des sites des restaurants",
-      "role": "Cherche l'e-mail sur l'accueil et la page contact (gratuit) ; bientôt aussi mentions légales, réservation et page Facebook (validé le 06/10)"
+      "role": "Cherche l'e-mail sur l'accueil, la page contact et, si rien, les mentions légales, la page de réservation et la page Facebook (gratuit, en place depuis le 06/10) ; la fiche note la page où l'adresse a été trouvée"
     },
     {
       "nom": "Mail OVH (contact@nourmeet.com)",
@@ -230,8 +260,8 @@
     },
     {
       "message": "N restaurants trouvés n'ont pas d'email (X %)",
-      "sens": "L'adresse est introuvable sur l'accueil et la page contact du site.",
-      "faire": "Rien : la recherche élargie validée le 06/10 fouillera plus de pages. Les appeler reste possible pour les plus intéressants."
+      "sens": "L'adresse est introuvable sur le site (accueil, contact, mentions légales, réservation, Facebook).",
+      "faire": "Rien : le repêchage de 11 h 07 les retente chaque jour par lots de 40. Si le chiffre ne baisse pas au fil des semaines, le dire à Claude. Les appeler reste possible pour les plus intéressants."
     },
     {
       "message": "X % des envois échouent cette période",
