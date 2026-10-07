@@ -1,12 +1,12 @@
 {
   "maj": "2026-10-07",
   "source": "Lu dans la base leviaro.db le 05/10/2026, puis dans le README de l'agent (~/leviaro-agent) le 06/10/2026",
-  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, tu valides, l'agent envoie avec deux relances au maximum et s'arrête dès qu'une réponse arrive. Il démarre toujours en mode simulation : rien ne part tant que tu ne l'as pas décidé.",
+  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, l'agent l'envoie seul si le dossier est assez bon (mode automatique depuis le 07/10/2026), avec deux relances au maximum, et s'arrête dès qu'une réponse arrive.",
   "journee": [
     {
       "quand": "Toutes les 15 minutes",
       "quoi": "Le cycle complet de l'agent : découverte si la file descend sous 5 entreprises, analyses du jour (10 par jour, tant que le budget du mois le permet), envois autorisés, relances, lecture des réponses.",
-      "toi": "Valider les mails en attente sur la page privée"
+      "toi": "Rien : les mails partent seuls (mode automatique depuis le 07/10/2026)"
     },
     {
       "quand": "Chaque heure",
@@ -75,7 +75,7 @@
         },
         {
           "type": "auto",
-          "texte": "Contrôle par Claude sur 100 : à 80 ou plus, mail + 2 relances à valider ; écartée mais avec e-mail, mail Nūr Meet à valider ; bon dossier sans contact, « lettre possible »"
+          "texte": "Contrôle par Claude sur 100 : à 80 ou plus, sans problème bloquant, mail + 2 relances qui partent seuls ; écartée mais avec e-mail, mail Nūr Meet ; bon dossier sans contact, « lettre possible »"
         },
         {
           "type": "securite",
@@ -83,9 +83,9 @@
           "sinon": "dossier bloqué, ou analyse refusée si le plafond du mois serait dépassé"
         },
         {
-          "type": "toi",
-          "texte": "Validation sur la page privée : lire chaque dossier, modifier, valider en lot ou rejeter avec un motif",
-          "outil": "admin.leviaro.fr"
+          "type": "securite",
+          "texte": "Plus de validation par toi depuis le 07/10/2026 (mode automatique) : seul un dossier à 80/100 ou plus, sans problème bloquant, vers un e-mail publié sur le site (jamais deviné), part ; 10 premiers contacts par jour au plus, en heures ouvrées",
+          "sinon": "le dossier ne part pas ; tu peux toujours le lire, le modifier ou le rejeter sur admin.leviaro.fr"
         },
         {
           "type": "auto",
@@ -99,7 +99,7 @@
         },
         {
           "type": "toi",
-          "texte": "Tu valides les brouillons de réponse sur la page et tu conclus (« en discussion »)"
+          "texte": "Tu relis les brouillons de réponse (préparés chaque matin dans Gmail), tu les envoies toi-même et tu conclus (« en discussion »)"
         }
       ]
     },
@@ -126,8 +126,9 @@
     {
       "titre": "Validation et modes",
       "points": [
-        "Quatre modes : simulation (défaut, rien ne part), pilote (chaque mail part après ta validation), automatique (refusé tant que 10 premiers mails et 5 relances n'ont pas été validés et envoyés), pause",
-        "Les réponses aux prospects restent toujours validées par toi, même en automatique",
+        "Quatre modes : simulation (rien ne part), pilote (chaque mail part après ta validation), automatique, pause. Depuis le 07/10/2026, ton choix : mode automatique, tu ne valides plus les mails",
+        "Garde-fous du mode automatique : score de 80/100 ou plus sans problème bloquant, e-mail publié sur le site (jamais deviné), 10 premiers contacts par jour au plus, heures ouvrées seulement",
+        "Les réponses aux prospects restent préparées en brouillon : c'est toi qui les envoies",
         "Une opposition (stop) arrête définitivement la fiche"
       ]
     },
@@ -157,7 +158,7 @@
     {
       "titre": "Passerelle Nūr Meet",
       "points": [
-        "Une entreprise écartée, à l'identité confirmée et qui publie un e-mail, reçoit un seul mail modèle présentant Nūr Meet (à valider comme les autres, sans relance, sans coût IA)"
+        "Une entreprise écartée, à l'identité confirmée et qui publie un e-mail, reçoit un seul mail modèle présentant Nūr Meet (même circuit d'envoi que les autres, sans relance, sans coût IA)"
       ]
     },
     {
@@ -173,7 +174,7 @@
       "points": [
         "Constat du 06/10/2026 : sur 15 dossiers complets, seuls 4 avaient un contact écrit, car l'IA de recherche lisait surtout les pages d'activité et oubliait la page Contact (ex. contact@centrelapparent.org, sur /nous-contacter/, jamais lue)",
         "À chaque tour (toutes les 15 minutes), 3 anciens dossiers sans e-mail sont relus de la même façon, gratuitement",
-        "Une « lettre possible » dont l'e-mail est trouvé passe en mail à valider par toi"
+        "Une « lettre possible » dont l'e-mail est trouvé rejoint le circuit d'envoi normal, avec les mêmes garde-fous"
       ]
     },
     {
