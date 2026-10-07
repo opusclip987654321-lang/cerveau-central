@@ -1,7 +1,7 @@
 {
   "maj": "2026-10-07",
   "source": "Lu dans la base leviaro.db le 05/10/2026, puis dans le README de l'agent (~/leviaro-agent) le 06/10/2026",
-  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, tu valides, l'agent envoie avec deux relances au maximum et s'arrête dès qu'une réponse arrive. Il démarre toujours en mode simulation : rien ne part tant que tu ne l'as pas décidé.",
+  "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, l'agent l'envoie seul si le dossier est assez bon (mode automatique depuis le 07/10/2026), avec deux relances au maximum, et s'arrête dès qu'une réponse arrive.",
   "journee": [
     {
       "quand": "Toutes les 15 minutes",
@@ -99,7 +99,7 @@
         },
         {
           "type": "toi",
-          "texte": "Tu valides les brouillons de réponse sur la page et tu conclus (« en discussion »)"
+          "texte": "Tu relis les brouillons de réponse (préparés chaque matin dans Gmail), tu les envoies toi-même et tu conclus (« en discussion »)"
         }
       ]
     },
@@ -158,7 +158,7 @@
     {
       "titre": "Passerelle Nūr Meet",
       "points": [
-        "Une entreprise écartée, à l'identité confirmée et qui publie un e-mail, reçoit un seul mail modèle présentant Nūr Meet (à valider comme les autres, sans relance, sans coût IA)"
+        "Une entreprise écartée, à l'identité confirmée et qui publie un e-mail, reçoit un seul mail modèle présentant Nūr Meet (même circuit d'envoi que les autres, sans relance, sans coût IA)"
       ]
     },
     {
