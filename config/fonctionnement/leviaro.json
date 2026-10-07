@@ -5,7 +5,7 @@
   "journee": [
     {
       "quand": "Toutes les 15 minutes",
-      "quoi": "Le cycle complet de l'agent : découverte si la file descend sous 5 entreprises, analyses du jour (3 par défaut, dans le budget), envois autorisés, relances, lecture des réponses.",
+      "quoi": "Le cycle complet de l'agent : découverte si la file descend sous 5 entreprises, analyses du jour (10 par jour, tant que le budget du mois le permet), envois autorisés, relances, lecture des réponses.",
       "toi": "Valider les mails en attente sur la page privée"
     },
     {
@@ -50,7 +50,7 @@
         },
         {
           "type": "auto",
-          "texte": "Analyse : Claude Sonnet cherche le site officiel et ses pages (6 recherches, jusqu'à 10 pages), Claude Opus rédige un premier dossier (faits sourcés, offre, mail, relances)",
+          "texte": "Analyse de 10 entreprises par jour : Claude Opus cherche le site officiel et ses pages (8 recherches, jusqu'à 15 pages), puis rédige un premier dossier (faits sourcés, offre, mail, relances)",
           "outil": "Claude (API Anthropic)"
         },
         {
@@ -172,11 +172,11 @@
       ]
     },
     {
-      "titre": "Moins mais mieux (07/10/2026)",
+      "titre": "10 entreprises par jour, modèle le plus performant (07/10/2026)",
       "points": [
-        "Ton choix : moins d'entreprises analysées par jour, mais des dossiers plus complets",
-        "Pourquoi : le contrôle baissait les notes quand l'offre portait sur une page non lue, et aucun dossier n'atteignait 80",
-        "Coût : environ 0,65 € par analyse complète (avant : environ 0,47 €), soit environ 2 analyses par jour dans le budget"
+        "Ton choix : 10 entreprises par jour, Claude Opus à toutes les étapes, quitte à épuiser le budget du mois en quelques jours",
+        "Le budget n'est plus étalé sur le mois : il part au rythme des analyses ; au plafond, les analyses s'arrêtent jusqu'au mois suivant, sauf si tu ajoutes du budget",
+        "Coût estimé : environ 1 à 1,20 € par analyse complète ; la carte Leviaro montre le budget dépensé et le plafond lus dans le diagnostic de l'agent"
       ]
     }
   ],
