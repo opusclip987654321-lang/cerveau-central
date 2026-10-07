@@ -20,10 +20,11 @@ export const sauverPauses = sauverJson;
 export const HORS_N8N = {
   leviaro: 'ses conteneurs leviaro-agent continuent de tourner (hors n8n)',
   'histoires-vraies': 'programme hors n8n, sa fabrication automatique est déjà en pause',
+  vegebudget: 'le site reste en ligne (hors n8n) ; seules ses alertes se taisent',
 };
 
 // Projets de la surveillance dont les alertes se taisent quand un projet est en pause.
-export const SURVEILLANCE = { 'nour-meet': ['nour-meet'], leviaro: ['leviaro'], 'histoires-vraies': ['histoires-vraies'], 'extrait-politique': ['vps-youtube'] };
+export const SURVEILLANCE = { 'nour-meet': ['nour-meet'], leviaro: ['leviaro'], 'histoires-vraies': ['histoires-vraies'], 'extrait-politique': ['vps-youtube'], vegebudget: ['vegebudget'] };
 export const alertesCoupees = (pauses) => new Set(Object.keys(pauses.projets).flatMap((p) => SURVEILLANCE[p] ?? []));
 
 function client(url, cle, delaiMs = 15_000) {

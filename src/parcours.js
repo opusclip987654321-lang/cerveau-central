@@ -38,6 +38,12 @@ export const PARCOURS = {
     { nom: 'Monter les vidéos', re: /production|montage|zapping|fabrication/i },
     { nom: 'Publier', re: /publi/i },
   ],
+  vegebudget: [
+    { nom: 'Faire venir des visiteurs', re: /visiteur|r[ée]f[ée]rencement|sitemap/i },
+    { nom: 'Composer sa semaine', re: /vegebudget\.fr|site/i },
+    { nom: 'Recevoir le lien de connexion', re: /e-?mail|smtp|connexion/i },
+    { nom: 'Payer', re: /paiement|stripe/i },
+  ],
   cambodge: [
     { nom: 'Candidature envoyée', re: /candidature|envoi/i },
     { nom: 'Accusé de réception', re: /accus[ée]/i },
@@ -50,7 +56,8 @@ export const PROJETS_TOUCHES = {
   'nour-meet': ['nour-meet'],
   leviaro: ['leviaro'],
   n8n: ['nour-meet', 'impacteur'],
-  serveur: ['nour-meet', 'leviaro', 'impacteur', 'histoires-vraies'],
+  serveur: ['nour-meet', 'leviaro', 'impacteur', 'histoires-vraies', 'vegebudget'],
+  vegebudget: ['vegebudget'],
   'histoires-vraies': ['histoires-vraies'],
   'vps-youtube': ['extrait-politique'],
 };
