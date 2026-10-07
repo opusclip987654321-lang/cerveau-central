@@ -29,6 +29,11 @@
       "toi": "Rien"
     },
     {
+      "quand": "8 h 52",
+      "quoi": "Boucle du matin, une routine Claude du projet Leviaro : elle lit le diagnostic, traite les demandes « Test gratuit » et prépare en brouillon Gmail les réponses aux prospects intéressés. Rien ne part tout seul depuis Gmail.",
+      "toi": "Relire les brouillons et cliquer toi-même sur Envoyer (sous 48 h pour les tests gratuits)"
+    },
+    {
       "quand": "18 h",
       "quoi": "Rapport du jour envoyé par mail.",
       "toi": "Le lire"
@@ -187,7 +192,15 @@
         "Les mails de l'agent renvoient vers la page du métier de l'entreprise, reconnu par son code NAF (ligne ajoutée dans la signature)",
         "L'agent prospecte aussi les e-commerçants (NAF 47.91A et 47.91B)",
         "Depuis le 07/10/2026, le site est plus visuel (icônes, illustrations, deux fois moins de texte) et tout texte public, y compris les mails de l'agent, suit le guide de ton « français naturel » du projet Leviaro (règles et paires « Ne dites pas / Dites »)",
-        "Depuis le 07/10/2026, chaque page métier a un 2e bouton « Tester gratuitement » : le patron envoie un exemple de ses données à walid@leviaro.fr et reçoit un résultat sous 48 h. Ces mails sont des demandes de test, pas des réponses à la prospection. Une démo fictive est en ligne sur leviaro.fr/exemple-couvreur"
+        "Depuis le 07/10/2026, chaque page métier a un 2e bouton « Tester gratuitement » : le patron envoie un exemple de ses données à walid@leviaro.fr et reçoit un résultat sous 48 h. Ces mails sont des demandes de test, pas des réponses à la prospection. Une démo fictive est en ligne sur leviaro.fr/exemple-couvreur",
+        "Les pages métiers montrent ta photo, ton prénom et ton portable, pour qu'un patron puisse t'appeler directement"
+      ]
+    },
+    {
+      "titre": "Délivrabilité des mails (07/10/2026)",
+      "points": [
+        "Un enregistrement DMARC est en place chez OVH pour leviaro.fr, en mode observation (p=none) : rien n'est bloqué, les rapports arrivent sur walid@leviaro.fr",
+        "Chaque mail de prospection porte un lien de désinscription ; un « STOP », « désinscrire » ou « ne plus me contacter » bloque l'adresse aussitôt"
       ]
     }
   ],
