@@ -265,8 +265,18 @@ ${aValider
     const blocBilans = `<section class="bloc"><h3>Bilans de la semaine de l’agent</h3>${bilans.length
       ? bilans.map((b, i) => `<details class="texte"${i === 0 ? ' open' : ''}><summary><b>Semaine finie le ${date(b.jour)}</b></summary><p style="white-space:pre-wrap">${e(b.texte)}</p></details>`).join('')
       : '<p class="vide">L’agent n’a pas encore déposé de bilan (fichier data/bilans/AAAA-MM-JJ.md de leviaro-agent).</p>'}</section>`;
+    const cat = business.sources.leviaro.catalogue;
+    const LISTES = [['auto', 'Automatisations'], ['service', 'Services'], ['aide', 'Aides publiques'], ['idee', 'Idées à tester']];
+    const ligneCat = (x) => `<li><b>${e(x.texte)}</b>${x.lien ? ` <a href="${e(x.lien)}" target="_blank" rel="noopener">lien officiel</a>` : ''}<br><small>${[x.priorite, x.statut, x.famille, x.offre && `offre ${x.offre}`, x.temps, x.faisabilite].filter(Boolean).map(e).join(' · ')}</small>${x.plan.length ? `<br><small>Plan : ${x.plan.map(e).join(' › ')}</small>` : ''}</li>`;
+    const blocCatalogue = `<section class="bloc"><h3>Ce que Leviaro peut proposer, par métier${cat ? ` <small>(${cat.metiers.reduce((n, m) => n + m.elements.length, 0)} éléments${cat.maj ? `, mis à jour le ${e(cat.maj)}` : ''})</small>` : ''}</h3>${cat
+      ? cat.metiers.map((m) => `<details class="texte"><summary><b>${e(m.nom)}</b> <small>(${m.elements.length})</small></summary>${LISTES.map(([t, titre]) => {
+        const xs = m.elements.filter((x) => x.type === t);
+        return xs.length ? `<h4>${titre} <small>(${xs.length})</small></h4><ul>${xs.map(ligneCat).join('')}</ul>` : '';
+      }).join('')}</details>`).join('') + (cat.ecartees.length ? `<p><small>Aides écartées, plus en vigueur : ${cat.ecartees.map(e).join(' ; ')}.</small></p>` : '')
+      : '<p class="vide">Le catalogue n’est pas encore déposé (fichier data/catalogue.json de leviaro-agent).</p>'}</section>`;
     return [
       blocBilans,
+      blocCatalogue,
       table('Réponses reçues', [{ cle: 'q', titre: 'Reçue le' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'c', titre: 'Type' }, { cle: 'x', titre: 'Extrait' }],
         d.reponses.map((r) => ({ q: date(r.recu), n: e(r.entreprise || r.de), c: etiquette(lb('reponse', r.categorie), r.categorie === 'humaine' ? 'ok' : r.categorie === 'opposition' ? 'off' : ''), x: e((r.extrait ?? '').slice(0, 120)) })), { aide: aide('reponse') }),
       table('Mails', [{ cle: 'q', titre: 'Quand' }, { cle: 'n', titre: 'Entreprise' }, { cle: 'o', titre: 'Objet' }, { cle: 'r', titre: 'Relance' }, { cle: 's', titre: 'État' }],

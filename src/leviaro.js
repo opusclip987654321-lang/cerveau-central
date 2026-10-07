@@ -89,6 +89,39 @@ export async function lireDiagnostic(dossier) {
   }
 }
 
+// Catalogue vivant de ce que Leviaro peut proposer, par métier, que le projet Leviaro
+// tient à jour dans data/catalogue.json. Format souple : { maj, metiers: [{ id, nom, elements: [
+// { type, priorite, statut, offre, famille, temps, faisabilite, texte, plan: [], lien }] }], ecartees: [] }.
+const TYPES_CATALOGUE = { auto: 'auto', automatisation: 'auto', service: 'service', serv: 'service', aide: 'aide', idee: 'idee', 'idée': 'idee' };
+export async function lireCatalogue(dossier) {
+  let d;
+  try {
+    d = JSON.parse(await readFile(path.join(dossier, 'catalogue.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+  const txt = (x, n = 600) => (x == null || x === '' ? null : String(x).slice(0, n));
+  const brut = Array.isArray(d.metiers) ? d.metiers : Object.entries(d.metiers ?? {}).map(([id, m]) => ({ id, ...m }));
+  const metiers = brut.slice(0, 40).map((m) => ({
+    id: txt(m.id, 60),
+    nom: txt(m.nom ?? m.titre ?? m.id, 120),
+    elements: (m.elements ?? m.items ?? []).slice(0, 200).map((x) => ({
+      type: TYPES_CATALOGUE[String(x.type ?? '').toLowerCase()] ?? 'idee',
+      priorite: txt(x.priorite, 10),
+      statut: txt(x.statut, 30),
+      offre: txt(x.offre, 60),
+      famille: txt(x.famille, 40),
+      temps: txt(x.temps, 30),
+      faisabilite: txt(x.faisabilite, 40),
+      texte: txt(x.texte ?? x.titre ?? x.description),
+      plan: (Array.isArray(x.plan ?? x.etapes) ? (x.plan ?? x.etapes) : []).slice(0, 12).map((p) => txt(typeof p === 'string' ? p : p?.texte ?? p?.titre, 200)).filter(Boolean),
+      lien: /^https:\/\//.test(x.lien ?? '') ? String(x.lien).slice(0, 300) : null,
+    })).filter((x) => x.texte),
+  })).filter((m) => m.nom);
+  if (!metiers.length) return null;
+  return { maj: txt(d.maj ?? d.mis_a_jour, 30), metiers, ecartees: (d.ecartees ?? []).slice(0, 30).map((x) => txt(typeof x === 'string' ? x : x?.texte, 300)).filter(Boolean) };
+}
+
 // Copie la base (et ses fichiers -wal/-shm) puis la lit : on ne touche jamais l'originale.
 export async function synchroniserLeviaro(business, dossier, { maintenant = new Date() } = {}) {
   const source = path.join(dossier, 'leviaro.db');
@@ -110,6 +143,7 @@ export async function synchroniserLeviaro(business, dossier, { maintenant = new 
       business.sources.leviaro.fileEtude = suivreFile(avant, jourDe(maintenant.toISOString()), business.sources.leviaro.aEtudier);
       business.sources.leviaro.bilans = await lireBilans(dossier);
       business.sources.leviaro.diagnostic = await lireDiagnostic(dossier);
+      business.sources.leviaro.catalogue = await lireCatalogue(dossier);
     } finally {
       db.close();
     }

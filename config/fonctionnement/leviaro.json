@@ -203,6 +203,15 @@
         "Un enregistrement DMARC est en place chez OVH pour leviaro.fr, en mode observation (p=none) : rien n'est bloqué, les rapports arrivent sur walid@leviaro.fr",
         "Chaque mail de prospection porte un lien de désinscription ; un « STOP », « désinscrire » ou « ne plus me contacter » bloque l'adresse aussitôt"
       ]
+    },
+    {
+      "titre": "Catalogue par métier (07/10/2026)",
+      "points": [
+        "La page Leviaro du cerveau affiche la liste vivante de tout ce que Leviaro peut proposer à chaque métier : automatisations, services (e-mailing, sites qui font venir des demandes, liaison d'outils avec n8n, design et développement), aides publiques vérifiées avec leur lien officiel, idées à tester",
+        "Le projet Leviaro la tient à jour dans data/catalogue.json de leviaro-agent ; le cerveau la relit chaque heure, sans rien recopier",
+        "Chaque proposition a un plan que tu peux réaliser seul avec l'IA (Claude, API Claude, VPS avec Docker et n8n, mail OVH, Calendly, sites nginx) ; ce qui demande une intégration lourde sans API, un engagement juridique ou une présence physique est marqué « trop risqué »",
+        "Offres décidées le 07/10/2026 : coachs, « Vos appels découverte » à 890 € + 39 €/mois ; e-commerçants, « Vos relances de boutique » à 590 € + 29 €/mois. Jamais de résultat chiffré promis aux coachs"
+      ]
     }
   ],
   "role": {
