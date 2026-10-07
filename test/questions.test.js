@@ -8,7 +8,7 @@ const config = JSON.parse(readFileSync(new URL('../config/questions.json', impor
 const vide = () => ({ jours: {}, reponses: [], rappels: [] });
 
 test('la banque de questions est valide', () => {
-  assert.equal(config.projets.length, 7);
+  assert.equal(config.projets.length, 8);
   const ids = config.projets.flatMap((p) => p.questions.map((q) => q.id));
   assert.equal(new Set(ids).size, ids.length, 'identifiants uniques');
   for (const p of config.projets) {
@@ -23,12 +23,12 @@ test('la banque de questions est valide', () => {
 test('3 questions par projet et par jour, dont la note du jour', () => {
   const h = vide();
   const jour = questionsDuJour(config, h, '2026-10-05');
-  assert.equal(jour.length, 7);
+  assert.equal(jour.length, 8);
   for (const { questions } of jour) {
     assert.equal(questions.length, 3);
     assert.ok(questions[0].quotidienne);
   }
-  assert.equal(enAttente(config, h, '2026-10-05'), 21);
+  assert.equal(enAttente(config, h, '2026-10-05'), 24);
 });
 
 test('les questions changent chaque jour et reviennent seulement après une pause', () => {
@@ -67,13 +67,13 @@ test('enregistrer des réponses : valeurs contrôlées, vides ignorées, correct
   assert.equal(enregistrerReponses(config, h, { [note]: '5' }, maintenant), 1);
   assert.equal(h.reponses.length, 1, 'une correction remplace la réponse');
   assert.equal(h.reponses[0].reponse, 5);
-  assert.equal(enAttente(config, h, jour), 20);
+  assert.equal(enAttente(config, h, jour), 23);
 });
 
 test('résumé du matin : une seule fois, après l’heure choisie', () => {
   const h = vide();
   assert.equal(matinARappeler(config, h, { heure: 9, maintenant: new Date('2026-10-05T08:30:00+02:00') }), null);
-  assert.equal(matinARappeler(config, h, { heure: 9, maintenant: new Date('2026-10-05T09:10:00+02:00') }), 21);
+  assert.equal(matinARappeler(config, h, { heure: 9, maintenant: new Date('2026-10-05T09:10:00+02:00') }), 24);
   assert.equal(matinARappeler(config, h, { heure: 9, maintenant: new Date('2026-10-05T12:00:00+02:00') }), null);
 });
 
@@ -84,7 +84,7 @@ test('la page affiche les questions et les réponses déjà données', () => {
   const [nm] = questionsDuJour(config, h, jour);
   enregistrerReponses(config, h, { [`${nm.projet.id}:${nm.questions[0].id}`]: '3' }, maintenant);
   const html = pageQuestions(config, h, { jour });
-  assert.match(html, /20 question\(s\) sur 21/);
+  assert.match(html, /23 question\(s\) sur 24/);
   assert.match(html, /value="3" checked/);
   assert.match(html, /Petites histoires vraies/);
 });

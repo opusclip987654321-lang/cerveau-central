@@ -333,6 +333,58 @@
           "type": "texte"
         }
       ]
+    },
+    {
+      "id": "vegebudget",
+      "nom": "VégéBudget",
+      "questions": [
+        {
+          "id": "vb-humeur",
+          "texte": "Sur 5, comment avance VégéBudget ?",
+          "type": "note",
+          "quotidienne": true
+        },
+        {
+          "id": "vb-membres",
+          "texte": "Combien de nouvelles personnes ont essayé VégéBudget ces derniers jours (si tu le sais) ?",
+          "type": "nombre"
+        },
+        {
+          "id": "vb-canal",
+          "texte": "Où as-tu parlé de VégéBudget récemment ?",
+          "type": "choix",
+          "choix": [
+            "Instagram",
+            "TikTok",
+            "Reddit ou forum",
+            "Facebook",
+            "Bouche-à-oreille",
+            "Nulle part"
+          ]
+        },
+        {
+          "id": "vb-retour",
+          "texte": "Qu'a dit la dernière personne qui a testé le site ?",
+          "type": "texte"
+        },
+        {
+          "id": "vb-bloque",
+          "texte": "Qu'est-ce qui te freine le plus pour trouver des clients payants ?",
+          "type": "choix",
+          "choix": [
+            "Pas assez de visiteurs",
+            "Les gens essaient mais ne reviennent pas",
+            "Le paiement pas encore branché",
+            "Le temps",
+            "Rien"
+          ]
+        },
+        {
+          "id": "vb-idee",
+          "texte": "Une idée pour faire connaître VégéBudget que tu n'as pas encore testée ?",
+          "type": "texte"
+        }
+      ]
     }
   ]
 }
