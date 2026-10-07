@@ -42,6 +42,7 @@ import { pageAnalyses } from './page-analyses.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
 import { synchroniserLeviaro } from './leviaro.js';
+import { synchroniserVegebudget } from './vegebudget.js';
 import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserImpacteur, tableauDeBord, messageSilences, validerObjectif } from './business.js';
 import { dossiersCode, listerCode, lireCode } from './code-source.js';
 
@@ -223,6 +224,11 @@ async function synchroniserJournal() {
       await avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON }));
     } catch (err) {
       console.error(`Tableau de bord (Cambodge) : ${err.message}`);
+    }
+    try {
+      await avecBusiness((b) => synchroniserVegebudget(b, { url: env.VEGEBUDGET_URL || 'https://vegebudget.fr', jeton: env.VEGEBUDGET_STATS_JETON }));
+    } catch (err) {
+      console.error(`Tableau de bord (VégéBudget) : ${err.message}`);
     }
   } catch (err) {
     console.error(`Journal : ${err.message}`);

@@ -8,6 +8,7 @@ import { jourParis } from './questions.js';
 import { projetDuWorkflow } from './journal.js';
 import { gainsPeriode, revenusPeriode } from './youtube.js';
 import { encaissePeriode } from './stripe.js';
+import { datesDe } from './vegebudget.js';
 
 export async function chargerBusiness(fichier) {
   try {
@@ -426,8 +427,31 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     carte('cambodge', { titre: 'Candidatures envoyées', dates: evenements(journal, 'cambodge', ['mail']), unite: 'candidature', joursMax: 7, branche: false, manque: ['candidatures'] });
   }
 
-  // VégéBudget : pas encore de lecture de sa base, seules les notes du Journal comptent.
-  carte('vegebudget', { titre: 'Actions pour le faire connaître', dates: evenements(journal, 'vegebudget', ['publication', 'video', 'mail']), unite: 'action', branche: false, manque: ['membres et réservations de vegebudget.fr'] });
+  // VégéBudget : l'entonnoir du site (visiteurs → semaine composée → inscrit → clic sur payer).
+  const vb = business.sources?.vegebudget;
+  if (vb?.jours) {
+    const serie = (cle) => somme(parJour(periode, datesDe(vb, cle)));
+    const visiteurs = serie('visiteurs'), semaines = serie('semaines'), inscrits = serie('inscrits'), clics = serie('clicsPayer');
+    const aDecider = [];
+    if (visiteurs >= 20 && pct(semaines, visiteurs) < 15) aDecider.push(`Seulement ${pct(semaines, visiteurs)} % des visiteurs composent une semaine : la page d'accueil retient mal, à retravailler ?`);
+    if (inscrits >= 5 && clics === 0) aDecider.push(`${nombre(inscrits)} inscrits cette période mais aucun clic sur payer : l'offre est-elle assez visible ?`);
+    const c = carte('vegebudget', {
+      titre: 'Visiteurs',
+      dates: datesDe(vb, 'visiteurs'),
+      unite: 'visiteur',
+      joursMax: reglages.vegebudget?.joursMax ?? 3,
+      aDecider,
+      extra: [
+        { titre: 'Semaines composées', valeur: semaines, detail: visiteurs ? `${pct(semaines, visiteurs)} % des visiteurs` : '' },
+        { titre: 'Inscrits', valeur: inscrits, detail: `${nombre(vb.totaux.membres)} membres au total` },
+        { titre: 'Clics sur payer', valeur: clics, detail: `${nombre(serie('reservations'))} réservation(s) · ${nombre(vb.totaux.abonnes)} abonné(s) payant(s)` },
+      ],
+      manque: vb.totaux.abonnes ? [] : ['paiement Stripe pas encore ouvert'],
+    });
+    c.secondaire = { titre: 'Inscrits', serie: parJour(periode, datesDe(vb, 'inscrits')) };
+  } else {
+    carte('vegebudget', { titre: 'Visiteurs', dates: [], unite: 'visiteur', branche: false, manque: ['chiffres de vegebudget.fr (VEGEBUDGET_STATS_JETON)'] });
+  }
 
   return { periode, cartes, maj: pr?.maj ?? null };
 }

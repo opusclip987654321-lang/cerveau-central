@@ -368,6 +368,35 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
     ].join('');
   }
 
+  if (id === 'vegebudget') {
+    const vb = business.sources?.vegebudget;
+    if (!vb) return `<p class="vide">Les chiffres de vegebudget.fr ne sont pas encore lus : il manque VEGEBUDGET_STATS_JETON dans le .env du cerveau (le même que CRON_SECRET de VégéBudget).</p>${fin(blocNotes)}`;
+    const derniers = vb.jours.slice(-30);
+    const tot = (cle) => derniers.reduce((s, j) => s + (j[cle] ?? 0), 0);
+    const part = (a, b) => (b ? `${Math.round((a / b) * 100)} %` : '—');
+    const etapes = [
+      ['Visiteurs', 'visiteurs', null],
+      ['Ont composé une semaine', 'semaines', 'visiteurs'],
+      ['Ont vu les offres', 'offreVue', 'visiteurs'],
+      ['Ont demandé un lien de connexion', 'connexions', 'visiteurs'],
+      ['Se sont inscrits', 'inscrits', 'visiteurs'],
+      ['Ont cliqué sur payer', 'clicsPayer', 'inscrits'],
+      ['Ont réservé une offre', 'reservations', 'inscrits'],
+    ];
+    return [
+      table('Le parcours sur 30 jours', [{ cle: 'n', titre: 'Étape' }, { cle: 'v', titre: 'Personnes' }, { cle: 'p', titre: 'Part' }],
+        etapes.map(([nom, cle, base]) => ({ n: e(nom), v: e(tot(cle).toLocaleString('fr-FR')), p: base ? `${part(tot(cle), tot(base))} <small>des ${base === 'inscrits' ? 'inscrits' : 'visiteurs'}</small>` : '' })),
+        { visibles: 10 }),
+      table('D’où viennent les visiteurs (90 jours)', [{ cle: 's', titre: 'Source' }, { cle: 'n', titre: 'Visites' }],
+        vb.sources.map((s) => ({ s: e(s.source === 'direct' ? 'direct (lien tapé, favori, appli)' : s.source), n: e(s.n.toLocaleString('fr-FR')) })), { vide: 'Pas encore de visite comptée.' }),
+      table('Jour par jour', [{ cle: 'q', titre: 'Jour' }, { cle: 'v', titre: 'Visiteurs' }, { cle: 's', titre: 'Semaines' }, { cle: 'i', titre: 'Inscrits' }, { cle: 'c', titre: 'Clics payer' }],
+        [...vb.jours].reverse().filter((j) => j.visiteurs || j.semaines || j.inscrits || j.clicsPayer).map((j) => ({ q: date(j.jour), v: j.visiteurs, s: j.semaines, i: j.inscrits, c: j.clicsPayer })),
+        { visibles: 14, vide: 'Pas encore de visite comptée.' }),
+      `<p class="vide">Au total : ${e(vb.totaux.membres)} membre(s), ${e(vb.totaux.abonnes)} abonné(s) payant(s), ${e(vb.totaux.reservationsFondateur)} réservation(s) fondateur. Chiffres mis à jour le ${e(new Date(vb.maj).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}.</p>`,
+      fin(blocNotes),
+    ].join('');
+  }
+
   if (id === 'histoires-vraies') {
     const pub = (histoires?.publiees ?? []).map((p) => ({ ...p, d: depuisHeureParis(p.date) })).sort((a, b) => (b.d ?? 0) - (a.d ?? 0));
     return [
