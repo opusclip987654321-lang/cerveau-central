@@ -178,6 +178,15 @@
         "Le budget n'est plus étalé sur le mois : il part au rythme des analyses ; au plafond, les analyses s'arrêtent jusqu'au mois suivant, sauf si tu ajoutes du budget",
         "Coût estimé : environ 1 à 1,20 € par analyse complète ; la carte Leviaro montre le budget dépensé et le plafond lus dans le diagnostic de l'agent"
       ]
+    },
+    {
+      "titre": "Pages métiers sur leviaro.fr (07/10/2026)",
+      "points": [
+        "11 pages, une par profession visée : menuisiers, électriciens, chauffagistes, couvreurs, peintres, rénovation énergétique, organismes de formation, formation sécurité, maintenance sécurité, nettoyage, e-commerçants",
+        "Chacune parle le vocabulaire du métier et ses vrais problèmes, à partir d'une enquête sourcée (forums, fédérations, presse du métier, études France Num et Bpifrance), relue par un contrôleur indépendant",
+        "Les mails de l'agent renvoient vers la page du métier de l'entreprise, reconnu par son code NAF (ligne ajoutée dans la signature)",
+        "L'agent prospecte aussi les e-commerçants (NAF 47.91A et 47.91B)"
+      ]
     }
   ],
   "role": {
