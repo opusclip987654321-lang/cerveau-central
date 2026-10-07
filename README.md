@@ -16,6 +16,7 @@ C'est l'**étape 2** du cahier des charges : « Est-ce que tout tourne ? ». Le 
 |---|---|
 | Nūr Meet | le site répond, l'API et sa base de données répondent (`/health/ready`), certificats HTTPS |
 | Leviaro | le site et l'admin répondent, certificats HTTPS |
+| VégéBudget | le site vegebudget.fr répond, certificat HTTPS |
 | n8n | n8n répond (`/healthz`), certificat, et (avec une clé API en lecture) les exécutions tombées en erreur, avec le nom de l'automatisation |
 | Serveur OVH | espace disque, mémoire, charge du processeur |
 
@@ -31,7 +32,7 @@ Règles des alertes :
 
 ## Questions du jour
 
-Chaque jour, l'onglet « Questions du jour » pose 3 questions par projet (les 7 projets) : une note sur 5 chaque jour, pour suivre la tendance, et deux questions qui changent. Une question déjà posée revient au plus tôt 7 jours plus tard. On répond à ce qu'on veut, le reste peut rester vide.
+Chaque jour, l'onglet « Questions du jour » pose 3 questions par projet (les 8 projets) : une note sur 5 chaque jour, pour suivre la tendance, et deux questions qui changent. Une question déjà posée revient au plus tôt 7 jours plus tard. On répond à ce qu'on veut, le reste peut rester vide.
 
 Le résumé Telegram du matin (9 h par défaut, `RESUME_HEURE`) rappelle combien de questions attendent. Les réponses sont gardées dans `data/reponses.json` ; l'analyse quotidienne par l'IA (étape suivante) s'en servira pour repérer les axes de progrès de chaque projet.
 
