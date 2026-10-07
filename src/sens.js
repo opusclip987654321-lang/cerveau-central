@@ -27,6 +27,7 @@ const TACHES = [
 const SITES = [
   [/api\.nourmeet/i, 'Nūr Meet', 'Le site s’affiche peut-être, mais les inscriptions, réservations et paiements ne marchent plus.'],
   [/nourmeet\.com\/?$|^nourmeet\.com|site nourmeet/i, 'Nūr Meet', 'Participants et restaurants ne peuvent plus voir les soirées ni s’inscrire.'],
+  [/vegebudget/i, 'VégéBudget', 'Les visiteurs tombent sur une erreur et les membres ne peuvent plus se connecter ni composer leur semaine.'],
   [/admin\.leviaro/i, 'Leviaro', 'Tu ne peux plus gérer Leviaro, mais tes prospects ne voient rien.'],
   [/leviaro/i, 'Leviaro', 'Les prospects qui cliquent sur le lien de tes mails tombent sur une erreur : tu peux perdre des clients.'],
   [/n8n\.actualitevideo/i, 'L’extrait politique', 'Plus aucune vidéo de L’extrait politique n’est fabriquée ni publiée tant que ça dure.'],

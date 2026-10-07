@@ -21,6 +21,14 @@
       ]
     },
     {
+      "id": "vegebudget",
+      "nom": "VégéBudget",
+      "verifications": [
+        { "type": "site", "nom": "Site vegebudget.fr", "url": "https://vegebudget.fr" },
+        { "type": "certificat", "nom": "Certificat vegebudget.fr", "hote": "vegebudget.fr" }
+      ]
+    },
+    {
       "id": "n8n",
       "nom": "n8n (automatisations)",
       "verifications": [

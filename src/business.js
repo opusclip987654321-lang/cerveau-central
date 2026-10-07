@@ -426,6 +426,9 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     carte('cambodge', { titre: 'Candidatures envoyées', dates: evenements(journal, 'cambodge', ['mail']), unite: 'candidature', joursMax: 7, branche: false, manque: ['candidatures'] });
   }
 
+  // VégéBudget : pas encore de lecture de sa base, seules les notes du Journal comptent.
+  carte('vegebudget', { titre: 'Actions pour le faire connaître', dates: evenements(journal, 'vegebudget', ['publication', 'video', 'mail']), unite: 'action', branche: false, manque: ['membres et réservations de vegebudget.fr'] });
+
   return { periode, cartes, maj: pr?.maj ?? null };
 }
 

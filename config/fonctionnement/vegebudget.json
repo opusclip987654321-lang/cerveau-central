@@ -1,0 +1,100 @@
+{
+  "maj": "2026-10-07",
+  "source": "Lu dans le code de VégéBudget (dépôt v-g-budget, branche main) et dans l'installation du serveur Nūr le 07/10/2026",
+  "intro": "VégéBudget compose les dîners sans viande de la semaine selon ton budget et donne la liste de courses exacte. Le site est en ligne sur vegebudget.fr depuis le 07/10. Tout ce qui est technique tourne seul (connexion par e-mail, rappel du dimanche, sauvegardes) ; ton travail, c'est de faire venir des gens et de les faire payer.",
+  "journee": [
+    { "quand": "En continu", "quoi": "Le site répond sur vegebudget.fr. Un visiteur compose sa semaine sans compte ; pour la garder, il reçoit un lien de connexion par e-mail depuis bonjour@vegebudget.fr.", "toi": "Rien" },
+    { "quand": "3 h 00", "quoi": "Sauvegarde de la base et des photos dans /var/backups/vegebudget sur le serveur (14 jours gardés).", "toi": "Rien" },
+    { "quand": "Dimanche 10 h 00", "quoi": "Rappel par e-mail aux membres qui n'ont pas encore composé la semaine suivante, avec le bilan de la précédente (dîners cuisinés, coût des courses, économie).", "toi": "Rien" },
+    { "quand": "Toutes les 3 h", "quoi": "Le cerveau vérifie que le site et son certificat HTTPS répondent.", "toi": "Agir seulement si une alerte arrive" }
+  ],
+  "circuits": [
+    {
+      "titre": "Du visiteur au membre",
+      "etapes": [
+        { "type": "toi", "texte": "Faire venir des visiteurs : réseaux sociaux, forums, bouche-à-oreille", "outil": "Instagram, TikTok, Reddit, Facebook" },
+        { "type": "auto", "texte": "Google, Bing et les assistants IA amènent des visiteurs sur les pages recettes et « Comment ça marche »", "outil": "Search Console, Bing Webmaster" },
+        { "type": "auto", "texte": "Le visiteur indique son foyer, son budget et son placard ; le site compose 5 dîners et la liste de courses en paquets entiers" },
+        { "type": "auto", "texte": "Pour garder sa semaine, il donne son e-mail et reçoit un lien de connexion", "outil": "SMTP OVH (bonjour@vegebudget.fr)" },
+        { "type": "securite", "texte": "Le lien ne sert qu'une fois et expire au bout d'un moment", "sinon": "lien refusé, il en redemande un" },
+        { "type": "auto", "texte": "La première semaine est gratuite ; le membre coche ses dîners cuisinés et suit ce qu'il dépense" }
+      ]
+    },
+    {
+      "titre": "Du membre au client",
+      "note": "Le paiement en ligne n'est pas encore branché : les prix Stripe restent à créer.",
+      "etapes": [
+        { "type": "auto", "texte": "Dimanche 10 h : rappel par e-mail avec le bilan de la semaine passée" },
+        { "type": "auto", "texte": "À partir de la deuxième semaine, l'offre Premium est proposée : 4,99 € par mois, ou l'offre fondateur à 19 € par an pour les 100 premiers (réservation)" },
+        { "type": "securite", "texte": "Paiement activé (Stripe configuré et BILLING_ENABLED=true) ?", "sinon": "la réservation de l'offre fondateur est seulement notée, rien n'est encaissé" },
+        { "type": "toi", "texte": "Créer les prix Stripe, puis activer le paiement", "outil": "Stripe" }
+      ]
+    },
+    {
+      "titre": "Mettre à jour le site",
+      "etapes": [
+        { "type": "auto", "texte": "Claude prépare la modification et la fusionne sur GitHub (branche main)", "outil": "GitHub" },
+        { "type": "toi", "texte": "Sur le serveur : cd /opt/vegebudget && git pull && docker compose up -d --build", "outil": "Terminal" },
+        { "type": "securite", "texte": "Le conteneur repasse « healthy » ?", "sinon": "l'ancienne version reste en place ; prévenir Claude" }
+      ]
+    }
+  ],
+  "regles": [
+    {
+      "titre": "Offre",
+      "points": [
+        "Première semaine gratuite, sans compte ni carte bancaire",
+        "Premium : 4,99 € par mois, sans engagement",
+        "Offre fondateur : 19 € par an, 100 places"
+      ]
+    },
+    {
+      "titre": "Message",
+      "points": [
+        "On parle d'argent d'abord : « 5 dîners pour 2, environ 21 € de courses »",
+        "« Sans viande » et « végétal » viennent en second",
+        "Aucun chiffre ni témoignage inventé sur le site"
+      ]
+    },
+    {
+      "titre": "Prix des courses",
+      "points": [
+        "Prix relevés chez Carrefour le 07/10/2026",
+        "Chaque membre peut corriger un prix ou un format, le budget est recalculé"
+      ]
+    }
+  ],
+  "outils": [
+    { "nom": "Next.js (Node 22)", "role": "Le site et l'application" },
+    { "nom": "SQLite", "role": "La base des membres et de leurs semaines, dans le volume Docker vegebudget-data" },
+    { "nom": "Docker et Caddy (VPS Nūr)", "role": "Le conteneur vegebudget, et le HTTPS de vegebudget.fr par le Caddy partagé avec Nūr Meet et Leviaro" },
+    { "nom": "E-mail OVH (Zimbra Starter)", "role": "bonjour@vegebudget.fr envoie les liens de connexion et les rappels" },
+    { "nom": "Google Search Console et Bing Webmaster Tools", "role": "Référencement : domaine validé et sitemap envoyé le 07/10" },
+    { "nom": "Planificateur du serveur (cron)", "role": "Le rappel du dimanche 10 h et la sauvegarde de 3 h" }
+  ],
+  "alertes": [
+    { "message": "Site vegebudget.fr : ne répond pas ou répond une erreur", "sens": "Les visiteurs tombent sur une erreur et personne ne peut se connecter.", "faire": "Sur le serveur : cd /opt/vegebudget && docker compose ps, puis docker compose logs --tail 50 ; envoyer le résultat à Claude.", "niveau": "important" },
+    { "message": "Site vegebudget.fr lent", "sens": "Le site répond en plus de 4 secondes ; des visiteurs partent avant de voir la page.", "faire": "Regarder la charge du serveur dans l'onglet Serveurs ; si ça dure, prévenir Claude." },
+    { "message": "Certificat vegebudget.fr bientôt expiré", "sens": "Caddy le renouvelle seul ; s'il ne l'a pas fait, le navigateur affichera « site non sécurisé ».", "faire": "Vérifier que les entrées DNS de vegebudget.fr pointent toujours vers 57.131.152.36, puis prévenir Claude." }
+  ],
+  "role": {
+    "quotidien": [
+      "Faire connaître le site : un post, une réponse sur un forum, un message à quelqu'un qui veut dépenser moins",
+      "Répondre aux e-mails reçus sur bonjour@vegebudget.fr"
+    ],
+    "parfois": [
+      "Créer les prix Stripe (4,99 € par mois et 19 € par an) pour encaisser",
+      "Lancer la commande de mise à jour quand Claude a fusionné une modification",
+      "Regarder dans Search Console quelles recherches amènent des visiteurs"
+    ],
+    "ameliorations": [
+      "Brancher le paiement Stripe et l'offre fondateur",
+      "Articles et guides pour Google et les IA (« menu de la semaine pour 20 € »)",
+      "Afficher dans le cerveau le nombre de membres et de réservations fondateur"
+    ]
+  },
+  "aCompleter": [
+    "Le nombre de visiteurs, de membres et de réservations n'est pas encore lu par le cerveau.",
+    "Le paiement n'est pas branché : aucun revenu à suivre pour l'instant."
+  ]
+}

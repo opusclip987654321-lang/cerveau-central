@@ -8,7 +8,8 @@
     { "id": "extrait-politique", "nom": "L'extrait politique" },
     { "id": "histoires-vraies", "nom": "Petites histoires vraies" },
     { "id": "impacteur", "nom": "Impacteur Afrique / Frexit" },
-    { "id": "cambodge", "nom": "Emploi Cambodge" }
+    { "id": "cambodge", "nom": "Emploi Cambodge" },
+    { "id": "vegebudget", "nom": "VégéBudget" }
   ],
   "lignes": [
     { "libelle": "VPS Nūr (OVH)", "projet": "commun", "montant": 14, "devise": "€", "frequence": "mois" },
