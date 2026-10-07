@@ -129,3 +129,38 @@ test('Leviaro : pas de diagnostic, rien d\'affiché', async () => {
   const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-06' }).cartes.find((c) => c.id === 'leviaro');
   assert.ok(!carte.chiffres.some((x) => x.titre === 'Budget IA du mois'));
 });
+
+test('Leviaro : catalogue par métier lu dans data/catalogue.json et affiché', async () => {
+  const { writeFile } = await import('node:fs/promises');
+  const { pageProjet } = await import('../src/page-projet.js');
+  const dossier = await baseExemple();
+  await writeFile(path.join(dossier, 'catalogue.json'), JSON.stringify({
+    maj: '2026-10-07',
+    metiers: { coachs: { nom: 'Coachs', elements: [
+      { type: 'service', priorite: 'P1', statut: 'prêt', offre: '890 € + 39 €/mois', texte: 'Vos appels découverte', plan: ['Questionnaire trié', 'Rappels Calendly'] },
+      { type: 'aide', texte: 'France Num', lien: 'https://www.francenum.gouv.fr' },
+      { type: 'aide', texte: 'Lien douteux', lien: 'javascript:alert(1)' },
+      { type: 'auto' },
+    ] } },
+    ecartees: ['FNE-Formation'],
+  }));
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-07T12:00:00Z') });
+  const cat = b.sources.leviaro.catalogue;
+  assert.equal(cat.metiers[0].id, 'coachs');
+  assert.equal(cat.metiers[0].elements.length, 3);
+  assert.equal(cat.metiers[0].elements[2].lien, null);
+  assert.deepEqual(cat.ecartees, ['FNE-Formation']);
+  const html = pageProjet(configJournal, 'leviaro', { business: b, journal: { evenements: [], n8n: { jours: {} } }, idees: { idees: [] }, jour: '2026-10-07' });
+  assert.match(html, /Ce que Leviaro peut proposer, par métier/);
+  assert.match(html, /Vos appels découverte/);
+  assert.match(html, /Questionnaire trié › Rappels Calendly/);
+  assert.match(html, /FNE-Formation/);
+});
+
+test('Leviaro : pas de catalogue, null', async () => {
+  const dossier = await baseExemple();
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-07T12:00:00Z') });
+  assert.equal(b.sources.leviaro.catalogue, null);
+});
