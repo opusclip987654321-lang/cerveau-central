@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-06",
+  "maj": "2026-10-07",
   "source": "Lu dans la base leviaro.db le 05/10/2026, puis dans le README de l'agent (~/leviaro-agent) le 06/10/2026",
   "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, tu valides, l'agent envoie avec deux relances au maximum et s'arrête dès qu'une réponse arrive. Il démarre toujours en mode simulation : rien ne part tant que tu ne l'as pas décidé.",
   "journee": [
@@ -50,7 +50,17 @@
         },
         {
           "type": "auto",
-          "texte": "Analyse : Claude Sonnet cherche le site officiel et ses pages (5 recherches, 6 pages), Claude Opus construit le dossier (faits sourcés, offre, mail, relances)",
+          "texte": "Analyse : Claude Sonnet cherche le site officiel et ses pages (6 recherches, jusqu'à 10 pages), Claude Opus rédige un premier dossier (faits sourcés, offre, mail, relances)",
+          "outil": "Claude (API Anthropic)"
+        },
+        {
+          "type": "auto",
+          "texte": "Relevé gratuit de l'existant (depuis le 07/10/2026) : l'agent ouvre lui-même, sans IA, l'accueil et les pages Contact, Devis, Rendez-vous et Inscription. Il note les formulaires (champs, choix, dépôt de fichiers) et les outils déjà en place (Calendly, chatbot, espace client…)",
+          "outil": "Site de l'entreprise"
+        },
+        {
+          "type": "auto",
+          "texte": "Réécriture du dossier en tenant compte de l'existant : l'IA améliore ce qui existe et ne propose jamais un outil déjà en place ; le contrôle juge avec ces pages",
           "outil": "Claude (API Anthropic)"
         },
         {
@@ -160,6 +170,14 @@
         "À chaque tour (toutes les 15 minutes), 3 anciens dossiers sans e-mail sont relus de la même façon, gratuitement",
         "Une « lettre possible » dont l'e-mail est trouvé passe en mail à valider par toi"
       ]
+    },
+    {
+      "titre": "Moins mais mieux (07/10/2026)",
+      "points": [
+        "Ton choix : moins d'entreprises analysées par jour, mais des dossiers plus complets",
+        "Pourquoi : le contrôle baissait les notes quand l'offre portait sur une page non lue, et aucun dossier n'atteignait 80",
+        "Coût : environ 0,65 € par analyse complète (avant : environ 0,47 €), soit environ 2 analyses par jour dans le budget"
+      ]
     }
   ],
   "role": {
@@ -173,8 +191,7 @@
       "Suivre le coût mensuel de l'agent (affiché sur la carte Leviaro)"
     ]
   },
-  "aCompleter": [
-  ],
+  "aCompleter": [],
   "outils": [
     {
       "nom": "Claude (API Anthropic)",
