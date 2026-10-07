@@ -57,6 +57,13 @@
       ]
     },
     {
+      "id": "vegebudget",
+      "nom": "VégéBudget",
+      "motifs": [
+        "v[ée]g[ée] ?budget"
+      ]
+    },
+    {
       "id": "autre",
       "nom": "Autres automatisations",
       "motifs": []
