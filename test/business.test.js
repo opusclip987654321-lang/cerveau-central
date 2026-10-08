@@ -205,3 +205,14 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
   assert.notEqual(c.couleur, 'gris');
   assert.deepEqual(await synchroniserImpacteur({ sources: {} }, {}), { ignore: true });
 });
+
+test('tableauDeBord : Petites histoires vraies compte les vidéos de sa chaîne YouTube, sans doublon le même jour', () => {
+  const j = journalVide();
+  j.evenements.push({ projet: 'histoires-vraies', type: 'video', jour: '2026-10-05', titre: 'Vidéo publiée (Facebook)' });
+  const yt = { chaines: [{ projet: 'histoires-vraies', id: 'UCx', abonnes: 120, vues: 5000, videos: [{ jour: '2026-10-02' }, { jour: '2026-10-05' }, { jour: '2026-10-04' }] }], historique: {} };
+  const t = tableauDeBord({ business: { sources: { youtube: yt }, objectifs: {} }, journal: j, configJournal, jour });
+  const h = t.cartes.find((c) => c.id === 'histoires-vraies');
+  assert.equal(h.principal.total, 3);
+  assert.notEqual(h.couleur, 'rouge');
+  assert.equal(h.chiffres.find((x) => x.titre === 'Abonnés YouTube').valeur, '120');
+});

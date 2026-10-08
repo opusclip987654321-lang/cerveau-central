@@ -347,13 +347,27 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     carte('extrait-politique', { titre: 'Vidéos publiées', dates: pubDates, unite: 'vidéo publiée', manque: ['vues', 'abonnés gagnés', 'revenus YouTube'] });
   }
 
-  // Petites histoires vraies : vidéos (programme + vidéos faites à la main notées).
+  // Petites histoires vraies : vidéos de la chaîne YouTube (faites à la main depuis la pause
+  // du programme), du programme (Facebook, Instagram) et notées à la main. Une même vidéo
+  // peut sortir sur plusieurs réseaux le même jour : par jour, on garde le plus grand des deux comptes.
+  const chainesHV = (yt?.chaines ?? []).filter((c) => c.projet === 'histoires-vraies');
+  const parJourHV = (dates) => dates.reduce((m, j) => (j ? m.set(j, (m.get(j) ?? 0) + 1) : m), new Map());
+  const ytHV = parJourHV(chainesHV.flatMap((c) => c.videos.map((v) => v.jour)));
+  const autresHV = parJourHV(evenements(journal, 'histoires-vraies', ['video', 'publication']));
+  const datesHV = [...new Set([...ytHV.keys(), ...autresHV.keys()])].flatMap((j) => Array(Math.max(ytHV.get(j) ?? 0, autresHV.get(j) ?? 0)).fill(j));
+  const gainsHV = chainesHV.length ? gainsPeriode(yt, chainesHV, periode) : null;
   carte('histoires-vraies', {
     titre: 'Vidéos publiées',
-    dates: evenements(journal, 'histoires-vraies', ['video', 'publication']),
+    dates: datesHV,
     unite: 'vidéo publiée',
     joursMax: reglages['histoires-vraies']?.joursMax ?? 7,
-    manque: ['vues (Facebook, Instagram, YouTube)'],
+    extra: chainesHV.length
+      ? [
+          { titre: 'Vues YouTube gagnées', valeur: gainsHV ? nombre(gainsHV.vues) : '—', detail: gainsHV ? `${nombre(chainesHV.reduce((a, c) => a + c.vues, 0))} vues en tout` : 'mesure en cours (il faut au moins deux jours de relevés)' },
+          { titre: 'Abonnés YouTube', valeur: nombre(chainesHV.reduce((a, c) => a + c.abonnes, 0)), detail: gainsHV ? `${gainsHV.abonnes >= 0 ? '+' : ''}${nombre(gainsHV.abonnes)} sur la période` : undefined },
+        ]
+      : undefined,
+    manque: chainesHV.length ? ['vues Facebook et Instagram'] : ['vues (Facebook, Instagram, YouTube)'],
   });
 
   // Leviaro et Cambodge : pas encore de source, seulement les notes.
