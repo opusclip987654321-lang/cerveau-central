@@ -886,6 +886,19 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify(await chargerReponses(fichierReponses)));
     }
+    // Résumé des cartes du Pilotage (couleur, total, silence) et des chaînes YouTube lues,
+    // pour vérifier depuis une session Claude sans mot de passe (jeton RELEVE_JETON).
+    if (req.method === 'GET' && url.pathname === '/api/pilotage') {
+      const business = await chargerBusiness(fichierBusiness);
+      const t = tableauDeBord({ business, journal: await chargerJournal(fichierJournal), configJournal, pauses: await chargerPauses(fichierPauses) });
+      const youtube = (business.sources?.youtube?.chaines ?? []).map((c) => ({ projet: c.projet, id: c.id, titre: c.titre, abonnes: c.abonnes, videos: c.videos.slice(0, 10).map((v) => ({ jour: v.jour, titre: v.titre })) }));
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({
+        maj: business.sources?.youtube?.maj ?? null,
+        cartes: t.cartes.map((c) => ({ id: c.id, couleur: c.couleur, titre: c.principal?.titre, total: c.principal?.total, silence: c.silence ?? null, aDecider: c.aDecider })),
+        youtube,
+      }));
+    }
     if (req.method === 'GET' && url.pathname === '/api/etat') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify(await chargerEtat(fichierEtat)));
