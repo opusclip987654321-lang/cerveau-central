@@ -7,29 +7,28 @@ const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 const TYPES = { auto: 'automatique', toi: 'toi', securite: 'contrôle de sécurité' };
 
 // Demande de louis (08/10, croquis « Trouver et contacter ») : chaque étape est une
-// case à gauche, reliée par un trait à une bulle à droite qui nomme l'outil qui la
-// fait et à quoi il sert (repris de la liste « Outils et API » du guide).
-function bulle(et, outils) {
-  if (et.outil) {
-    const o = outils.find((x) => x.nom === et.outil);
-    return `<div class="bulle"><b>${e(et.outil)}</b>${o ? `<span>${e(o.role)}</span>` : ''}</div>`;
-  }
-  if ((et.type ?? 'auto') === 'toi') return '<div class="bulle toi"><b>Toi</b><span>Tu fais cette étape toi-même</span></div>';
-  return '';
+// case à gauche (ce qui se passe, en mots simples), reliée par un trait à une bulle à
+// droite (le service qui la fait et comment, sans répéter la case). Jamais n8n : le
+// vrai service derrière ; une étape qui n'est qu'un tri ou un contrôle n'en a pas.
+function bulle(et) {
+  const toi = (et.type ?? 'auto') === 'toi';
+  const titre = et.outil ?? (toi ? 'Toi' : 'Règle automatique');
+  const classe = et.outil ? '' : toi ? ' toi' : ' regle';
+  return `<div class="bulle${classe}"><b>${e(titre)}</b>${et.technique ? `<span>${e(et.technique)}</span>` : ''}</div>`;
 }
 
-function circuit(c, i, outils) {
+function circuit(c, i) {
   const etapes = (c.etapes ?? [])
     .map((et) => {
-      const b = bulle(et, outils);
-      return `<div class="pas"><div class="etape ${e(et.type ?? 'auto')}">${e(et.texte)}${et.sinon ? `<span class="sinon">si non : ${e(et.sinon)}</span>` : ''}</div>${b ? `<div class="trait"></div>${b}` : ''}</div>`;
+      const b = bulle(et);
+      return `<div class="pas"><div class="etape ${e(et.type ?? 'auto')}">${e(et.texte)}${et.sinon ? `<span class="sinon">si non : ${e(et.sinon)}</span>` : ''}</div><div class="trait"></div>${b}</div>`;
     })
     .join('<div class="pas fleche"><div>↓</div></div>');
   return `<section class="bloc circuit" id="circuit-${i + 1}">
 <h3>${e(c.titre)} <small>circuit ${i + 1}</small></h3>
 ${c.note ? `<p class="note">${e(c.note)}</p>` : ''}
 <div class="flux">${etapes}</div>
-<p class="legende-circuit"><i class="auto"></i> automatique <i class="toi"></i> toi <i class="securite"></i> contrôle de sécurité <i class="ovale"></i> outil qui le fait</p>
+<p class="legende-circuit"><i class="auto"></i> automatique <i class="toi"></i> toi <i class="securite"></i> contrôle de sécurité <i class="ovale"></i> service et technique</p>
 </section>`;
 }
 
@@ -47,7 +46,7 @@ ${g.journee.map((l) => `<tr><td><b>${e(l.quand)}</b></td><td>${e(l.quoi)}</td><t
 </table></section>`
     : '';
 
-  const circuits = (g.circuits ?? []).map((c, i) => circuit(c, i, g.outils ?? [])).join('');
+  const circuits = (g.circuits ?? []).map(circuit).join('');
 
   const apprentissage = g.apprentissage
     ? `<section class="bloc"><h3>L'apprentissage</h3><div class="deux">
@@ -135,7 +134,7 @@ ${vigilance}
 .trait { height:2px; background:var(--texte); opacity:.7; }
 .bulle { border:1.5px solid var(--texte); border-radius:50%; min-height:110px; padding:16px 36px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; font-size:12px; background:var(--carte2); }
 .bulle b { font-size:13px; } .bulle span { color:var(--doux); margin-top:3px; }
-.bulle.toi { border-color:var(--attention); }
+.bulle.toi { border-color:var(--attention); } .bulle.regle { border-style:dashed; border-color:var(--doux); background:transparent; }
 .pas.fleche { min-height:30px; } .pas.fleche div { grid-column:1; text-align:center; color:var(--texte); font-size:20px; line-height:1; }
 @media (max-width:620px) {
   .pas { grid-template-columns:1fr; }

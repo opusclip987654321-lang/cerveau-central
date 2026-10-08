@@ -35,34 +35,37 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "9 h : recherche Google Places du jour (restaurants d'Île-de-France, ouverts, jamais vus)",
-          "outil": "Google Places (Google Maps Platform)"
+          "texte": "9 h : on cherche les nouveaux restaurants d'Île-de-France, ouverts et jamais vus",
+          "outil": "Google Places",
+          "technique": "API de Google Maps : une recherche par zone chaque matin, payante à l'usage."
         },
         {
           "type": "auto",
-          "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max ; si rien, lecture aussi des mentions légales, de la page de réservation et de la page Facebook",
-          "outil": "Lecture des sites des restaurants"
+          "texte": "On cherche l'adresse e-mail de chaque restaurant sur son site, 120 sites au maximum",
+          "outil": "Sites des restaurants",
+          "technique": "Le robot lit l'accueil et la page contact ; si rien, les mentions légales, la réservation et la page Facebook. Gratuit."
         },
         {
           "type": "securite",
-          "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
+          "texte": "Adresse trouvée, restaurant jamais contacté et pas exclu ?",
           "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté, mais il sera retenté au repêchage de 11 h 07",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "technique": "Comparaison avec la mémoire de la prospection : restaurants déjà contactés et adresses exclues."
         },
         {
           "type": "auto",
-          "texte": "Note sur la fiche (halal, sans alcool, privatisation, capacité…) et tri : les 50 meilleurs du jour",
-          "outil": "n8n (n8n.nourmeet.com)"
+          "texte": "Chaque restaurant reçoit une note (halal, sans alcool, privatisation, capacité…) ; on garde les 50 meilleurs du jour",
+          "technique": "Points calculés à partir de ce que dit son site."
         },
         {
           "type": "auto",
-          "texte": "Mail personnalisé envoyé depuis contact@nourmeet.com, signé Walid, avec le logo et le lien nourmeet.com/restaurateurs (pause entre chaque envoi)",
-          "outil": "Mail OVH (contact@nourmeet.com)"
+          "texte": "Le mail de présentation part, signé Walid, avec le logo et le lien pour s'inscrire",
+          "outil": "Mail OVH (SMTP)",
+          "technique": "Envoi depuis contact@nourmeet.com par le serveur d'OVH, avec une pause entre chaque mail pour ne pas finir en spam."
         },
         {
           "type": "auto",
-          "texte": "Fiche mise à jour : contacté, date d'envoi, page où l'adresse a été trouvée ; échec d'envoi noté",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "texte": "La fiche du restaurant est mise à jour : contacté, date, page où l'adresse a été trouvée",
+          "technique": "Ligne enregistrée dans la mémoire de la prospection, que le cerveau relit ; un échec d'envoi y est noté avec sa cause."
         }
       ]
     },
@@ -72,24 +75,25 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Lecture du stock des fiches « sans e-mail » dans np_prospects, 40 par jour en rotation",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "texte": "On reprend les restaurants restés sans e-mail, 40 par jour à tour de rôle",
+          "technique": "Lecture des fiches « sans e-mail » dans la mémoire de la prospection."
         },
         {
           "type": "auto",
-          "texte": "Relecture de leur site avec la recherche élargie : accueil, contact, mentions légales, réservation, page Facebook",
-          "outil": "Lecture des sites des restaurants"
+          "texte": "On relit leur site plus en profondeur pour trouver une adresse",
+          "outil": "Sites des restaurants",
+          "technique": "Pages lues : accueil, contact, mentions légales, réservation et page Facebook. Gratuit."
         },
         {
           "type": "securite",
-          "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
+          "texte": "Adresse trouvée, restaurant jamais contacté et pas exclu ?",
           "sinon": "la fiche reste « sans e-mail », elle repassera à un prochain tour",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "technique": "Même comparaison que le matin avec la mémoire de la prospection."
         },
         {
           "type": "auto",
-          "texte": "E-mail trouvé : le restaurant suit le circuit normal (tri, mail personnalisé, envoi) et sa fiche est mise à jour, jamais dupliquée",
-          "outil": "n8n (n8n.nourmeet.com)"
+          "texte": "Adresse trouvée : le restaurant rejoint le circuit normal (note, mail, envoi)",
+          "technique": "La fiche existante est complétée, jamais dupliquée."
         }
       ]
     },
@@ -98,23 +102,24 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "9 h 30 : lecture des restaurants contactés sans réponse",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "texte": "9 h 30 : on regarde quels restaurants contactés n'ont pas répondu",
+          "technique": "Lecture des envois sans réponse dans la mémoire de la prospection."
         },
         {
           "type": "auto",
-          "texte": "Choix de qui relancer aujourd'hui, avec une phrase personnalisée selon leur site (sans alcool, privatisation…)",
-          "outil": "n8n (n8n.nourmeet.com)"
+          "texte": "On choisit qui relancer aujourd'hui, avec une phrase adaptée à chaque restaurant",
+          "technique": "La phrase reprend ce qui a été lu sur son site (sans alcool, privatisation…)."
         },
         {
           "type": "auto",
-          "texte": "Envoi de la relance 1, puis de la relance 2 les jours suivants ; jamais plus de 2 relances",
-          "outil": "Mail OVH (contact@nourmeet.com)"
+          "texte": "La relance part, puis une deuxième les jours suivants ; jamais plus de deux",
+          "outil": "Mail OVH (SMTP)",
+          "technique": "Même envoi que le premier mail, depuis contact@nourmeet.com."
         },
         {
           "type": "auto",
-          "texte": "Statuts mis à jour (relancé 1 fois, relancé 2 fois)",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "texte": "Le restaurant passe à « relancé 1 fois », puis « relancé 2 fois »",
+          "technique": "Mise à jour de la fiche dans la mémoire de la prospection."
         }
       ]
     },
@@ -124,33 +129,38 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Chaque mail reçu sur la boîte de prospection est analysé (expéditeur, objet, texte)",
-          "outil": "Mail OVH (contact@nourmeet.com)"
+          "texte": "Chaque mail reçu est lu : qui écrit, quel sujet, quel texte",
+          "outil": "Mail OVH (IMAP)",
+          "technique": "Lecture de la boîte contact@nourmeet.com ; les mails y restent non lus pour toi."
         },
         {
           "type": "securite",
-          "texte": "Réponse automatique d'absence ou retour d'erreur ?",
+          "texte": "Message d'absence ou erreur de livraison ?",
           "sinon": "absence ignorée ; adresse invalide mise en exclusion",
-          "outil": "n8n (n8n.nourmeet.com)"
+          "technique": "Tri automatique des messages envoyés par des robots."
         },
         {
           "type": "auto",
-          "texte": "« Stop » ou désinscription : le restaurant est exclu, ses envois en attente annulés",
-          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
+          "texte": "Le restaurant demande d'arrêter : il est exclu et ses mails prévus sont annulés",
+          "technique": "Adresse ajoutée aux exclusions, pour toujours."
         },
         {
           "type": "auto",
-          "texte": "Vraie réponse : relances stoppées, texte gardé et affiché sur la page Nūr Meet",
-          "outil": "Page Nūr Meet du cerveau"
+          "texte": "Vraie réponse : les relances s'arrêtent et la réponse s'affiche sur la page Nūr Meet",
+          "outil": "Cerveau",
+          "technique": "Le cerveau relit les réponses enregistrées et les range dans « Réponses à traiter »."
         },
         {
           "type": "toi",
-          "texte": "Tu lis la réponse et tu réponds toi-même pour transformer l'intérêt en abonnement"
+          "texte": "Tu lis la réponse et tu réponds toi-même pour décrocher l'abonnement",
+          "outil": "Ta boîte mail",
+          "technique": "Tu réponds depuis contact@nourmeet.com."
         },
         {
           "type": "toi",
-          "texte": "Tu notes le suivi de chaque réponse sur la page Nūr Meet : à lire, suivi en cours, en attente du restaurant, à relancer, traité, refus ou opposition, avec une prochaine action et une échéance si tu veux",
-          "outil": "Page Nūr Meet du cerveau"
+          "texte": "Tu notes où en est chaque échange : à lire, en cours, à relancer, traité, refus…",
+          "outil": "Cerveau",
+          "technique": "Un état à choisir sur la page Nūr Meet ; ça n'envoie aucun mail, c'est une étiquette pour t'y retrouver."
         }
       ]
     }

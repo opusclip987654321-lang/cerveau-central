@@ -35,34 +35,40 @@
       "etapes": [
         {
           "type": "toi",
-          "texte": "Faire venir des visiteurs : réseaux sociaux, forums, bouche-à-oreille",
-          "outil": "Réseaux sociaux (Instagram, TikTok, Reddit, Facebook)"
+          "texte": "Tu fais venir des visiteurs : réseaux sociaux, forums, bouche-à-oreille",
+          "outil": "Instagram, TikTok, Reddit, Facebook",
+          "technique": "Publications faites à la main ; comptes encore à créer."
         },
         {
           "type": "auto",
-          "texte": "Google, Bing et les assistants IA amènent des visiteurs sur les pages recettes et « Comment ça marche »",
-          "outil": "Google Search Console et Bing Webmaster Tools"
+          "texte": "Des gens arrivent depuis Google, Bing ou une IA en cherchant des recettes pas chères",
+          "outil": "Search Console et Bing Webmaster",
+          "technique": "Domaine validé et plan du site (sitemap) envoyé le 07/10 : les moteurs savent quelles pages afficher."
         },
         {
           "type": "auto",
-          "texte": "Le visiteur indique son foyer, son budget et son placard ; le site compose 5 dîners et la liste de courses en paquets entiers",
-          "outil": "Next.js (Node 22)"
+          "texte": "Le visiteur donne son foyer, son budget et son placard ; il reçoit 5 dîners et sa liste de courses",
+          "outil": "Le site VégéBudget",
+          "technique": "Application Next.js sur le serveur Nūr ; calcul avec les prix Carrefour du 07/10, en paquets entiers."
         },
         {
           "type": "auto",
-          "texte": "Pour garder sa semaine, il donne son e-mail et reçoit un lien de connexion",
-          "outil": "E-mail OVH (Zimbra Starter)"
+          "texte": "Pour garder sa semaine, il laisse son e-mail et reçoit un lien pour se connecter",
+          "outil": "E-mail OVH (Zimbra)",
+          "technique": "Envoi depuis bonjour@vegebudget.fr par le serveur d'OVH ; pas de mot de passe à retenir."
         },
         {
           "type": "securite",
-          "texte": "Le lien ne sert qu'une fois et expire au bout d'un moment",
+          "texte": "Le lien ne marche qu'une fois et finit par expirer",
           "sinon": "lien refusé, il en redemande un",
-          "outil": "Next.js (Node 22)"
+          "outil": "Le site VégéBudget",
+          "technique": "Contrôle fait par le site à chaque clic sur le lien."
         },
         {
           "type": "auto",
-          "texte": "La première semaine est gratuite ; le membre coche ses dîners cuisinés et suit ce qu'il dépense",
-          "outil": "SQLite"
+          "texte": "Première semaine gratuite : il coche les dîners cuisinés et voit ce qu'il dépense",
+          "outil": "SQLite",
+          "technique": "Petite base de données dans un fichier sur le serveur (volume Docker vegebudget-data), sauvegardée chaque nuit à 3 h."
         }
       ]
     },
@@ -72,24 +78,28 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Dimanche 10 h : rappel par e-mail avec le bilan de la semaine passée",
-          "outil": "Planificateur du serveur (cron)"
+          "texte": "Chaque dimanche à 10 h, il reçoit par e-mail le bilan de sa semaine",
+          "outil": "Cron + E-mail OVH",
+          "technique": "Le planificateur du serveur déclenche l'envoi, protégé par une clé secrète."
         },
         {
           "type": "auto",
-          "texte": "À partir de la deuxième semaine, l'offre Premium est proposée : 4,99 € par mois, ou l'offre fondateur à 19 € par an pour les 100 premiers (réservation)",
-          "outil": "Next.js (Node 22)"
+          "texte": "Dès la deuxième semaine, on lui propose Premium à 4,99 €/mois, ou l'offre fondateur à 19 €/an pour les 100 premiers",
+          "outil": "Le site VégéBudget",
+          "technique": "Chaque vue de l'offre et chaque clic « payer » sont comptés par la mesure d'audience maison, sans cookie."
         },
         {
           "type": "securite",
-          "texte": "Paiement activé (Stripe configuré et BILLING_ENABLED=true) ?",
+          "texte": "Le paiement en ligne est-il activé ?",
           "sinon": "la réservation de l'offre fondateur est seulement notée, rien n'est encaissé",
-          "outil": "Stripe"
+          "outil": "Stripe",
+          "technique": "Il faut les prix créés dans Stripe et le réglage BILLING_ENABLED=true sur le serveur."
         },
         {
           "type": "toi",
-          "texte": "Créer les prix Stripe, puis activer le paiement",
-          "outil": "Stripe"
+          "texte": "Tu crées les prix et tu actives le paiement",
+          "outil": "Stripe",
+          "technique": "Dans le tableau de bord Stripe : 2 prix (4,99 €/mois et 19 €/an), puis les clés dans le fichier .env du serveur."
         }
       ]
     },
@@ -98,19 +108,22 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Claude prépare la modification et la fusionne sur GitHub (branche main)",
-          "outil": "GitHub (dépôt v-g-budget)"
+          "texte": "Claude prépare la modification et la publie dans le code du site",
+          "outil": "GitHub",
+          "technique": "Dépôt v-g-budget : Claude ouvre une demande de modification, vérifie qu'elle passe, puis la fusionne."
         },
         {
           "type": "toi",
-          "texte": "Sur le serveur : cd /opt/vegebudget && git pull && docker compose up -d --build",
-          "outil": "Docker et Caddy (VPS Nūr)"
+          "texte": "Tu mets le site à jour sur le serveur",
+          "outil": "Docker (serveur Nūr)",
+          "technique": "cd /opt/vegebudget && git pull && docker compose up -d --build"
         },
         {
           "type": "securite",
-          "texte": "Le conteneur repasse « healthy » ?",
+          "texte": "Le site redémarre-t-il correctement ?",
           "sinon": "l'ancienne version reste en place ; prévenir Claude",
-          "outil": "Docker et Caddy (VPS Nūr)"
+          "outil": "Docker et Caddy",
+          "technique": "Docker vérifie que le conteneur répond (« healthy ») ; Caddy sert vegebudget.fr en HTTPS."
         }
       ]
     }

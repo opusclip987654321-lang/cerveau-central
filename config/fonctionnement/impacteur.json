@@ -35,34 +35,40 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "8 h 07 : 5 requêtes au dépôt légal de la BnF (livres français récents, thèmes tournants, chaîne en alternance)",
-          "outil": "Dépôt légal BnF"
+          "texte": "8 h 07 : on cherche les livres français qui viennent de sortir, sur un thème qui change",
+          "outil": "Dépôt légal BnF",
+          "technique": "5 requêtes gratuites au catalogue de la BnF ; la chaîne (Afrique ou Frexit) alterne."
         },
         {
           "type": "securite",
-          "texte": "Auteur vivant, pas déjà dans le Sheet ?",
+          "texte": "L'auteur est-il vivant et pas déjà dans la liste ?",
           "sinon": "écarté avant toute dépense",
-          "outil": "Google Sheets"
+          "outil": "Google Sheets",
+          "technique": "Comparaison avec l'onglet Prospection du Sheet, avant toute dépense."
         },
         {
           "type": "auto",
-          "texte": "Recherche du contact de l'auteur sur le web (4 candidats max)",
-          "outil": "Brave Search (API)"
+          "texte": "On cherche comment contacter l'auteur",
+          "outil": "Brave Search",
+          "technique": "Recherche web payante par API ; 4 pistes au plus."
         },
         {
           "type": "auto",
-          "texte": "Claude rédige l'invitation au nom de Walid (avec demande d'exemplaire de presse)",
-          "outil": "Claude (Haiku, API Anthropic)"
+          "texte": "Une invitation est écrite au nom de Walid, avec une demande d'exemplaire presse",
+          "outil": "Claude Haiku (API Anthropic)",
+          "technique": "Le modèle le moins cher de Claude rédige à partir de la fiche du livre."
         },
         {
           "type": "auto",
-          "texte": "Fiche « à vérifier » dans le Sheet + rapport de funnel à chaque run, même vide",
-          "outil": "Google Sheets"
+          "texte": "La fiche est ajoutée « à vérifier », avec le bilan de la tournée",
+          "outil": "Google Sheets",
+          "technique": "Une ligne dans l'onglet Prospection, que le cerveau relit."
         },
         {
           "type": "toi",
-          "texte": "Notification Telegram par fiche : ✅ Valider · 🗑 Rejeter",
-          "outil": "Telegram (bot)"
+          "texte": "Tu valides ou tu rejettes chaque fiche",
+          "outil": "Telegram",
+          "technique": "Une notification par fiche, avec ✅ et 🗑."
         }
       ]
     },
@@ -71,23 +77,27 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "12 h 07 : lecture des flux des 40 chaînes choisies (20 Afrique, 20 Frexit), vidéos des 7 derniers jours",
-          "outil": "Flux RSS YouTube"
+          "texte": "12 h 07 : on regarde les vidéos de la semaine des 40 chaînes choisies (20 Afrique, 20 Frexit)",
+          "outil": "Flux RSS YouTube",
+          "technique": "Flux publics et gratuits de chaque chaîne."
         },
         {
           "type": "auto",
-          "texte": "Claude identifie les invités des interviews et choisit la chaîne cible selon le sujet",
-          "outil": "Claude (Haiku, API Anthropic)"
+          "texte": "On repère qui est invité dans chaque interview et la chaîne qui lui correspond",
+          "outil": "Claude Haiku (API Anthropic)",
+          "technique": "L'IA lit les infos de la vidéo et choisit Afrique ou Frexit selon le sujet."
         },
         {
           "type": "auto",
-          "texte": "Dédoublonnage, recherche de contact, invitation rédigée",
-          "outil": "Brave Search (API)"
+          "texte": "On écarte les doublons, on cherche le contact et on écrit l'invitation",
+          "outil": "Brave Search + Claude Haiku",
+          "technique": "Même recherche de contact et même rédaction que pour les livres."
         },
         {
           "type": "toi",
-          "texte": "Fiche + notification Telegram : ✅ / 🗑",
-          "outil": "Telegram (bot)"
+          "texte": "Tu valides ou tu rejettes chaque fiche",
+          "outil": "Telegram",
+          "technique": "Même notification ✅ / 🗑 que pour les livres."
         }
       ]
     },
@@ -97,30 +107,33 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "10 h 07 et 15 h 07 : lecture des fiches prêtes (invitation conforme + e-mail trouvé, priorité aux adresses professionnelles)",
-          "outil": "Google Sheets"
+          "texte": "10 h 07 et 15 h 07 : on prend les fiches prêtes à partir",
+          "outil": "Google Sheets",
+          "technique": "Fiches avec invitation conforme et e-mail trouvé ; adresses professionnelles en premier."
         },
         {
           "type": "securite",
-          "texte": "Plafond : 5 envois par jour, jamais deux fois le même auteur ou le même e-mail",
+          "texte": "5 envois par jour au plus, jamais deux fois la même personne",
           "sinon": "fiche sans e-mail : notifiée sur Telegram, tu peux donner l'adresse avec /email",
-          "outil": "n8n (n8n.nourmeet.com)"
+          "technique": "Compteur du jour et liste des auteurs et adresses déjà contactés."
         },
         {
           "type": "securite",
-          "texte": "Contrôle du texte : l'invitation doit contenir l'exemple d'interview et finir par la signature Walid + nom de la chaîne",
+          "texte": "L'invitation suit-elle bien le modèle ?",
           "sinon": "retenue : rien ne part, la liste arrive sur Telegram (un message par tournée)",
-          "outil": "n8n (n8n.nourmeet.com)"
+          "technique": "Le texte doit contenir l'exemple d'interview et finir par « Walid » + le nom de la chaîne."
         },
         {
           "type": "auto",
-          "texte": "Envoi par Gmail (compte Afrique ou Frexit selon la chaîne), avec image de suivi d'ouverture",
-          "outil": "Gmail (API)"
+          "texte": "L'invitation part depuis le compte de la bonne chaîne",
+          "outil": "Gmail (API)",
+          "technique": "Compte Afrique ou Frexit ; une image invisible signale l'ouverture (approximatif)."
         },
         {
           "type": "auto",
-          "texte": "Fiche marquée « envoyé » avec la date",
-          "outil": "Google Sheets"
+          "texte": "La fiche passe à « envoyé », avec la date",
+          "outil": "Google Sheets",
+          "technique": "Mise à jour de la ligne dans l'onglet Prospection."
         }
       ]
     },
@@ -129,23 +142,27 @@
       "etapes": [
         {
           "type": "toi",
-          "texte": "✅ Valider une fiche : elle est marquée validée et un brouillon mis en forme (logo de la chaîne) est créé dans le compte Gmail de sa chaîne, prêt à partir",
-          "outil": "Telegram (bot)"
+          "texte": "✅ Valider : la fiche est validée et un brouillon prêt à partir est créé",
+          "outil": "Telegram + Gmail",
+          "technique": "Le brouillon est créé dans le compte Gmail de la chaîne, avec son logo en signature."
         },
         {
           "type": "toi",
-          "texte": "🗑 Rejeter : la fiche est écartée définitivement",
-          "outil": "Telegram (bot)"
+          "texte": "🗑 Rejeter : la fiche est écartée pour de bon",
+          "outil": "Telegram",
+          "technique": "Bouton sous la notification."
         },
         {
           "type": "toi",
-          "texte": "/email CLE adresse : tu fournis l'e-mail manquant d'une fiche",
-          "outil": "Telegram (bot)"
+          "texte": "/email : tu donnes l'adresse qui manquait sur une fiche",
+          "outil": "Telegram",
+          "technique": "Commande à taper : /email CLE adresse."
         },
         {
           "type": "toi",
-          "texte": "/inviter : tu proposes une personnalité de ton choix, l'agent prépare la fiche et l'invitation",
-          "outil": "Telegram (bot)"
+          "texte": "/inviter : tu proposes quelqu'un, l'agent prépare la fiche et l'invitation",
+          "outil": "Telegram",
+          "technique": "Commande à taper, suivie de la personne."
         }
       ]
     }
