@@ -347,7 +347,7 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     carte('extrait-politique', { titre: 'Vidéos publiées', dates: pubDates, unite: 'vidéo publiée', manque: ['vues', 'abonnés gagnés', 'revenus YouTube'] });
   }
 
-  // Petites histoires vraies : vidéos de la chaîne YouTube (faites à la main depuis la pause
+  // Petites histoires vraies : vidéos de la chaîne YouTube (publiées hors du programme, en pause
   // du programme), du programme (Facebook, Instagram) et notées à la main. Une même vidéo
   // peut sortir sur plusieurs réseaux le même jour : par jour, on garde le plus grand des deux comptes.
   const chainesHV = (yt?.chaines ?? []).filter((c) => c.projet === 'histoires-vraies');
