@@ -163,6 +163,28 @@
           "technique": "Un état à choisir sur la page Nūr Meet ; ça n'envoie aucun mail, c'est une étiquette pour t'y retrouver."
         }
       ]
+    },
+    {
+      "titre": "Le bilan du jour (10 h 30)",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "10 h 30 : on fait les comptes de la prospection du jour",
+          "technique": "Chiffres tirés de la mémoire de la prospection, sans service extérieur."
+        },
+        {
+          "type": "auto",
+          "texte": "Le bilan t'est envoyé sur ton téléphone",
+          "outil": "Telegram",
+          "technique": "API Telegram : le bot de la prospection envoie le message."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu lis le bilan",
+          "outil": "Telegram",
+          "technique": "Rien à répondre : c'est pour information."
+        }
+      ]
     }
   ],
   "regles": [
