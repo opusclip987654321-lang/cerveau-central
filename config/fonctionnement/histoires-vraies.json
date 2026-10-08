@@ -31,6 +31,12 @@
       "etapes": [
         {
           "type": "auto",
+          "texte": "9 h un jour sur deux (ou quand tu tapes /nouvelle) : une vidéo démarre",
+          "outil": "Cron ou Telegram",
+          "technique": "Ligne du planificateur du serveur Nūr, coupée pendant la pause ; /nouvelle dans le bot lance une vidéo à la main."
+        },
+        {
+          "type": "auto",
           "texte": "Une histoire de la réserve devient un script et 9 images (environ 0,60 $)",
           "outil": "Grok Imagine (xAI)",
           "technique": "Une histoire par fichier, prise dans l'ordre ; l'API d'xAI dessine les images."
@@ -76,6 +82,16 @@
     {
       "titre": "Le suivi (actif)",
       "etapes": [
+        {
+          "type": "auto",
+          "texte": "Lundi : la réserve d'histoires vraies est rafraîchie",
+          "technique": "Fait par le programme sur le serveur Nūr, un fichier par histoire."
+        },
+        {
+          "type": "auto",
+          "texte": "9 h 30 : on relève les performances des vidéos déjà publiées",
+          "technique": "Fait par le programme sur le serveur Nūr."
+        },
         {
           "type": "auto",
           "texte": "Les vidéos publiées s'affichent sur la page du projet, avec leurs liens",

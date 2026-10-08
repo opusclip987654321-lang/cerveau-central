@@ -64,6 +64,12 @@
         },
         {
           "type": "auto",
+          "texte": "On sait à peu près si le mail a été ouvert",
+          "outil": "Image de suivi",
+          "technique": "Une image invisible dans le mail ; certaines messageries la bloquent ou la chargent toutes seules."
+        },
+        {
+          "type": "auto",
           "texte": "La fiche du restaurant est mise à jour : contacté, date, page où l'adresse a été trouvée",
           "technique": "Ligne enregistrée dans la mémoire de la prospection, que le cerveau relit ; un échec d'envoi y est noté avec sa cause."
         }
@@ -161,6 +167,34 @@
           "texte": "Tu notes où en est chaque échange : à lire, en cours, à relancer, traité, refus…",
           "outil": "Cerveau",
           "technique": "Un état à choisir sur la page Nūr Meet ; ça n'envoie aucun mail, c'est une étiquette pour t'y retrouver."
+        },
+        {
+          "type": "auto",
+          "texte": "Un restaurant s'abonne : il compte dans les abonnés payants",
+          "outil": "Stripe",
+          "technique": "Le cerveau lit les abonnements payés dans Stripe et les affiche sur la carte Nūr Meet."
+        }
+      ]
+    },
+    {
+      "titre": "Le bilan du jour (10 h 30)",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "10 h 30 : on fait les comptes de la prospection du jour",
+          "technique": "Chiffres tirés de la mémoire de la prospection, sans service extérieur."
+        },
+        {
+          "type": "auto",
+          "texte": "Le bilan t'est envoyé sur ton téléphone",
+          "outil": "Telegram",
+          "technique": "API Telegram : le bot de la prospection envoie le message."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu lis le bilan",
+          "outil": "Telegram",
+          "technique": "Rien à répondre : c'est pour information."
         }
       ]
     }
