@@ -95,6 +95,13 @@
         "/retry reprend une fabrication en erreur là où elle s'était arrêtée, sans repayer ce qui est déjà généré",
         "Un mode à blanc (DRY_RUN) permet de tester toute la chaîne sans aucun appel payant"
       ]
+    },
+    {
+      "titre": "Comptage des vidéos (08/10/2026)",
+      "points": [
+        "Le cerveau lit chaque heure la chaîne YouTube Petites Histoires Vraies (vidéos, vues, abonnés) : les vidéos faites à la main y sont comptées automatiquement, sans rien noter",
+        "Il compte aussi les vidéos publiées par le programme (Facebook, Instagram) et celles notées à la main ; une même vidéo sortie le même jour sur plusieurs réseaux ne compte qu'une fois"
+      ]
     }
   ],
   "role": {
