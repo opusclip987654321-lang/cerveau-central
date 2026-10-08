@@ -139,6 +139,59 @@
           "technique": "Liste « lettre possible », exportable en CSV."
         }
       ]
+    },
+    {
+      "titre": "Le suivi et l'apprentissage",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Toutes les 15 minutes, l'agent note son état : mode, budget du mois, erreurs",
+          "outil": "Fichier diagnostic (serveur Nūr)",
+          "technique": "data/diagnostic.json, relu par le cerveau : budget et mode sur la carte, erreurs dans « À décider »."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque heure, la carte Leviaro et le compteur « À étudier » se mettent à jour",
+          "outil": "Cerveau",
+          "technique": "Il lit une copie de leviaro.db, sans jamais y écrire."
+        },
+        {
+          "type": "auto",
+          "texte": "8 h : le diagnostic du jour arrive par mail",
+          "outil": "Boîte mail (SMTP)",
+          "technique": "Lu ensuite par une routine Claude du projet Leviaro."
+        },
+        {
+          "type": "auto",
+          "texte": "8 h 52 : les réponses aux demandes « Test gratuit » et aux prospects intéressés sont préparées",
+          "outil": "Routine Claude + Gmail",
+          "technique": "Une tâche Claude programmée écrit les brouillons dans Gmail ; rien ne part tout seul."
+        },
+        {
+          "type": "auto",
+          "texte": "18 h : le rapport du jour arrive par mail",
+          "outil": "Boîte mail (SMTP)",
+          "technique": "Envoyé par l'agent à ta boîte."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque semaine, le bilan de la semaine s'affiche en haut de la page Leviaro",
+          "outil": "Cerveau",
+          "technique": "L'agent le dépose dans data/bilans/ ; le cerveau garde les 8 derniers."
+        },
+        {
+          "type": "auto",
+          "texte": "Lundi 8 h : récap des 7 jours et propositions pour mieux écrire",
+          "outil": "Telegram",
+          "technique": "Au plus 3 règles de rédaction et 3 recommandations, chacune appuyée sur au moins 3 cas."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu acceptes, reportes ou refuses chaque proposition",
+          "outil": "admin.leviaro.fr",
+          "technique": "Page « Apprentissage » ; jamais de règle sur les prix, le budget ou les désinscriptions."
+        }
+      ]
     }
   ],
   "regles": [

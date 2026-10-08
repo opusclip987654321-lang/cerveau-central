@@ -69,6 +69,12 @@
           "texte": "Première semaine gratuite : il coche les dîners cuisinés et voit ce qu'il dépense",
           "outil": "SQLite",
           "technique": "Petite base de données dans un fichier sur le serveur (volume Docker vegebudget-data), sauvegardée chaque nuit à 3 h."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu réponds aux e-mails reçus",
+          "outil": "E-mail OVH (Zimbra)",
+          "technique": "Boîte bonjour@vegebudget.fr, dans le webmail OVH."
         }
       ]
     },
@@ -124,6 +130,35 @@
           "sinon": "l'ancienne version reste en place ; prévenir Claude",
           "outil": "Docker et Caddy",
           "technique": "Docker vérifie que le conteneur répond (« healthy ») ; Caddy sert vegebudget.fr en HTTPS."
+        }
+      ]
+    },
+    {
+      "titre": "Surveillance et sauvegarde",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "3 h : la base et les photos sont sauvegardées, 14 jours gardés",
+          "outil": "Cron (serveur Nūr)",
+          "technique": "Copie dans /var/backups/vegebudget, sur le serveur."
+        },
+        {
+          "type": "auto",
+          "texte": "Toutes les 3 h : on vérifie que le site et son certificat répondent",
+          "outil": "Cerveau",
+          "technique": "Visite de vegebudget.fr et contrôle du certificat HTTPS ; alerte si ça casse."
+        },
+        {
+          "type": "auto",
+          "texte": "Toutes les heures : les chiffres du site arrivent sur la carte VégéBudget",
+          "outil": "Mesure d'audience maison",
+          "technique": "Le cerveau lit /api/stats avec un jeton : visiteurs, semaines, inscrits, clics « payer », origine des visites, sans cookie."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu regardes la carte VégéBudget",
+          "outil": "Cerveau",
+          "technique": "Agir seulement si une alerte arrive."
         }
       ]
     }

@@ -21,7 +21,8 @@
         { "type": "auto", "texte": "Montage de la vidéo verticale avec titre, sous-titres et source", "outil": "Atelier (ffmpeg)", "technique": "Programme maison sur le serveur YouTube qui monte la vidéo au format 9:16." },
         { "type": "toi", "texte": "Tu regardes l'extrait : ✅ Valider · 🔁 Autre moment · 🗑 Abandonner", "outil": "Telegram", "technique": "La vidéo arrive dans le bot avec ses boutons." },
         { "type": "auto", "texte": "La vidéo part au prochain créneau libre (1 par heure au plus) sur YouTube, Facebook et Instagram", "outil": "YouTube et Meta", "technique": "API YouTube (en privé jusqu'à l'audit, 1 600 points sur 10 000 par jour) et API Meta (accès à renouveler vers janvier 2027)." },
-        { "type": "toi", "texte": "Tu postes toi-même la vidéo sur TikTok", "outil": "Telegram", "technique": "La vidéo et sa légende arrivent dans le bot ; l'envoi direct à TikTok existe mais n'est pas utilisé." }
+        { "type": "toi", "texte": "Tu postes toi-même la vidéo sur TikTok", "outil": "Telegram", "technique": "La vidéo et sa légende arrivent dans le bot ; l'envoi direct à TikTok existe mais n'est pas utilisé." },
+        { "type": "toi", "texte": "Tu passes le Short YouTube en public", "outil": "YouTube Studio", "technique": "Tant que l'audit de l'API YouTube n'est pas validé, les vidéos arrivent en privé." }
       ]
     },
     {
@@ -34,6 +35,7 @@
         { "type": "auto", "texte": "L'IA compose l'émission : 9 à 14 extraits, 8 à 10 minutes, rien de risqué", "outil": "Claude (API Anthropic)", "technique": "Consignes : au plus 2 extraits par chaîne TV, environ 20 % d'essais, extraits à risque écartés." },
         { "type": "auto", "texte": "Montage du zapping : intro, bandeaux, sous-titres, sources, fin, chapitres et miniature", "outil": "Atelier (ffmpeg) + OpenAI", "technique": "L'atelier monte la vidéo 16:9 ; le visuel de la miniature vient de l'API images d'OpenAI." },
         { "type": "auto", "texte": "19 h : le zapping est publié sur YouTube et Facebook", "outil": "YouTube et Meta", "technique": "Mise en ligne par l'API YouTube (en privé jusqu'à l'audit) et l'API Meta." },
+        { "type": "toi", "texte": "Tu passes le zapping YouTube en public", "outil": "YouTube Studio", "technique": "Tant que l'audit de l'API YouTube n'est pas validé, les vidéos arrivent en privé." },
         { "type": "auto", "texte": "Tu reçois le sommaire, les liens et l'idée testée du jour", "outil": "Telegram", "technique": "Message du bot, rien à faire." }
       ]
     },

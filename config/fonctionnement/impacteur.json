@@ -73,6 +73,29 @@
       ]
     },
     {
+      "titre": "Le récap de 8 h 33",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "8 h 33 : on fait les comptes de la prospection",
+          "outil": "Google Sheets",
+          "technique": "Chiffres tirés de l'onglet Prospection."
+        },
+        {
+          "type": "auto",
+          "texte": "Le récap t'est envoyé",
+          "outil": "Telegram",
+          "technique": "API Telegram : le bot envoie le message."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu lis le récap",
+          "outil": "Telegram",
+          "technique": "Rien à répondre : c'est pour information."
+        }
+      ]
+    },
+    {
       "titre": "Découverte YouTube",
       "etapes": [
         {
@@ -128,6 +151,12 @@
           "texte": "L'invitation part depuis le compte de la bonne chaîne",
           "outil": "Gmail (API)",
           "technique": "Compte Afrique ou Frexit ; une image invisible signale l'ouverture (approximatif)."
+        },
+        {
+          "type": "toi",
+          "texte": "Un auteur accepte : tu lui réponds toi-même",
+          "outil": "Gmail",
+          "technique": "Depuis le compte Gmail de la chaîne qui l'a invité."
         },
         {
           "type": "auto",
