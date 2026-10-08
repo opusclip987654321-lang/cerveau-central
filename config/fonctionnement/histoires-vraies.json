@@ -32,27 +32,28 @@
         {
           "type": "auto",
           "texte": "Une histoire de la réserve (un fichier par histoire, pris dans l'ordre) devient un script et 9 images (~0,60 $)",
-          "outil": "Grok Imagine (xAI)"
+          "outil": "Grok Imagine (xAI, API)"
         },
         {
           "type": "toi",
           "texte": "Checkpoint 1 sur Telegram : script + 9 images ; /regen 3 refait l'image 3 (consigne possible) ; ✅ lance l'étape payante, ❌ annule",
-          "outil": "Telegram"
+          "outil": "Telegram (bot dédié)"
         },
         {
           "type": "securite",
           "texte": "Garde-fou de coût : au plus 110 secondes d'animation par vidéo",
-          "sinon": "le job est refusé avant de payer"
+          "sinon": "le job est refusé avant de payer",
+          "outil": "VPS Nūr (hébergement seulement)"
         },
         {
           "type": "auto",
           "texte": "Animation des scènes en 720p (~8,70 $ la vidéo, facturée à la seconde)",
-          "outil": "Grok (xAI)"
+          "outil": "Grok Imagine (xAI, API)"
         },
         {
           "type": "auto",
           "texte": "Voix off française (voix choisie dans ta bibliothèque)",
-          "outil": "ElevenLabs"
+          "outil": "ElevenLabs (API)"
         },
         {
           "type": "auto",
@@ -62,7 +63,7 @@
         {
           "type": "toi",
           "texte": "Checkpoint 2 sur Telegram : ✅ = vidéo validée ; tu l'enregistres depuis Telegram et tu la publies toi-même",
-          "outil": "Telegram"
+          "outil": "Telegram (bot dédié)"
         }
       ]
     },
@@ -71,11 +72,13 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Le cerveau lit les publications du programme et les montre sur la page du projet, avec leurs liens"
+          "texte": "Le cerveau lit les publications du programme et les montre sur la page du projet, avec leurs liens",
+          "outil": "Cerveau (cerveau.nourmeet.com)"
         },
         {
           "type": "toi",
-          "texte": "Tes vidéos faites à la main : note-les avec « Ajouter une note » du Journal pour qu'elles comptent"
+          "texte": "Tes vidéos faites à la main : note-les avec « Ajouter une note » du Journal pour qu'elles comptent",
+          "outil": "Journal du cerveau"
         }
       ]
     }
@@ -141,6 +144,10 @@
     {
       "nom": "VPS Nūr (hébergement seulement)",
       "role": "Le bot tourne en service permanent ; le départ automatique (un jour sur deux à 9 h) est une ligne du planificateur, coupée pendant la pause"
+    },
+    {
+      "nom": "Cerveau (cerveau.nourmeet.com)",
+      "role": "Lit les publications du programme et les affiche sur la page du projet"
     }
   ],
   "alertes": [

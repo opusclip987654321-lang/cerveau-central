@@ -75,12 +75,14 @@
         },
         {
           "type": "auto",
-          "texte": "Contrôle par Claude sur 100 : à 80 ou plus, sans problème bloquant, mail + 2 relances qui partent seuls ; écartée mais avec e-mail, mail Nūr Meet ; bon dossier sans contact, « lettre possible »"
+          "texte": "Contrôle par Claude sur 100 : à 80 ou plus, sans problème bloquant, mail + 2 relances qui partent seuls ; écartée mais avec e-mail, mail Nūr Meet ; bon dossier sans contact, « lettre possible »",
+          "outil": "Claude (API Anthropic)"
         },
         {
           "type": "securite",
           "texte": "Contrôles automatiques (prix, source non consultée, adresse non publiée…) et budget réservé avant chaque appel payant",
-          "sinon": "dossier bloqué, ou analyse refusée si le plafond du mois serait dépassé"
+          "sinon": "dossier bloqué, ou analyse refusée si le plafond du mois serait dépassé",
+          "outil": "Base leviaro.db"
         },
         {
           "type": "securite",
@@ -90,12 +92,12 @@
         {
           "type": "auto",
           "texte": "Envoi en jours et heures ouvrés, dans les quotas, avec signature légale et lien de désinscription, puis relances 1 et 2 si pas de réponse",
-          "outil": "Boîte mail (SMTP)"
+          "outil": "Boîte mail (SMTP et IMAP)"
         },
         {
           "type": "auto",
           "texte": "Toute réponse arrête la séquence ; un « STOP » est appliqué tout de suite ; les autres réponses reçoivent un brouillon préparé",
-          "outil": "Boîte mail (IMAP)"
+          "outil": "Boîte mail (SMTP et IMAP)"
         },
         {
           "type": "toi",
@@ -109,15 +111,17 @@
         {
           "type": "auto",
           "texte": "Site avec formulaire de contact : message unique préparé (sans relance), envoyé aussi sur Telegram si branché",
-          "outil": "Telegram"
+          "outil": "Telegram (bot, facultatif)"
         },
         {
           "type": "toi",
-          "texte": "C'est toi qui colles le texte dans le formulaire (aucun robot ne le remplit), puis bouton « Envoyé »"
+          "texte": "C'est toi qui colles le texte dans le formulaire (aucun robot ne le remplit), puis bouton « Envoyé »",
+          "outil": "Page privée admin.leviaro.fr"
         },
         {
           "type": "auto",
-          "texte": "Bon dossier mais ni e-mail ni formulaire : « lettre possible », adresse du siège listée sur la page (export CSV)"
+          "texte": "Bon dossier mais ni e-mail ni formulaire : « lettre possible », adresse du siège listée sur la page (export CSV)",
+          "outil": "Page privée admin.leviaro.fr"
         }
       ]
     }
@@ -256,6 +260,10 @@
     {
       "nom": "VPS Nūr (hébergement seulement)",
       "role": "Deux conteneurs Docker construits sur la même image : web (la page privée) et cycle (toutes les 15 minutes)"
+    },
+    {
+      "nom": "Site de l'entreprise",
+      "role": "Lu gratuitement par l'agent : ce que l'entreprise a déjà, et l'e-mail publié (jamais deviné)"
     }
   ],
   "alertes": [

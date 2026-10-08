@@ -36,30 +36,33 @@
         {
           "type": "toi",
           "texte": "Faire venir des visiteurs : réseaux sociaux, forums, bouche-à-oreille",
-          "outil": "Instagram, TikTok, Reddit, Facebook"
+          "outil": "Réseaux sociaux (Instagram, TikTok, Reddit, Facebook)"
         },
         {
           "type": "auto",
           "texte": "Google, Bing et les assistants IA amènent des visiteurs sur les pages recettes et « Comment ça marche »",
-          "outil": "Search Console, Bing Webmaster"
+          "outil": "Google Search Console et Bing Webmaster Tools"
         },
         {
           "type": "auto",
-          "texte": "Le visiteur indique son foyer, son budget et son placard ; le site compose 5 dîners et la liste de courses en paquets entiers"
+          "texte": "Le visiteur indique son foyer, son budget et son placard ; le site compose 5 dîners et la liste de courses en paquets entiers",
+          "outil": "Next.js (Node 22)"
         },
         {
           "type": "auto",
           "texte": "Pour garder sa semaine, il donne son e-mail et reçoit un lien de connexion",
-          "outil": "SMTP OVH (bonjour@vegebudget.fr)"
+          "outil": "E-mail OVH (Zimbra Starter)"
         },
         {
           "type": "securite",
           "texte": "Le lien ne sert qu'une fois et expire au bout d'un moment",
-          "sinon": "lien refusé, il en redemande un"
+          "sinon": "lien refusé, il en redemande un",
+          "outil": "Next.js (Node 22)"
         },
         {
           "type": "auto",
-          "texte": "La première semaine est gratuite ; le membre coche ses dîners cuisinés et suit ce qu'il dépense"
+          "texte": "La première semaine est gratuite ; le membre coche ses dîners cuisinés et suit ce qu'il dépense",
+          "outil": "SQLite"
         }
       ]
     },
@@ -69,16 +72,19 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Dimanche 10 h : rappel par e-mail avec le bilan de la semaine passée"
+          "texte": "Dimanche 10 h : rappel par e-mail avec le bilan de la semaine passée",
+          "outil": "Planificateur du serveur (cron)"
         },
         {
           "type": "auto",
-          "texte": "À partir de la deuxième semaine, l'offre Premium est proposée : 4,99 € par mois, ou l'offre fondateur à 19 € par an pour les 100 premiers (réservation)"
+          "texte": "À partir de la deuxième semaine, l'offre Premium est proposée : 4,99 € par mois, ou l'offre fondateur à 19 € par an pour les 100 premiers (réservation)",
+          "outil": "Next.js (Node 22)"
         },
         {
           "type": "securite",
           "texte": "Paiement activé (Stripe configuré et BILLING_ENABLED=true) ?",
-          "sinon": "la réservation de l'offre fondateur est seulement notée, rien n'est encaissé"
+          "sinon": "la réservation de l'offre fondateur est seulement notée, rien n'est encaissé",
+          "outil": "Stripe"
         },
         {
           "type": "toi",
@@ -93,17 +99,18 @@
         {
           "type": "auto",
           "texte": "Claude prépare la modification et la fusionne sur GitHub (branche main)",
-          "outil": "GitHub"
+          "outil": "GitHub (dépôt v-g-budget)"
         },
         {
           "type": "toi",
           "texte": "Sur le serveur : cd /opt/vegebudget && git pull && docker compose up -d --build",
-          "outil": "Terminal"
+          "outil": "Docker et Caddy (VPS Nūr)"
         },
         {
           "type": "securite",
           "texte": "Le conteneur repasse « healthy » ?",
-          "sinon": "l'ancienne version reste en place ; prévenir Claude"
+          "sinon": "l'ancienne version reste en place ; prévenir Claude",
+          "outil": "Docker et Caddy (VPS Nūr)"
         }
       ]
     }
@@ -161,6 +168,18 @@
     {
       "nom": "Mesure d'audience maison (/api/stats)",
       "role": "Compte les visiteurs et chaque étape du parcours, sans cookie ni adresse IP conservée ; le cerveau la lit avec un jeton"
+    },
+    {
+      "nom": "Réseaux sociaux (Instagram, TikTok, Reddit, Facebook)",
+      "role": "Les publications qui font venir les premiers visiteurs ; comptes encore à créer"
+    },
+    {
+      "nom": "Stripe",
+      "role": "Le paiement de l'abonnement Premium et de l'offre fondateur ; prix pas encore créés"
+    },
+    {
+      "nom": "GitHub (dépôt v-g-budget)",
+      "role": "Le code du site ; Claude y prépare et fusionne les modifications"
     }
   ],
   "alertes": [

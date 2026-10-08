@@ -6,17 +6,30 @@ const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 
 const TYPES = { auto: 'automatique', toi: 'toi', securite: 'contrôle de sécurité' };
 
-function circuit(c, i) {
+// Demande de louis (08/10, croquis « Trouver et contacter ») : chaque étape est une
+// case à gauche, reliée par un trait à une bulle à droite qui nomme l'outil qui la
+// fait et à quoi il sert (repris de la liste « Outils et API » du guide).
+function bulle(et, outils) {
+  if (et.outil) {
+    const o = outils.find((x) => x.nom === et.outil);
+    return `<div class="bulle"><b>${e(et.outil)}</b>${o ? `<span>${e(o.role)}</span>` : ''}</div>`;
+  }
+  if ((et.type ?? 'auto') === 'toi') return '<div class="bulle toi"><b>Toi</b><span>Tu fais cette étape toi-même</span></div>';
+  return '';
+}
+
+function circuit(c, i, outils) {
   const etapes = (c.etapes ?? [])
-    .map(
-      (et) => `<div class="etape ${e(et.type ?? 'auto')}">${e(et.texte)}${et.outil ? ` <span class="outil">${e(et.outil)}</span>` : ''}${et.sinon ? `<span class="sinon">si non : ${e(et.sinon)}</span>` : ''}</div>`,
-    )
-    .join('<div class="fleche">↓</div>');
+    .map((et) => {
+      const b = bulle(et, outils);
+      return `<div class="pas"><div class="etape ${e(et.type ?? 'auto')}">${e(et.texte)}${et.sinon ? `<span class="sinon">si non : ${e(et.sinon)}</span>` : ''}</div>${b ? `<div class="trait"></div>${b}` : ''}</div>`;
+    })
+    .join('<div class="pas fleche"><div>↓</div></div>');
   return `<section class="bloc circuit" id="circuit-${i + 1}">
 <h3>${e(c.titre)} <small>circuit ${i + 1}</small></h3>
 ${c.note ? `<p class="note">${e(c.note)}</p>` : ''}
-<div class="chaine">${etapes}</div>
-<p class="legende-circuit"><i class="auto"></i> automatique <i class="toi"></i> toi <i class="securite"></i> contrôle de sécurité</p>
+<div class="flux">${etapes}</div>
+<p class="legende-circuit"><i class="auto"></i> automatique <i class="toi"></i> toi <i class="securite"></i> contrôle de sécurité <i class="ovale"></i> outil qui le fait</p>
 </section>`;
 }
 
@@ -34,7 +47,7 @@ ${g.journee.map((l) => `<tr><td><b>${e(l.quand)}</b></td><td>${e(l.quoi)}</td><t
 </table></section>`
     : '';
 
-  const circuits = (g.circuits ?? []).map(circuit).join('');
+  const circuits = (g.circuits ?? []).map((c, i) => circuit(c, i, g.outils ?? [])).join('');
 
   const apprentissage = g.apprentissage
     ? `<section class="bloc"><h3>L'apprentissage</h3><div class="deux">
@@ -112,16 +125,26 @@ ${vigilance}
 .bloc td { padding:7px 10px 7px 0; border-bottom:1px solid var(--bord); vertical-align:top; }
 .bloc tr:last-child td { border-bottom:0; }
 .note { margin:0 0 10px; color:var(--doux); font-size:14px; }
-.chaine { display:flex; flex-direction:column; align-items:center; gap:0; max-width:560px; margin:0 auto; }
-.etape { border:1px solid var(--bord); border-radius:8px; padding:8px 12px; font-size:13px; text-align:center; max-width:460px; }
+.flux { max-width:820px; margin:0 auto; }
+.pas { display:grid; grid-template-columns:minmax(0,11fr) 56px minmax(0,8fr); align-items:center; }
+.etape { grid-column:1; border:1.5px solid var(--bord); border-radius:4px; padding:12px 14px; font-size:13px; text-align:center; min-height:44px; display:flex; flex-direction:column; justify-content:center; }
 .etape.auto { background:color-mix(in srgb, var(--ok) 12%, var(--carte)); border-color:color-mix(in srgb, var(--ok) 40%, var(--bord)); }
 .etape.toi { background:color-mix(in srgb, var(--attention) 14%, var(--carte)); border-color:color-mix(in srgb, var(--attention) 45%, var(--bord)); }
 .etape.securite { background:color-mix(in srgb, var(--panne) 12%, var(--carte)); border-color:color-mix(in srgb, var(--panne) 40%, var(--bord)); }
 .etape .sinon { display:block; margin-top:4px; font-size:12px; color:var(--panne); }
-.etape .outil { display:inline-block; background:var(--fond); border:1px solid var(--bord); border-radius:8px; padding:0 7px; font-size:11px; color:var(--doux); white-space:nowrap; }
-.fleche { color:var(--doux); line-height:1.3; font-size:15px; }
-.legende-circuit { margin:10px 0 0; font-size:12px; color:var(--doux); display:flex; gap:12px; align-items:center; justify-content:center; }
+.trait { height:2px; background:var(--texte); opacity:.7; }
+.bulle { border:1.5px solid var(--texte); border-radius:50%; min-height:110px; padding:16px 36px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; font-size:12px; background:var(--carte2); }
+.bulle b { font-size:13px; } .bulle span { color:var(--doux); margin-top:3px; }
+.bulle.toi { border-color:var(--attention); }
+.pas.fleche { min-height:30px; } .pas.fleche div { grid-column:1; text-align:center; color:var(--texte); font-size:20px; line-height:1; }
+@media (max-width:620px) {
+  .pas { grid-template-columns:1fr; }
+  .trait { width:2px; height:12px; justify-self:center; }
+  .bulle { border-radius:999px; min-height:0; padding:8px 18px; }
+}
+.legende-circuit { margin:10px 0 0; font-size:12px; color:var(--doux); display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:center; }
 .legende-circuit i { width:10px; height:10px; border-radius:2px; display:inline-block; margin-right:4px; }
+.legende-circuit .ovale { width:16px; border-radius:50%; border:1.5px solid var(--texte); box-sizing:border-box; }
 .legende-circuit .auto { background:var(--ok); } .legende-circuit .toi { background:var(--attention); } .legende-circuit .securite { background:var(--panne); }
 .deux { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px; }
 .carte-mini { border:1px solid var(--bord); border-radius:10px; padding:10px 12px; border-top:3px solid var(--bord); }
