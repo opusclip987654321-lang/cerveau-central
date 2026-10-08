@@ -44,9 +44,18 @@ test('le guide Cambodge affiche ses règles et chaque guide a ses outils', async
     const page = pageFonctionnement(configJournal, id, g);
     if (page) assert.match(page, /Outils et API/, `section outils absente de la page ${id}`);
   }
-  // La puce d'outil sur une étape de circuit (Google Places sur la recherche Nūr Meet).
+  // Croquis de louis (08/10) : chaque étape est reliée à une bulle qui nomme l'outil et son rôle.
   const nm = pageFonctionnement(configJournal, 'nour-meet', guides.get('nour-meet'));
-  assert.match(nm, /<span class="outil">Google Places<\/span>/);
+  assert.match(nm, /<div class="trait"><\/div><div class="bulle"><b>Google Places \(Google Maps Platform\)<\/b><span>Trouve les restaurants/);
+  assert.match(nm, /<div class="bulle toi"><b>Toi<\/b>/);
+});
+
+test('chaque outil cité dans un circuit est décrit dans « Outils et API »', async () => {
+  const guides = await chargerFonctionnement(dossier);
+  for (const [id, g] of guides) {
+    const noms = new Set((g.outils ?? []).map((o) => o.nom));
+    for (const c of g.circuits ?? []) for (const et of c.etapes ?? []) if (et.outil) assert.ok(noms.has(et.outil), `outil « ${et.outil} » absent de la liste des outils (${id})`);
+  }
 });
 
 test('la page du guide reprend le format du PDF v4', async () => {

@@ -20,16 +20,19 @@
       "etapes": [
         {
           "type": "toi",
-          "texte": "Tu envoies une candidature (ou tu reçois une réponse) et tu poses l'étiquette « Cambodge » sur le mail"
+          "texte": "Tu envoies une candidature (ou tu reçois une réponse) et tu poses l'étiquette « Cambodge » sur le mail",
+          "outil": "Étiquette Gmail « Cambodge »"
         },
         {
           "type": "auto",
           "texte": "Une automatisation n8n lit ces mails dans ta boîte Gmail (lecture seule)",
-          "sinon": "Sans l'étiquette, le mail est invisible pour le cerveau"
+          "sinon": "Sans l'étiquette, le mail est invisible pour le cerveau",
+          "outil": "n8n (« CERVEAU - lecture Cambodge »)"
         },
         {
           "type": "auto",
-          "texte": "La carte Cambodge compte les candidatures envoyées et les réponses reçues ; la page montre chaque mail"
+          "texte": "La carte Cambodge compte les candidatures envoyées et les réponses reçues ; la page montre chaque mail",
+          "outil": "Cerveau (cerveau.nourmeet.com)"
         }
       ]
     }
@@ -75,6 +78,10 @@
     {
       "nom": "Étiquette Gmail « Cambodge »",
       "role": "Le seul tri : un mail sans l'étiquette est invisible pour le cerveau"
+    },
+    {
+      "nom": "Cerveau (cerveau.nourmeet.com)",
+      "role": "Affiche la carte Cambodge et chaque mail suivi"
     }
   ],
   "vigilance": [

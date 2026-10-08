@@ -36,30 +36,33 @@
         {
           "type": "auto",
           "texte": "9 h : recherche Google Places du jour (restaurants d'Île-de-France, ouverts, jamais vus)",
-          "outil": "Google Places"
+          "outil": "Google Places (Google Maps Platform)"
         },
         {
           "type": "auto",
           "texte": "Lecture du site de chaque restaurant (accueil + page contact) pour trouver un e-mail — 120 sites max ; si rien, lecture aussi des mentions légales, de la page de réservation et de la page Facebook",
-          "outil": "sites des restaurants et Facebook"
+          "outil": "Lecture des sites des restaurants"
         },
         {
           "type": "securite",
           "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
-          "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté, mais il sera retenté au repêchage de 11 h 07"
+          "sinon": "fiche gardée « sans e-mail » : le restaurant n'est pas contacté, mais il sera retenté au repêchage de 11 h 07",
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         },
         {
           "type": "auto",
-          "texte": "Note sur la fiche (halal, sans alcool, privatisation, capacité…) et tri : les 50 meilleurs du jour"
+          "texte": "Note sur la fiche (halal, sans alcool, privatisation, capacité…) et tri : les 50 meilleurs du jour",
+          "outil": "n8n (n8n.nourmeet.com)"
         },
         {
           "type": "auto",
           "texte": "Mail personnalisé envoyé depuis contact@nourmeet.com, signé Walid, avec le logo et le lien nourmeet.com/restaurateurs (pause entre chaque envoi)",
-          "outil": "SMTP OVH"
+          "outil": "Mail OVH (contact@nourmeet.com)"
         },
         {
           "type": "auto",
-          "texte": "Fiche mise à jour : contacté, date d'envoi, page où l'adresse a été trouvée ; échec d'envoi noté"
+          "texte": "Fiche mise à jour : contacté, date d'envoi, page où l'adresse a été trouvée ; échec d'envoi noté",
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         }
       ]
     },
@@ -70,21 +73,23 @@
         {
           "type": "auto",
           "texte": "Lecture du stock des fiches « sans e-mail » dans np_prospects, 40 par jour en rotation",
-          "outil": "Tables n8n"
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         },
         {
           "type": "auto",
           "texte": "Relecture de leur site avec la recherche élargie : accueil, contact, mentions légales, réservation, page Facebook",
-          "outil": "sites des restaurants et Facebook"
+          "outil": "Lecture des sites des restaurants"
         },
         {
           "type": "securite",
           "texte": "E-mail trouvé, pas déjà prospecté, pas dans les exclusions ?",
-          "sinon": "la fiche reste « sans e-mail », elle repassera à un prochain tour"
+          "sinon": "la fiche reste « sans e-mail », elle repassera à un prochain tour",
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         },
         {
           "type": "auto",
-          "texte": "E-mail trouvé : le restaurant suit le circuit normal (tri, mail personnalisé, envoi) et sa fiche est mise à jour, jamais dupliquée"
+          "texte": "E-mail trouvé : le restaurant suit le circuit normal (tri, mail personnalisé, envoi) et sa fiche est mise à jour, jamais dupliquée",
+          "outil": "n8n (n8n.nourmeet.com)"
         }
       ]
     },
@@ -93,19 +98,23 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "9 h 30 : lecture des restaurants contactés sans réponse"
+          "texte": "9 h 30 : lecture des restaurants contactés sans réponse",
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         },
         {
           "type": "auto",
-          "texte": "Choix de qui relancer aujourd'hui, avec une phrase personnalisée selon leur site (sans alcool, privatisation…)"
+          "texte": "Choix de qui relancer aujourd'hui, avec une phrase personnalisée selon leur site (sans alcool, privatisation…)",
+          "outil": "n8n (n8n.nourmeet.com)"
         },
         {
           "type": "auto",
-          "texte": "Envoi de la relance 1, puis de la relance 2 les jours suivants ; jamais plus de 2 relances"
+          "texte": "Envoi de la relance 1, puis de la relance 2 les jours suivants ; jamais plus de 2 relances",
+          "outil": "Mail OVH (contact@nourmeet.com)"
         },
         {
           "type": "auto",
-          "texte": "Statuts mis à jour (relancé 1 fois, relancé 2 fois)"
+          "texte": "Statuts mis à jour (relancé 1 fois, relancé 2 fois)",
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         }
       ]
     },
@@ -116,20 +125,23 @@
         {
           "type": "auto",
           "texte": "Chaque mail reçu sur la boîte de prospection est analysé (expéditeur, objet, texte)",
-          "outil": "IMAP OVH"
+          "outil": "Mail OVH (contact@nourmeet.com)"
         },
         {
           "type": "securite",
           "texte": "Réponse automatique d'absence ou retour d'erreur ?",
-          "sinon": "absence ignorée ; adresse invalide mise en exclusion"
+          "sinon": "absence ignorée ; adresse invalide mise en exclusion",
+          "outil": "n8n (n8n.nourmeet.com)"
         },
         {
           "type": "auto",
-          "texte": "« Stop » ou désinscription : le restaurant est exclu, ses envois en attente annulés"
+          "texte": "« Stop » ou désinscription : le restaurant est exclu, ses envois en attente annulés",
+          "outil": "Tables n8n (np_prospects, np_envois, np_ouvertures, np_reponses)"
         },
         {
           "type": "auto",
-          "texte": "Vraie réponse : relances stoppées, texte gardé et affiché sur la page Nūr Meet"
+          "texte": "Vraie réponse : relances stoppées, texte gardé et affiché sur la page Nūr Meet",
+          "outil": "Page Nūr Meet du cerveau"
         },
         {
           "type": "toi",
@@ -137,7 +149,8 @@
         },
         {
           "type": "toi",
-          "texte": "Tu notes le suivi de chaque réponse sur la page Nūr Meet : à lire, suivi en cours, en attente du restaurant, à relancer, traité, refus ou opposition, avec une prochaine action et une échéance si tu veux"
+          "texte": "Tu notes le suivi de chaque réponse sur la page Nūr Meet : à lire, suivi en cours, en attente du restaurant, à relancer, traité, refus ou opposition, avec une prochaine action et une échéance si tu veux",
+          "outil": "Page Nūr Meet du cerveau"
         }
       ]
     }
@@ -250,6 +263,10 @@
     {
       "nom": "Stripe",
       "role": "Les abonnements payés, affichés sur la carte"
+    },
+    {
+      "nom": "Page Nūr Meet du cerveau",
+      "role": "Affiche les réponses des restaurants et le suivi que tu notes"
     }
   ],
   "alertes": [

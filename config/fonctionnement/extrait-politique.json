@@ -13,38 +13,38 @@
     {
       "titre": "Les Shorts",
       "etapes": [
-        { "type": "auto", "texte": "Veille toutes les heures des 38 chaînes YouTube" },
-        { "type": "auto", "texte": "Claude note chaque vidéo sur 10, avec tes goûts et les leçons apprises" },
-        { "type": "toi", "texte": "Telegram : les 5 meilleures (≥ 7/10) · ✅ Intéressant · ❌ Non · 🚫 Ignorer la source" },
-        { "type": "securite", "texte": "Source autorisée ?", "sinon": "Refus + message (règle anti-strike : TF1 et sources exclues)" },
-        { "type": "auto", "texte": "Transcription précise (Deepgram), choix du passage 62-70 s, titre, description" },
-        { "type": "auto", "texte": "Montage vertical 9:16 : titre, sous-titres, source" },
-        { "type": "toi", "texte": "Telegram : l'extrait · ✅ Valider · 🔁 Autre moment · 🗑 Abandonner" },
-        { "type": "auto", "texte": "Prochain créneau libre (1 Short par heure max) : YouTube (privé), Facebook, Reel Instagram" },
-        { "type": "toi", "texte": "La vidéo et la légende TikTok arrivent sur Telegram : à poster toi-même" }
+        { "type": "auto", "texte": "Veille toutes les heures des 38 chaînes YouTube", "outil": "n8n (n8n.actualitevideo.fr)" },
+        { "type": "auto", "texte": "Claude note chaque vidéo sur 10, avec tes goûts et les leçons apprises", "outil": "Claude (API Anthropic)" },
+        { "type": "toi", "texte": "Telegram : les 5 meilleures (≥ 7/10) · ✅ Intéressant · ❌ Non · 🚫 Ignorer la source", "outil": "Telegram (bot)" },
+        { "type": "securite", "texte": "Source autorisée ?", "sinon": "Refus + message (règle anti-strike : TF1 et sources exclues)", "outil": "n8n (n8n.actualitevideo.fr)" },
+        { "type": "auto", "texte": "Transcription précise (Deepgram), choix du passage 62-70 s, titre, description", "outil": "Deepgram (API)" },
+        { "type": "auto", "texte": "Montage vertical 9:16 : titre, sous-titres, source", "outil": "Atelier (/opt/atelier : FastAPI + ffmpeg)" },
+        { "type": "toi", "texte": "Telegram : l'extrait · ✅ Valider · 🔁 Autre moment · 🗑 Abandonner", "outil": "Telegram (bot)" },
+        { "type": "auto", "texte": "Prochain créneau libre (1 Short par heure max) : YouTube (privé), Facebook, Reel Instagram", "outil": "Meta (Facebook et Instagram)" },
+        { "type": "toi", "texte": "La vidéo et la légende TikTok arrivent sur Telegram : à poster toi-même", "outil": "Telegram (bot)" }
       ]
     },
     {
       "titre": "Le zapping de 19h",
       "note": "Tous les jours, sans validation de ta part. L'IA choisit seule, en tenant compte de tes ✅ et de ce qu'elle a appris.",
       "etapes": [
-        { "type": "auto", "texte": "18h00 : vidéos des 30 dernières heures (sources autorisées, jamais utilisées dans un zapping)" },
-        { "type": "auto", "texte": "Jusqu'à 18 candidates, priorité à tes ✅, 3 max par chaîne" },
-        { "type": "auto", "texte": "Transcription légère (sous-titres YouTube, sinon Deepgram)" },
-        { "type": "auto", "texte": "Claude rédacteur en chef : 9 à 14 extraits · 8 à 10 min · risque élevé écarté · ≤ 2 extraits par chaîne TV · ~20 % d'essai" },
-        { "type": "auto", "texte": "Montage 16:9 : intro, bandeaux, sous-titres, sources, outro, chapitres, miniature" },
-        { "type": "auto", "texte": "19h00 : publication YouTube (privé) + Facebook" },
-        { "type": "auto", "texte": "Message Telegram : sommaire, liens, hypothèse testée du jour" }
+        { "type": "auto", "texte": "18h00 : vidéos des 30 dernières heures (sources autorisées, jamais utilisées dans un zapping)", "outil": "n8n (n8n.actualitevideo.fr)" },
+        { "type": "auto", "texte": "Jusqu'à 18 candidates, priorité à tes ✅, 3 max par chaîne", "outil": "n8n (n8n.actualitevideo.fr)" },
+        { "type": "auto", "texte": "Transcription légère (sous-titres YouTube, sinon Deepgram)", "outil": "Deepgram (API)" },
+        { "type": "auto", "texte": "Claude rédacteur en chef : 9 à 14 extraits · 8 à 10 min · risque élevé écarté · ≤ 2 extraits par chaîne TV · ~20 % d'essai", "outil": "Claude (API Anthropic)" },
+        { "type": "auto", "texte": "Montage 16:9 : intro, bandeaux, sous-titres, sources, outro, chapitres, miniature", "outil": "Atelier (/opt/atelier : FastAPI + ffmpeg)" },
+        { "type": "auto", "texte": "19h00 : publication YouTube (privé) + Facebook", "outil": "YouTube (API officielle)" },
+        { "type": "auto", "texte": "Message Telegram : sommaire, liens, hypothèse testée du jour", "outil": "Telegram (bot)" }
       ]
     },
     {
       "titre": "L'apprentissage",
       "note": "La boucle qui doit rapprocher la chaîne des 3 000 €/mois : tes choix sur Telegram + les résultats réels des vidéos publiées.",
       "etapes": [
-        { "type": "auto", "texte": "10h : statistiques YouTube de chaque vidéo publiée (vues, likes, commentaires, statut)" },
-        { "type": "securite", "texte": "Vidéo retirée, rejetée ou bloquée ?", "sinon": "+1 pénalité à chaque source de la vidéo · exclue à 3 · alerte Telegram" },
-        { "type": "auto", "texte": "Claude réécrit les LEÇONS (prouvé / probable / à tester) ; les règles anti-strike ne s'assouplissent jamais" },
-        { "type": "auto", "texte": "Rapport Telegram ; leçons utilisées le jour même par la veille, les Shorts et le zapping" }
+        { "type": "auto", "texte": "10h : statistiques YouTube de chaque vidéo publiée (vues, likes, commentaires, statut)", "outil": "YouTube (API officielle)" },
+        { "type": "securite", "texte": "Vidéo retirée, rejetée ou bloquée ?", "sinon": "+1 pénalité à chaque source de la vidéo · exclue à 3 · alerte Telegram", "outil": "n8n (n8n.actualitevideo.fr)" },
+        { "type": "auto", "texte": "Claude réécrit les LEÇONS (prouvé / probable / à tester) ; les règles anti-strike ne s'assouplissent jamais", "outil": "Claude (API Anthropic)" },
+        { "type": "auto", "texte": "Rapport Telegram ; leçons utilisées le jour même par la veille, les Shorts et le zapping", "outil": "Telegram (bot)" }
       ]
     }
   ],
