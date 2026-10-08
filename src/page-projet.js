@@ -383,7 +383,23 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
       ['Ont cliqué sur payer', 'clicsPayer', 'inscrits'],
       ['Ont réservé une offre', 'reservations', 'inscrits'],
     ];
+    const pc = vb.parcours;
+    const duree = (s) => (s >= 60 ? `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')}` : `${s} s`);
+    const etape = (x) => (x.type === 'page' ? `📄 ${e(x.page)} <small>${duree(x.secondes)} · ${x.lu} % lu</small>` : x.type === 'clic' ? `👆 « ${e(x.texte)} » <small>sur ${e(x.page)}</small>` : `⭐ ${e(x.texte)}`);
+    const blocage = !pc
+      ? '<section class="bloc"><h3>Où ça bloque</h3><p class="vide">Le suivi visite par visite arrive avec la mise à jour du site (git pull dans /opt/vegebudget). Les parcours s’afficheront ici dès les visites suivantes.</p></section>'
+      : [
+        `<section class="bloc"><h3>Où ça bloque <small>(${pc.visites} visite(s) suivies sur ${pc.jours} jours)</small></h3>${pc.constats.length ? `<ul>${pc.constats.map((c) => `<li>${e(c)}</li>`).join('')}</ul>` : '<p class="vide">Rien de marquant pour l’instant.</p>'}</section>`,
+        table('Jusqu’où vont les visiteurs', [{ cle: 'n', titre: 'Étape' }, { cle: 'v', titre: 'Visites' }, { cle: 'p', titre: 'Perdues ici' }],
+          pc.entonnoir.map((x, i) => ({ n: e(x.libelle), v: e(x.visites), p: i ? (x.perdues ? `${x.perdues} <small>(${x.pertePct} %)</small>` : '0') : '' })), { visibles: 10 }),
+        table('Pages : où l’on reste, où l’on part', [{ cle: 'p', titre: 'Page' }, { cle: 'v', titre: 'Vues' }, { cle: 'e', titre: 'Entrées' }, { cle: 's', titre: 'Départs' }, { cle: 't', titre: 'Temps moyen' }, { cle: 'l', titre: 'Lu' }],
+          pc.pages.map((x) => ({ p: e(x.page), v: x.vues, e: x.entrees, s: `${x.sorties} <small>(${x.tauxSortie} %)</small>`, t: duree(x.secondesMoy), l: `${x.luMoyPct} %` })), { visibles: 10, vide: 'Pas encore de page vue.' }),
+        table('Ce qu’ils cliquent', [{ cle: 't', titre: 'Bouton ou lien' }, { cle: 'p', titre: 'Sur la page' }, { cle: 'n', titre: 'Clics' }],
+          pc.clics.map((x) => ({ t: e(x.texte), p: e(x.page), n: x.n })), { visibles: 8, vide: 'Aucun clic pour l’instant.' }),
+        `<section class="bloc"><h3>Visite par visite <small>(${pc.dernieres.length})</small></h3>${pc.dernieres.length ? pc.dernieres.map((v) => `<details class="jour-mails"><summary><b>${date(v.jour)} ${e(v.heure)}</b> · ${e(v.source)} · ${v.pages} page(s), ${duree(v.secondes)} · s’arrête à « ${e(v.plusLoin)} »${v.rebond ? ` ${etiquette('rebond', 'off')}` : ''}<span class="voir">Voir le parcours ›</span></summary><ol>${v.parcours.map((x) => `<li>${e(x.heure)} ${etape(x)}</li>`).join('')}</ol><p class="vide">Entrée : ${e(v.entree)} · Sortie : ${e(v.sortie)}</p></details>`).join('') : '<p class="vide">Pas encore de visite suivie.</p>'}</section>`,
+      ].join('');
     return [
+      blocage,
       table('Le parcours sur 30 jours', [{ cle: 'n', titre: 'Étape' }, { cle: 'v', titre: 'Personnes' }, { cle: 'p', titre: 'Part' }],
         etapes.map(([nom, cle, base]) => ({ n: e(nom), v: e(tot(cle).toLocaleString('fr-FR')), p: base ? `${part(tot(cle), tot(base))} <small>des ${base === 'inscrits' ? 'inscrits' : 'visiteurs'}</small>` : '' })),
         { visibles: 10 }),
