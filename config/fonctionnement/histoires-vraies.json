@@ -31,39 +31,45 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Une histoire de la réserve (un fichier par histoire, pris dans l'ordre) devient un script et 9 images (~0,60 $)",
-          "outil": "Grok Imagine (xAI, API)"
+          "texte": "Une histoire de la réserve devient un script et 9 images (environ 0,60 $)",
+          "outil": "Grok Imagine (xAI)",
+          "technique": "Une histoire par fichier, prise dans l'ordre ; l'API d'xAI dessine les images."
         },
         {
           "type": "toi",
-          "texte": "Checkpoint 1 sur Telegram : script + 9 images ; /regen 3 refait l'image 3 (consigne possible) ; ✅ lance l'étape payante, ❌ annule",
-          "outil": "Telegram (bot dédié)"
+          "texte": "Tu valides le script et les images avant de payer : ✅ continuer, ❌ annuler, ou refaire une image",
+          "outil": "Telegram",
+          "technique": "Bot dédié ; /regen 3 refait l'image 3, avec une consigne si tu veux."
         },
         {
           "type": "securite",
-          "texte": "Garde-fou de coût : au plus 110 secondes d'animation par vidéo",
+          "texte": "Garde-fou de coût : 110 secondes d'animation au plus",
           "sinon": "le job est refusé avant de payer",
-          "outil": "VPS Nūr (hébergement seulement)"
+          "technique": "Durée vérifiée par le programme avant d'appeler le service payant."
         },
         {
           "type": "auto",
-          "texte": "Animation des scènes en 720p (~8,70 $ la vidéo, facturée à la seconde)",
-          "outil": "Grok Imagine (xAI, API)"
+          "texte": "Les scènes sont animées (environ 8,70 $ par vidéo)",
+          "outil": "Grok Imagine (xAI)",
+          "technique": "Animation en 720p, facturée à la seconde."
         },
         {
           "type": "auto",
-          "texte": "Voix off française (voix choisie dans ta bibliothèque)",
-          "outil": "ElevenLabs (API)"
+          "texte": "Une voix française raconte l'histoire",
+          "outil": "ElevenLabs",
+          "technique": "Synthèse vocale par API, voix choisie dans ta bibliothèque (abonnement ~5 $/mois)."
         },
         {
           "type": "auto",
-          "texte": "Montage, sous-titres, musique de fond à bas volume et zoom final (gratuit, sur le serveur)",
-          "outil": "ffmpeg"
+          "texte": "Montage final : sous-titres, musique douce et zoom de fin",
+          "outil": "ffmpeg",
+          "technique": "Logiciel de montage gratuit qui tourne sur le serveur Nūr."
         },
         {
           "type": "toi",
-          "texte": "Checkpoint 2 sur Telegram : ✅ = vidéo validée ; tu l'enregistres depuis Telegram et tu la publies toi-même",
-          "outil": "Telegram (bot dédié)"
+          "texte": "Tu valides la vidéo finie, tu l'enregistres et tu la publies toi-même",
+          "outil": "Telegram",
+          "technique": "La vidéo arrive dans le bot ; l'agent ne publie jamais seul."
         }
       ]
     },
@@ -72,13 +78,15 @@
       "etapes": [
         {
           "type": "auto",
-          "texte": "Le cerveau lit les publications du programme et les montre sur la page du projet, avec leurs liens",
-          "outil": "Cerveau (cerveau.nourmeet.com)"
+          "texte": "Les vidéos publiées s'affichent sur la page du projet, avec leurs liens",
+          "outil": "Cerveau + YouTube",
+          "technique": "Le cerveau lit chaque heure la chaîne YouTube Petites Histoires Vraies (vidéos, vues, abonnés)."
         },
         {
           "type": "toi",
-          "texte": "Tes vidéos faites à la main : note-les avec « Ajouter une note » du Journal pour qu'elles comptent",
-          "outil": "Journal du cerveau"
+          "texte": "Tes vidéos faites à la main : tu les notes pour qu'elles comptent",
+          "outil": "Journal du cerveau",
+          "technique": "Bouton « Ajouter une note » ; une vidéo sortie sur plusieurs réseaux le même jour ne compte qu'une fois."
         }
       ]
     }

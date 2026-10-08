@@ -20,19 +20,22 @@
       "etapes": [
         {
           "type": "toi",
-          "texte": "Tu envoies une candidature (ou tu reçois une réponse) et tu poses l'étiquette « Cambodge » sur le mail",
-          "outil": "Étiquette Gmail « Cambodge »"
+          "texte": "Tu postules (ou tu reçois une réponse) et tu mets l'étiquette « Cambodge » sur le mail",
+          "outil": "Gmail",
+          "technique": "Une étiquette Gmail : c'est le seul tri, un mail sans elle reste invisible."
         },
         {
           "type": "auto",
-          "texte": "Une automatisation n8n lit ces mails dans ta boîte Gmail (lecture seule)",
+          "texte": "Toutes les heures, les mails étiquetés sont relus",
           "sinon": "Sans l'étiquette, le mail est invisible pour le cerveau",
-          "outil": "n8n (« CERVEAU - lecture Cambodge »)"
+          "outil": "Gmail (API Google)",
+          "technique": "Lecture seule du compte « Gmail Walid », avec l'autorisation Google du projet « cerveau » ; rien n'est envoyé ni modifié."
         },
         {
           "type": "auto",
-          "texte": "La carte Cambodge compte les candidatures envoyées et les réponses reçues ; la page montre chaque mail",
-          "outil": "Cerveau (cerveau.nourmeet.com)"
+          "texte": "La carte Cambodge compte les candidatures et les réponses ; la page montre chaque mail",
+          "outil": "Cerveau",
+          "technique": "Un accusé de réception automatique compte comme candidature envoyée, pas comme réponse."
         }
       ]
     }

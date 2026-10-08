@@ -46,15 +46,21 @@ test('le guide Cambodge affiche ses règles et chaque guide a ses outils', async
   }
   // Croquis de louis (08/10) : chaque étape est reliée à une bulle qui nomme l'outil et son rôle.
   const nm = pageFonctionnement(configJournal, 'nour-meet', guides.get('nour-meet'));
-  assert.match(nm, /<div class="trait"><\/div><div class="bulle"><b>Google Places \(Google Maps Platform\)<\/b><span>Trouve les restaurants/);
-  assert.match(nm, /<div class="bulle toi"><b>Toi<\/b>/);
+  assert.match(nm, /<div class="trait"><\/div><div class="bulle"><b>Google Places<\/b><span>API de Google Maps/);
+  assert.match(nm, /<div class="bulle regle"><b>Règle automatique<\/b>/);
+  assert.doesNotMatch(nm.slice(nm.indexOf('id="circuit-1"'), nm.indexOf('Outils et API')), /n8n/);
 });
 
-test('chaque outil cité dans un circuit est décrit dans « Outils et API »', async () => {
+test('chaque étape a sa partie technique, jamais avec n8n', async () => {
   const guides = await chargerFonctionnement(dossier);
   for (const [id, g] of guides) {
-    const noms = new Set((g.outils ?? []).map((o) => o.nom));
-    for (const c of g.circuits ?? []) for (const et of c.etapes ?? []) if (et.outil) assert.ok(noms.has(et.outil), `outil « ${et.outil} » absent de la liste des outils (${id})`);
+    for (const c of g.circuits ?? []) for (const et of c.etapes ?? []) {
+      // louis (08/10) : à droite, le service et le côté technique de l'étape, pas n8n.
+      assert.ok(et.technique, `étape sans partie technique : « ${et.texte} » (${id})`);
+      assert.doesNotMatch(`${et.outil ?? ''} ${et.technique}`, /n8n/i, `n8n sur « ${et.texte} » (${id})`);
+      // Pas de redite : la bulle ne recopie pas la case.
+      assert.notEqual(et.technique, et.texte, `bulle identique à la case (${id})`);
+    }
   }
 });
 
