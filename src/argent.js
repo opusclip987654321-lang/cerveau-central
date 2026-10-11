@@ -44,6 +44,9 @@ function ajouter(total, devise, montant) {
   return total;
 }
 
+// Deux lignes « Anthropic » sont la même dépense : on les regroupe par nom.
+export const cleDepense = (libelle) => String(libelle ?? '').trim().toLowerCase();
+
 export const parMois = (l) => (l.frequence === 'mois' ? l.montant : l.frequence === 'an' ? l.montant / 12 : 0);
 
 // Les chiffres de l'onglet : coût fixe par mois, dépenses ponctuelles du mois
@@ -128,12 +131,24 @@ export function historique(lignes, jour = jourParis()) {
     const abonnements = {};
     const recharges = {};
     const total = {};
+    // Le détail de chaque mois : dépense par dépense (les recharges du même nom
+    // additionnées), et le même découpage par projet.
+    const detail = { abonnements: [], recharges: [] };
+    const projets = {};
+    const noter = (sorte, l, montant) => {
+      for (const liste of [detail[sorte], ((projets[l.projet] ??= { lignes: [], total: {} }).lignes)]) {
+        const deja = liste.find((x) => x.sorte === sorte && cleDepense(x.libelle) === cleDepense(l.libelle) && x.devise === l.devise);
+        if (deja) deja.montant = Math.round((deja.montant + montant) * 100) / 100;
+        else liste.push({ sorte, libelle: l.libelle, montant: Math.round(montant * 100) / 100, devise: l.devise });
+      }
+      ajouter(projets[l.projet].total, l.devise, montant);
+    };
     for (const l of lignes) {
       if (l.frequence === 'une-fois') {
-        if (l.date?.startsWith(mois)) (ajouter(recharges, l.devise, l.montant), ajouter(total, l.devise, l.montant));
-      } else if (!l.depuis || l.depuis.slice(0, 7) <= mois) (ajouter(abonnements, l.devise, parMois(l)), ajouter(total, l.devise, parMois(l)));
+        if (l.date?.startsWith(mois)) (ajouter(recharges, l.devise, l.montant), ajouter(total, l.devise, l.montant), noter('recharges', l, l.montant));
+      } else if (!l.depuis || l.depuis.slice(0, 7) <= mois) (ajouter(abonnements, l.devise, parMois(l)), ajouter(total, l.devise, parMois(l)), noter('abonnements', l, parMois(l)));
     }
-    liste.push({ mois, abonnements, recharges, total });
+    liste.push({ mois, abonnements, recharges, total, detail, projets });
     const [a, m] = mois.split('-').map(Number);
     mois = m === 12 ? `${a + 1}-01` : `${a}-${String(m + 1).padStart(2, '0')}`;
   }
@@ -152,3 +167,27 @@ export const moisLisible = (m) => {
   const t = new Date(`${m}-15T12:00:00Z`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' });
   return t[0].toUpperCase() + t.slice(1);
 };
+
+// Le 1er du mois : ce qui a été dépensé le mois qui vient de finir, comparé aux
+// mois d'avant. Rien si l'historique ne connaît pas encore ce mois.
+export function messageMoisPasse(lignes, jour = jourParis()) {
+  const h = historique(lignes, jour).mois; // du plus récent au plus ancien
+  const passe = h[1];
+  if (!passe) return null;
+  const ecart = (a, b) => {
+    const devises = [...new Set([...Object.keys(a), ...Object.keys(b)])];
+    const parties = devises
+      .map((d) => [d, Math.round(((a[d] ?? 0) - (b[d] ?? 0)) * 100) / 100])
+      .filter(([, v]) => v !== 0)
+      .map(([d, v]) => `${v > 0 ? '+' : '−'}${montantLisible(Math.abs(v), d)}`);
+    return parties.length ? parties.join(', ') : 'pareil';
+  };
+  const lignesMsg = [
+    `💶 <b>Dépenses de ${moisLisible(passe.mois).toLowerCase()}</b>`,
+    `Total : <b>${totalLisible(passe.total)}</b>`,
+    `Abonnements : ${totalLisible(passe.abonnements)} · Recharges : ${totalLisible(passe.recharges)}`,
+  ];
+  const avant = h.slice(2, 5);
+  if (avant.length) lignesMsg.push('', `Comparé aux mois d’avant (écart de ${moisLisible(passe.mois).toLowerCase()}) :`, ...avant.map((x) => `• ${moisLisible(x.mois)} : ${totalLisible(x.total)} (${ecart(passe.total, x.total)})`));
+  return lignesMsg.join('\n');
+}

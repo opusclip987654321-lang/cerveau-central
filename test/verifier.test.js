@@ -46,8 +46,7 @@ test('scénario complet : panne, une seule alerte, puis rétablissement', async 
 
     enPanne = false;
     const { etat } = await lancer();
-    assert.equal(envoyes.length, 2);
-    assert.match(envoyes[1], /🟢 .*\nRevenu à la normale après \d+ min, rien à faire/);
+    assert.equal(envoyes.length, 1, 'le retour au vert n’est plus envoyé sur Telegram (seulement noté)');
     assert.equal(etat.historique.length, 2);
 
     const html = pageEtat(config, etat);

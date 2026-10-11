@@ -218,3 +218,48 @@ test('historique : mois précédents, années et total depuis le début', async 
   assert.equal(h.debut, '2026-09');
   assert.equal(historique(lignes, '2027-01-02').annees['2027']['€'], 20);
 });
+
+test('historique : détail par dépense et par projet, recharges du même nom additionnées', async () => {
+  const { historique } = await import('../src/argent.js');
+  const lignes = [
+    { id: 'c', libelle: 'Claude (abonnement)', projet: 'commun', montant: 100, devise: '€', frequence: 'mois', date: null },
+    { id: 'a1', libelle: 'Anthropic', projet: 'commun', montant: 12, devise: '$', frequence: 'une-fois', date: '2026-10-09' },
+    { id: 'a2', libelle: 'anthropic ', projet: 'commun', montant: 12.5, devise: '$', frequence: 'une-fois', date: '2026-10-05' },
+    { id: 'e', libelle: 'ElevenLabs', projet: 'extrait-politique', montant: 24, devise: '$', frequence: 'une-fois', date: '2026-10-04' },
+  ];
+  const oct = historique(lignes, '2026-10-10').mois[0];
+  assert.deepEqual(oct.detail.abonnements.map((x) => [x.libelle, x.montant]), [['Claude (abonnement)', 100]]);
+  assert.deepEqual(oct.detail.recharges.map((x) => [x.libelle, x.montant, x.devise]), [['Anthropic', 24.5, '$'], ['ElevenLabs', 24, '$']]);
+  assert.deepEqual(oct.projets['extrait-politique'].total, { $: 24 });
+  assert.deepEqual(oct.projets.commun.total, { '€': 100, $: 24.5 });
+});
+
+test('Telegram du 1er du mois : total du mois fini comparé aux mois d’avant', async () => {
+  const { messageMoisPasse } = await import('../src/argent.js');
+  const lignes = [
+    { id: 'v', libelle: 'VPS', projet: 'commun', montant: 14, devise: '€', frequence: 'mois', date: null },
+    { id: 't', libelle: 'Twilio', projet: 'commun', montant: 20, devise: '€', frequence: 'une-fois', date: '2026-08-22' },
+    { id: 'i', libelle: 'IPRoyal', projet: 'commun', montant: 50, devise: '$', frequence: 'une-fois', date: '2026-09-04' },
+  ];
+  const m = messageMoisPasse(lignes, '2026-10-01');
+  assert.match(m, /Dépenses de septembre 2026/);
+  assert.match(m, /Total : <b>14 € \+ 50 \$<\/b>/);
+  assert.match(m, /Août 2026 : 34 € \(−20 €, \+50 \$\)/);
+  assert.equal(messageMoisPasse(lignes.slice(0, 1), '2026-10-01'), null, 'pas de mois passé connu');
+});
+
+test('page Argent : dépenses du même nom regroupées et dépliables, tableau par projet', () => {
+  const donnees = {
+    lignes: [
+      { id: 'a1', libelle: 'Anthropic', projet: 'commun', montant: 12, devise: '$', frequence: 'une-fois', date: '2026-10-09' },
+      { id: 'a2', libelle: 'Anthropic', projet: 'commun', montant: 13, devise: '$', frequence: 'une-fois', date: '2026-10-05' },
+      { id: 'v', libelle: 'VPS', projet: 'nour-meet', montant: 14, devise: '€', frequence: 'mois', date: null },
+    ],
+    factures: [],
+  };
+  const html = pageArgent({ projets }, donnees, { jour: '2026-10-10' });
+  assert.match(html, /class="groupe".*Anthropic.*<b>25 \$<\/b><small>2 paiements/s);
+  assert.equal((html.match(/data-groupe="g\d+" hidden/g) ?? []).length, 2);
+  assert.match(html, /<th>Abonnements<\/th><th>Recharges<\/th>/);
+  assert.match(html, /class="total"/);
+});

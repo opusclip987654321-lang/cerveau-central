@@ -57,7 +57,9 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {},
     const type = changement(avant, resultat);
     if (type) {
       // Projet mis en pause par louis : on note le changement, sans le prévenir.
-      if (!enPause.has(projet.id)) messages.push(redigerAlerte(type, projet, verif, resultat, avant));
+      // Telegram ne porte que les pannes (🔴) : louis ne veut plus d'alertes orange
+      // ni de retours au vert (document du 11/10). Tout reste dans l'historique.
+      if (!enPause.has(projet.id) && type === 'panne') messages.push(redigerAlerte(type, projet, verif, resultat, avant));
       const { pour, texte } = expliquer(projet, verif, resultat, type);
       etat.historique.unshift({ date: maintenant, projet: projet.nom, verification: verif.nom, type, detail: resultat.detail, pour, sens: texte });
     }
