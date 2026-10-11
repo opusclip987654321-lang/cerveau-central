@@ -187,9 +187,11 @@ remplacer_code(wd, prep_val,
                ":(candidats.find(x=>x&&x.email&&!publicDomains.has(String(x.email).split('@')[1]||''))||candidats.find(x=>x&&x.email));",
                "const saisie=String(row.email_contact||'')",
                "D / validation : l'adresse mise par louis dans email_contact passe en premier")
+# La sauvegarde publique masque les adresses (adresse@retiree.invalid) : le vrai
+# texte du serveur garde l'exemple adresse@domaine.fr, c'est lui le repère.
 remplacer_code(wd, prep_val,
-               "telegram_message:'❌ Aucun email candidat pour '+cle+'.\\nRéponds : /email '+cle+' adresse@retiree.invalid'",
-               "telegram_message:'❌ Pas d\\'adresse pour '+cle+'.\\nMets-la dans la colonne email_contact du Sheet, ou réponds : /email '+cle+' adresse@retiree.invalid'",
+               "telegram_message:'❌ Aucun email candidat pour '+cle+'.\\nRéponds : /email '+cle+' adresse@domaine.fr'",
+               "telegram_message:'❌ Pas d\\'adresse pour '+cle+'.\\nMets-la dans la colonne email_contact du Sheet, ou réponds : /email '+cle+' adresse@domaine.fr'",
                "colonne email_contact du Sheet, ou réponds",
                "D / validation : le message « pas d'adresse » explique la colonne du Sheet")
 
