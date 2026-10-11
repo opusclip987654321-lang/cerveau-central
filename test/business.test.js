@@ -201,7 +201,7 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
   assert.equal(c.chiffres[2].detail, '1 Afrique, 1 Frexit');
   assert.ok(c.aDecider.some((t) => /2 fiche\(s\) d'invités attendent ta vérification avant l'envoi \(1 Impacteur Afrique, 1 Impacteur Frexit\)/.test(t)));
   assert.ok(c.aDecider.some((t) => /1 brouillon\(s\) prêts dans Gmail, pas encore envoyés \(1 chaîne non précisée\)/.test(t)));
-  assert.ok(c.aDecider.some((t) => /décédé/.test(t)));
+  assert.ok(c.aDecider.some((t) => /décès à vérifier.*passe leur statut à A_VERIFIER/.test(t)));
   assert.notEqual(c.couleur, 'gris');
   assert.deepEqual(await synchroniserImpacteur({ sources: {} }, {}), { ignore: true });
 });

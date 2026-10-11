@@ -169,8 +169,12 @@ test('page Impacteur : plateforme de vérification des fiches, choix noté sans 
   assert.match(html, /Fiches à vérifier avant envoi/);
   assert.match(html, /action="\/verif-fiche"/);
   assert.match(html, /rien ne part d’ici : le ✅\/🗑 sur Telegram reste le vrai interrupteur/);
-  // Le choix déjà noté s'affiche ; l'autre fiche attend, décès signalé.
+  // La fiche tranchée quitte la liste d'attente et descend, choix affiché et modifiable.
+  assert.match(html, /Fiches déjà tranchées/);
   assert.match(html, /Validée par toi/);
+  assert.ok(html.indexOf('C. Attente') > html.indexOf('Fiches déjà tranchées'), 'la fiche tranchée est sous « Fiches déjà tranchées »');
+  // L'autre fiche attend toujours au-dessus, décès signalé.
   assert.match(html, /D\. Doute/);
   assert.match(html, /décès à vérifier/);
+  assert.ok(html.indexOf('D. Doute') < html.indexOf('Fiches déjà tranchées'), 'la fiche non tranchée reste dans la liste d’attente');
 });
