@@ -9,7 +9,8 @@ test('résumé : tout va bien', () => {
   const t = resumeQuotidien(etat, 21, maintenant);
   assert.match(t, /Aucune panne en cours/);
   assert.match(t, /aucun incident/);
-  assert.match(t, /21 question\(s\) du jour/);
+  assert.match(t, /21 fiche\(s\) attendent ta décision/);
+  assert.doesNotMatch(t, /question\(s\) du jour/);
 });
 
 test('résumé : pannes, points à surveiller et incidents récents', () => {

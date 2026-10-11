@@ -1,21 +1,20 @@
 // Page « Actions » : chaque problème a sa fiche, et tout ce qui attend une
 // décision ou un geste de louis est au même endroit.
 import { gabarit } from './page.js';
-import { STATUTS_ACTION } from './actions.js';
+import { STATUTS_ACTION, A_TOI } from './actions.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const heure = (iso) => (iso ? new Date(iso).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' }) : '—');
 const court = (t, n = 140) => (t.length > n ? `${t.slice(0, n)}…` : t);
 
-// Les statuts où c'est à louis de jouer passent devant.
-const A_TOI = new Set(['question_posee', 'proposition_a_valider', 'a_transmettre', 'resultat_a_verifier']);
-
 export function pageActions({ configJournal, actions = [], cartes = [], idees = [], aRepondre = 0 }) {
   const nomBusiness = (id) => configJournal.projets.find((p) => p.id === id)?.nom ?? id;
 
+  // Les fiches où c'est à louis de jouer passent devant ; les reportées vont à part.
   const ouvertes = actions
-    .filter((a) => a.statut !== 'resolu')
+    .filter((a) => a.statut !== 'resolu' && a.statut !== 'reporte')
     .sort((x, y) => (A_TOI.has(y.statut) ? 1 : 0) - (A_TOI.has(x.statut) ? 1 : 0) || y.maj.localeCompare(x.maj));
+  const reportees = actions.filter((a) => a.statut === 'reporte').sort((x, y) => (x.reporteJusquau ?? '').localeCompare(y.reporteJusquau ?? ''));
   const resolues = actions.filter((a) => a.statut === 'resolu').slice(0, 10);
   const objectifs = cartes.filter((c) => c.couleur !== 'gris' && !c.objectif?.valide);
   const proposees = (idees ?? []).filter((i) => i.statut === 'proposee');
@@ -27,7 +26,7 @@ export function pageActions({ configJournal, actions = [], cartes = [], idees = 
   const ficheLigne = (a) =>
     ligne({
       texte: e(court(a.titre)),
-      detail: `${e(a.projet || 'Cerveau central')} · ${e(STATUTS_ACTION[a.statut]?.nom ?? a.statut)} · ${heure(a.maj)}`,
+      detail: `${e(a.projet || 'Cerveau central')} · ${e(STATUTS_ACTION[a.statut]?.nom ?? a.statut)}${a.statut === 'reporte' && a.reporteJusquau ? ` jusqu’au ${e(a.reporteJusquau)}` : ''} · ${heure(a.maj)}`,
       href: `/action?id=${e(a.id)}`,
       action: 'Ouvrir',
       aToi: A_TOI.has(a.statut),
@@ -36,11 +35,13 @@ export function pageActions({ configJournal, actions = [], cartes = [], idees = 
   const blocs = [
     bloc('Problèmes ouverts, une fiche chacun', ouvertes.map(ficheLigne)),
     bloc('Objectifs à valider', objectifs.map((c) => ligne({ texte: `${e(c.nom)} : ${c.objectif.propose} par semaine (proposé)`, href: '/journal', action: 'Valider' }))),
-    bloc('Questions du jour', aRepondre ? [ligne({ texte: `${aRepondre} question(s) attendent tes réponses`, href: '/questions', action: 'Répondre' })] : []),
+    bloc('Reportées', reportees.map(ficheLigne)),
     bloc('Tes idées, pas encore traitées', proposees.map((i) => ligne({ texte: e(court(i.texte)), detail: `${e(nomBusiness(i.projet))} · proposée le ${heure(i.cree)}`, href: `/projet?projet=${e(i.projet)}`, action: 'Ouvrir' }))),
   ].filter(Boolean);
 
+  const legende = `<p class="legende">${Object.values(STATUTS_ACTION).filter((s) => s.a !== 'personne').map((s) => `<b>${e(s.nom)}</b> : ${e(s.qui)}`).join(' · ')}</p>`;
   const contenu = `${blocs.length ? blocs.join('\n') : '<p class="vide">Rien n’attend ta décision pour l’instant : pas de problème ouvert, pas de question, pas d’idée en attente.</p>'}
+${legende}
 ${resolues.length ? `<details class="resolues"><summary>Fiches résolues récentes (${resolues.length})</summary><ul class="liste-actions">${resolues.map(ficheLigne).join('')}</ul></details>` : ''}
 <style>
 .bloc-actions { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:14px 18px; margin-bottom:14px; }
@@ -57,6 +58,7 @@ ${resolues.length ? `<details class="resolues"><summary>Fiches résolues récent
 .resolues { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:10px 18px; }
 .resolues summary { cursor:pointer; font-weight:600; font-size:14px; }
 .vide { color:var(--doux); }
+.legende { font-size:12px; color:var(--doux); margin:10px 0 14px; } .legende b { color:var(--texte); font-weight:600; }
 </style>`;
   return gabarit({ onglet: 'actions', aRepondre, contenu });
 }

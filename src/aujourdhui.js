@@ -3,7 +3,7 @@
 // rapport à hier, phrase du cerveau), puis ce qui a changé depuis hier.
 // Tout vient des données déjà lues ; une donnée absente est « indisponible ».
 import { tableauDeBord } from './business.js';
-import { STATUTS_ACTION } from './actions.js';
+import { STATUTS_ACTION, A_TOI } from './actions.js';
 import { journee } from './journal.js';
 import { jourParis } from './questions.js';
 
@@ -106,7 +106,7 @@ export function priorites({ etat, cartes, actions = [], config, max = 3 }) {
   for (const c of cartes) {
     if (c.couleur !== 'rouge') continue;
     const texte = c.aDecider[0] ?? `Plus aucun ${c.principal.unite} depuis ${c.silence} jours.`;
-    const f = actions.find((a) => a.source?.projet === c.id && a.source?.type === 'decider' && a.statut !== 'resolu' && a.titre === texte);
+    const f = actions.find((a) => a.source?.projet === c.id && a.source?.type === 'decider' && a.statut !== 'resolu' && a.statut !== 'reporte' && a.titre === texte);
     candidats.push({
       score: 80,
       projet: c.nom,
@@ -119,11 +119,10 @@ export function priorites({ etat, cartes, actions = [], config, max = 3 }) {
     });
   }
 
-  const POIDS = { question_posee: 60, proposition_a_valider: 60, resultat_a_verifier: 45, a_transmettre: 50 };
   for (const a of actions) {
-    if (!(a.statut in POIDS) || candidats.some((c) => c.ficheId === a.id)) continue;
+    if (!A_TOI.has(a.statut) || candidats.some((c) => c.ficheId === a.id)) continue;
     candidats.push({
-      score: POIDS[a.statut],
+      score: a.source?.type === 'matin' ? 65 : 60,
       projet: a.projet || 'Cerveau central',
       titre: a.titre,
       preuve: a.constat !== a.titre ? a.constat : (a.historique?.at(-1)?.texte ?? ''),

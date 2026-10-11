@@ -7,7 +7,7 @@ import { jourParis } from './questions.js';
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const dateCourte = (iso) => (iso ? new Date(`${iso}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Paris' }) : '');
 
-export function pageArgent(config, donnees, { jour = jourParis(), message, aRepondre = 0, lectureActive = false, plafondIa = 10 } = {}) {
+export function pageArgent(config, donnees, { jour = jourParis(), message, aRepondre = 0, lectureActive = false, plafondIa = 10, ia = [] } = {}) {
   const nomProjet = (id) => config.projets.find((p) => p.id === id)?.nom ?? id;
   const b = bilan(donnees.lignes, jour);
   const r = rapprochement(donnees, jour);
@@ -140,6 +140,15 @@ ${tuiles}
 ${factures.length ? replier(factures.map(ligneFacture), 'factures', 'facture(s)') : ''}
 ${corrections}
 <p class="doux petit-texte">Le cerveau lit chaque facture avec Claude (environ 1 centime par facture) et la rapproche de ta liste. Dépense IA ce mois : ${montantLisible(Math.round(depenseIaDuMois(donnees, jour) * 100) / 100, '$')} sur ${plafondIa} $ de plafond.</p>
+</section>
+
+<section class="bloc">
+<h3>Ce que l’IA du cerveau coûte ce mois-ci</h3>
+<table><tr><th>Usage</th><th class="num">Ce mois</th><th class="num">Plafond</th></tr>
+<tr><td>Factures et discussions dans les fiches</td><td class="num">${montantLisible(Math.round(depenseIaDuMois(donnees, jour) * 100) / 100, '$')}</td><td class="num">${plafondIa} $</td></tr>
+${ia.map((x) => `<tr><td>${e(x.nom)}</td><td class="num">${montantLisible(Math.round(x.depense * 100) / 100, '$')}</td><td class="num">${x.plafond} $</td></tr>`).join('')}
+</table>
+<p class="doux petit-texte">Chaque usage a son plafond : atteint, il s’arrête jusqu’au mois suivant et le dit, rien ne déborde.</p>
 </section>
 
 <section class="bloc">
