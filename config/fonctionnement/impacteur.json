@@ -1,7 +1,7 @@
 {
-  "maj": "2026-10-06",
+  "maj": "2026-10-11",
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
-  "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu tries sur Telegram, et les envois partent tout seuls, plafonnés à 5 par jour.",
+  "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu tries sur Telegram, et les envois partent tout seuls, plafonnés à 8 par jour.",
   "journee": [
     {
       "quand": "8 h 07",
@@ -15,7 +15,7 @@
     },
     {
       "quand": "10 h 07 et 15 h 07",
-      "quoi": "Envois automatiques : les fiches prêtes (invitation conforme + e-mail trouvé) partent par Gmail, 5 par jour maximum.",
+      "quoi": "Envois automatiques : les fiches prêtes (invitation conforme + e-mail trouvé) partent par Gmail, 8 par jour maximum.",
       "toi": "Rien"
     },
     {
@@ -37,11 +37,11 @@
           "type": "auto",
           "texte": "8 h 07 : on cherche les livres français qui viennent de sortir, sur un thème qui change",
           "outil": "Dépôt légal BnF",
-          "technique": "5 requêtes gratuites au catalogue de la BnF ; la chaîne (Afrique ou Frexit) alterne."
+          "technique": "5 requêtes gratuites au catalogue de la BnF ; la chaîne (Afrique ou Frexit) alterne ; jusqu'à 6 fiches préparées par jour."
         },
         {
           "type": "securite",
-          "texte": "L'auteur est-il vivant et pas déjà dans la liste ?",
+          "texte": "L'auteur est-il déjà dans la liste ?",
           "sinon": "écarté avant toute dépense",
           "outil": "Google Sheets",
           "technique": "Comparaison avec l'onglet Prospection du Sheet, avant toute dépense."
@@ -136,7 +136,7 @@
         },
         {
           "type": "securite",
-          "texte": "5 envois par jour au plus, jamais deux fois la même personne",
+          "texte": "8 envois par jour au plus, jamais deux fois la même personne",
           "sinon": "fiche sans e-mail : notifiée sur Telegram, tu peux donner l'adresse avec /email",
           "technique": "Compteur du jour et liste des auteurs et adresses déjà contactés."
         },
@@ -201,7 +201,7 @@
       "titre": "Rythme",
       "points": [
         "Livres à 8 h 07, récap à 8 h 33, envois à 10 h 07 et 15 h 07, YouTube à 12 h 07",
-        "5 envois par jour maximum, toutes chaînes confondues"
+        "8 envois par jour maximum, toutes chaînes confondues (ton choix du 11/10)"
       ]
     },
     {
@@ -258,6 +258,10 @@
     {
       "sujet": "Nom de l'accès Gmail Afrique",
       "detail": "L'accès s'appelle « Gmail account » et ce nom est écrit tel quel dans l'automatisation C depuis le 06/10 (le brouillon Afrique de D utilise le même accès) : si tu le renommes dans n8n, demander à Claude de re-patcher."
+    },
+    {
+      "sujet": "Auteurs décédés",
+      "detail": "Le garde-fou qui écartait les auteurs peut-être décédés est retiré (ton choix du 11/10) : l'invitation part, un doute est seulement signalé sur la fiche. Les fiches déjà marquées « décès à vérifier » restent bloquées ; pour les relancer, passe leur statut à A_VERIFIER dans le Sheet."
     }
   ],
   "aCompleter": [

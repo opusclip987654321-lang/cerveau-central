@@ -324,28 +324,41 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
     const aVerifier = fiches.filter((f) => f.statut?.startsWith('A_VERIFIER'));
     const formVerif = (f, choix, texte) =>
       `<form method="post" action="/verif-fiche" class="verif-form"><input type="hidden" name="auteur" value="${e(f.auteur ?? '')}"><input type="hidden" name="livre" value="${e(f.livre ?? '')}"><input type="hidden" name="choix" value="${choix}"><button type="submit">${texte}</button></form>`;
+    // Une fiche tranchée quitte la liste d'attente (demande de louis du 11/10) : elle
+    // descend dans un bloc replié où son choix reste modifiable.
+    const choixDe = (f) => (verifs?.choix ?? {})[cleVerif(f.auteur, f.livre)];
+    const ligneVerif = (f) => {
+      const ch = choixDe(f);
+      return {
+        a: e(f.auteur ?? '?'),
+        l: e(f.livre ?? '—'),
+        c: etiquette(f.chaine ?? 'chaîne non déclarée', 'or'),
+        s: etiquette(lb('impacteur', f.statut), tonIm(f.statut)),
+        x: `${ch ? `${etiquette(CHOIX_VERIF[ch.choix], ch.choix === 'valider' ? 'ok' : 'off')} <small>le ${date(ch.quand?.slice(0, 10))}</small> ` : ''}<span class="verif-boutons">${formVerif(f, 'valider', 'Valider')}${formVerif(f, 'rejeter', 'Rejeter')}</span>`,
+      };
+    };
+    const colonnesVerif = [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }, { cle: 'x', titre: 'Ton choix' }];
+    const tranchees = aVerifier.filter((f) => choixDe(f));
     const blocVerifs = table(
       'Fiches à vérifier avant envoi',
-      [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }, { cle: 'x', titre: 'Ton choix' }],
-      aVerifier.map((f) => {
-        const ch = (verifs?.choix ?? {})[cleVerif(f.auteur, f.livre)];
-        return {
-          a: e(f.auteur ?? '?'),
-          l: e(f.livre ?? '—'),
-          c: etiquette(f.chaine ?? 'chaîne non déclarée', 'or'),
-          s: etiquette(lb('impacteur', f.statut), tonIm(f.statut)),
-          x: `${ch ? `${etiquette(CHOIX_VERIF[ch.choix], ch.choix === 'valider' ? 'ok' : 'off')} <small>le ${date(ch.quand?.slice(0, 10))}</small> ` : ''}<span class="verif-boutons">${formVerif(f, 'valider', 'Valider')}${formVerif(f, 'rejeter', 'Rejeter')}</span>`,
-        };
-      }),
+      colonnesVerif,
+      aVerifier.filter((f) => !choixDe(f)).map(ligneVerif),
       {
         visibles: 15,
         vide: 'Aucune fiche n’attend ta vérification avant envoi.',
-        aide: '<p class="note-mail">Ton choix est noté dans le cerveau, rien ne part d’ici : le ✅/🗑 sur Telegram reste le vrai interrupteur. Le branchement direct (Valider = brouillon créé dans la boîte Gmail de la chaîne, comme le ✅) est en préparation et te sera montré avant d’être activé.</p>',
+        aide: '<p class="note-mail">Ton choix est noté dans le cerveau, rien ne part d’ici : le ✅/🗑 sur Telegram reste le vrai interrupteur. Une fiche validée ou rejetée quitte cette liste et descend dans le bloc juste en dessous. Le branchement direct (Valider = brouillon créé dans la boîte Gmail de la chaîne, comme le ✅) est en préparation et te sera montré avant d’être activé.</p>',
       },
     );
+    const blocTranchees = tranchees.length
+      ? table('Fiches déjà tranchées', colonnesVerif, tranchees.map(ligneVerif), {
+          visibles: 5,
+          aide: '<p class="note-mail">Ton choix est noté ; les boutons restent là pour en changer. Tant que le branchement direct n’est pas activé, l’envoi réel passe toujours par le ✅ Telegram.</p>',
+        })
+      : '';
     const sansEnvoi = fiches.filter((f) => !f.envoi && !f.statut?.startsWith('A_VERIFIER'));
     return [
       blocVerifs,
+      blocTranchees,
       blocJours,
       table('Fiches sans envoi (brouillons, bloquées)', [{ cle: 'a', titre: 'Auteur' }, { cle: 'l', titre: 'Livre' }, { cle: 'c', titre: 'Chaîne' }, { cle: 's', titre: 'État' }],
         sansEnvoi.map((f) => ({ a: e(f.auteur ?? '?'), l: e(f.livre ?? '—'), c: e(f.chaine ?? '—'), s: etiquette(lb('impacteur', f.statut), tonIm(f.statut)) })), { visibles: 12, vide: 'Toutes les fiches du Sheet ont été traitées.' }),

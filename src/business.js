@@ -294,7 +294,7 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     };
     if (compte('A_VERIFIER')) aDecider.push(`${nombre(compte('A_VERIFIER'))} fiche(s) d'invités attendent ta vérification avant l'envoi${parChaineStatut('A_VERIFIER')}.`);
     if (compte('BROUILLON_CREE')) aDecider.push(`${nombre(compte('BROUILLON_CREE'))} brouillon(s) prêts dans Gmail, pas encore envoyés${parChaineStatut('BROUILLON_CREE')}.`);
-    if (compte('A_VERIFIER_DECES')) aDecider.push(`${nombre(compte('A_VERIFIER_DECES'))} auteur(s) peut-être décédé(s) : à vérifier avant de les contacter.`);
+    if (compte('A_VERIFIER_DECES')) aDecider.push(`${nombre(compte('A_VERIFIER_DECES'))} fiche(s) encore marquée(s) « décès à vérifier » (ancien garde-fou, retiré le 11/10) : passe leur statut à A_VERIFIER dans le Sheet pour les relancer.`);
     carte('impacteur', {
       titre: 'Invités contactés',
       dates: [...envoyes.map((f) => f.envoi), ...evenements(journal, 'impacteur', ['mail'])],
