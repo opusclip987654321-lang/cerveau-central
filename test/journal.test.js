@@ -74,8 +74,8 @@ test('page Journal : jours, liens cliquables, filtre par projet, texte échappé
   assert.match(html, /Hier/);
   assert.match(html, /href="https:\/\/youtu.be\/abc"/);
   assert.match(html, /&lt;b&gt;Vidéo&lt;\/b&gt;/);
-  assert.match(html, /class="actif" data-s="[^"]*">Activité/);
-  assert.match(pageJournal(config, j, { jour: '2026-10-05' }), /class="actif" data-s="[^"]*">Pilotage/);
+  assert.match(html, /class="actif" data-s="[^"]*">Journal/);
+  assert.match(pageJournal(config, j, { jour: '2026-10-05' }), /class="actif" data-s="[^"]*">Projets/);
   const filtre = pageJournal(config, j, { jour: '2026-10-05', projet: 'leviaro', vue: 'activite' });
   assert.doesNotMatch(filtre, /youtu\.be/);
   assert.match(filtre, /RDV client/);
