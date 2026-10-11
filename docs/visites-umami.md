@@ -2,7 +2,7 @@
 
 Umami est un compteur de visites gratuit, sans cookie, qu'on installe soi-même. Il tourne sur le VPS Nūr, à côté de Nūr Meet, derrière Caddy, à l'adresse **stats.nourmeet.com**. Le cerveau le lit toutes les heures et montre, sur la page de chaque projet (Vue d'ensemble), les visiteurs, les pages vues, d'où viennent les visites et combien repartent tout de suite.
 
-Chaque étape se tape une à la fois, sur le VPS Nūr (`ssh ubuntu@57.131.152.36`). Rien ici ne touche aux sites existants tant que la ligne de suivi (étape 5) n'est pas posée.
+Chaque étape se tape une à la fois, sur le VPS Nūr (`ssh ubuntu@57.131.152.36`). **Règle pour `~/nour-v2` : toute commande `docker compose` y passe par `-f docker-compose.prod.yml`** (le fichier `docker-compose.yml` seul est celui du développement : lancé en production le 11/10, il a relancé la base et l'API avec les mauvais réglages et mis nourmeet.com en 502 jusqu'au retour à `docker compose -f docker-compose.prod.yml up -d --build`). Rien ici ne touche aux sites existants tant que la ligne de suivi (étape 5) n'est pas posée.
 
 ## 1. Le nom de domaine
 
@@ -62,7 +62,7 @@ UMAMI_APP_SECRET=<un autre mot de passe au hasard>
 Lancer :
 
 ```
-cd ~/nour-v2 && docker compose -f docker-compose.yml -f docker-compose.umami.yml up -d umami umami-db
+cd ~/nour-v2 && docker compose -f docker-compose.prod.yml -f docker-compose.umami.yml up -d umami umami-db
 ```
 
 ## 3. Caddy
@@ -90,6 +90,8 @@ Ouvrir **https://stats.nourmeet.com**. Identifiant `admin`, mot de passe `umami`
 Les domaines doivent être ceux de `config/visites.json` du cerveau : c'est comme ça qu'il retrouve chaque site.
 
 ## 5. La ligne de suivi sur chaque site
+
+Où elle va (fait le 11/10) : Nūr Meet dans `~/nour-v2/apps/web/index.html` puis `docker compose -f docker-compose.prod.yml up -d --build web` ; Leviaro dans chaque `.html` de `~/leviaro-site/public` (servis tels quels, rien à reconstruire) ; VégéBudget dans `/opt/vegebudget/app/layout.tsx` (bloc `<head>` sous `<html lang="fr">`) puis `docker compose up -d --build` dans `/opt/vegebudget`.
 
 Pour chaque site, Umami donne (Edit › Tracking code) une ligne du genre :
 
