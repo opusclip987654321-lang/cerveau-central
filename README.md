@@ -38,6 +38,10 @@ Une fiche d'action a quatre statuts, plus « reporté » : **Question posée à 
 
 Les anciennes « Questions du jour » (3 questions par projet, `config/questions.json`) ne sont plus proposées depuis le 11/10 : la page `/questions` reste lisible pour l'historique.
 
+## Visites des sites (Umami)
+
+Le cerveau lit chez Umami (compteur gratuit installé sur le VPS Nūr, voir [`docs/visites-umami.md`](docs/visites-umami.md)) les visites de Nūr Meet, Leviaro et VégéBudget sur 30 jours : visiteurs, visites, pages vues, rebonds, temps par visite, pages les plus vues, provenance. Les sites sont retrouvés par leur domaine (`config/visites.json`) ; accès par `UMAMI_URL` + `UMAMI_UTILISATEUR` / `UMAMI_MOT_DE_PASSE` (ou `UMAMI_CLE_API`). Le bloc « Visites du site » apparaît dans la vue d'ensemble de chaque projet concerné ; un site absent d'Umami est dit tel quel.
+
 ## Connexions et Surveillance
 
 La page **Connexions** montre d'où viennent les chiffres : une fiche par source (n8n, prospection, agent Leviaro, Sheet Impacteur, YouTube, revenus YouTube, Stripe, Gmail Cambodge, VégéBudget, histoires, relevé des serveurs) avec son état (branchée, silencieuse, en erreur, pas branchée), sa dernière lecture et ce qu'il faut pour la brancher (le nom de la variable du .env, jamais sa valeur). Le serveur note chaque tentative de lecture dans `data/business.json` (`connexions`). Ce qui reste à brancher est listé en bas.

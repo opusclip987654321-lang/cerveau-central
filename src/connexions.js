@@ -19,12 +19,12 @@ export const CONNEXIONS = [
   { id: 'cambodge', nom: 'Gmail Cambodge', projets: ['cambodge'], lit: 'Les mails étiquetés « Cambodge » (candidatures, réponses), via le workflow n8n « CERVEAU - lecture Cambodge ».', besoin: 'Le n8n Nūr Meet branché et le jeton RELEVE_JETON.' },
   { id: 'vegebudget', nom: 'VégéBudget', projets: ['vegebudget'], lit: 'Les statistiques du site (visiteurs, semaines composées, inscrits, abonnés) et le parcours des visites.', besoin: 'VEGEBUDGET_STATS_JETON dans le .env, le même que sur le site.' },
   { id: 'histoires', nom: 'Petites histoires vraies (fabrication)', projets: ['histoires-vraies'], lit: 'Le dossier data/ du programme de fabrication (vidéos publiées sur Instagram et Facebook), monté en lecture seule.', besoin: 'Le dossier monté dans le conteneur (HISTOIRES_DOSSIER). La fabrication est en pause depuis le 05/10.' },
+  { id: 'visites', nom: 'Visites des sites (Umami)', projets: ['nour-meet', 'leviaro', 'vegebudget'], lit: 'Visiteurs, visites, pages vues, rebonds, pages les plus vues et provenance, sur 30 jours, pour chaque site déclaré dans config/visites.json.', besoin: 'Umami installé sur le VPS Nūr (docs/visites-umami.md), UMAMI_URL et UMAMI_UTILISATEUR + UMAMI_MOT_DE_PASSE (ou UMAMI_CLE_API) dans le .env, et la ligne de suivi posée sur chaque site.' },
   { id: 'serveurs', nom: 'Relevé des serveurs', projets: ['nour-meet', 'leviaro', 'extrait-politique'], lit: 'Disque et mémoire des deux VPS, envoyés par scripts/releve.sh (cron sur chaque serveur).', besoin: 'Le cron de relevé en place sur chaque VPS, avec RELEVE_JETON.' },
 ];
 
 // Ce qui reste à brancher, et par qui (plan de la refonte, choix de louis du 11/10).
 export const A_BRANCHER = [
-  { nom: 'Visites des sites (Nūr Meet, Leviaro, VégéBudget)', pourquoi: 'Savoir combien de personnes arrivent sur chaque site et où elles décrochent.', comment: 'Un compteur gratuit (Umami) installé sur le VPS Nūr, lu par le cerveau : étape 5 de la refonte.' },
   { nom: 'Boîtes Gmail Impacteur Afrique et Frexit', pourquoi: 'Lire les réponses des invités, en lecture seule.', comment: 'Un workflow n8n de lecture, comme pour le Cambodge ; branché par le fil Cahier des charges.' },
   { nom: 'TikTok, Instagram, Facebook', pourquoi: 'Abonnés et vues des comptes, gains Facebook si une page est monétisée.', comment: 'Via n8n (fil Cahier des charges) ; attend la liste des comptes.' },
   { nom: 'OVH (factures des serveurs)', pourquoi: 'Avoir les vraies factures des VPS dans Argent sans les déposer à la main.', comment: 'API OVH, à brancher plus tard.' },
@@ -61,6 +61,8 @@ function derniereLecture(id, { business, journal, serveurs }) {
       return s.cambodge?.maj ?? null;
     case 'vegebudget':
       return s.vegebudget?.maj ?? null;
+    case 'visites':
+      return s.visites?.maj ?? null;
     case 'histoires':
       return journal?.histoires?.maj ?? null;
     case 'serveurs': {
