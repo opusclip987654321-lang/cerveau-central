@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-06",
+  "maj": "2026-10-11",
   "source": "Lu dans /opt/nour-video-agent le 05/10/2026, puis dans son mode d'emploi (INSTALL_FR.md, .env.example) le 06/10/2026",
   "intro": "Des petites histoires vraies en vidéo. L'agent fabrique chaque vidéo étape par étape avec deux validations sur Telegram, puis c'est toi qui publies. Depuis le 5 octobre, la fabrication automatique est en pause (son décalé, voix robotique) : tu fais les vidéos à la main, le suivi continue.",
   "journee": [
@@ -128,6 +128,13 @@
       "points": [
         "Le cerveau lit chaque heure la chaîne YouTube Petites Histoires Vraies (vidéos, vues, abonnés) : toutes les vidéos de la chaîne y sont comptées automatiquement, sans rien noter",
         "Il compte aussi les vidéos publiées par le programme (Facebook, Instagram) et celles notées à la main ; une même vidéo sortie le même jour sur plusieurs réseaux ne compte qu'une fois"
+      ]
+    },
+    {
+      "titre": "Shorts et vidéos longues dans le cerveau",
+      "points": [
+        "Depuis le 11/10, la page Publications du projet sépare les shorts des vidéos longues d'après la durée relue chez YouTube : 3 minutes ou moins = short (YouTube ne dit pas le format, c'est une déduction)",
+        "Le tunnel « Parcours des vidéos » compte les 30 derniers jours : vidéos publiées, shorts, longues, vues de ces vidéos, abonnés, revenus (« ? » tant que les revenus ne sont pas branchés)"
       ]
     }
   ],

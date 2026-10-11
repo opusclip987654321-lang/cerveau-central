@@ -52,7 +52,7 @@ test('carte et page Cambodge montrent candidatures et réponses', async () => {
   assert.equal(c.secondaire.titre, 'Réponses');
   assert.ok(!c.manque.length);
 
-  const html = pageProjet(configJournal, 'cambodge', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05' });
+  const html = pageProjet(configJournal, 'cambodge', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05', onglet: 'mails' });
   assert.match(html, /Vraies réponses reçues/);
   assert.match(html, /Candidatures envoyées/);
   assert.match(html, /confirmation automatique/);
@@ -61,7 +61,7 @@ test('carte et page Cambodge montrent candidatures et réponses', async () => {
   assert.match(html, /<details class="texte">/); // la longue réponse se replie
 
   // Avant le branchement : la page explique quoi faire, la carte reste « pas branché ».
-  const vide = pageProjet(configJournal, 'cambodge', { business: { sources: {}, objectifs: {} }, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05' });
+  const vide = pageProjet(configJournal, 'cambodge', { business: { sources: {}, objectifs: {} }, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05', onglet: 'mails' });
   assert.match(vide, /pas encore lue/);
   const c2 = tableauDeBord({ business: { sources: {}, objectifs: {} }, journal: journalVide(), configJournal, jour: '2026-10-05' }).cartes.find((x) => x.id === 'cambodge');
   assert.match(c2.manque[0], /candidatures/);

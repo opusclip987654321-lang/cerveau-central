@@ -43,24 +43,33 @@ test('page projet Leviaro : détail, idées, surveillance', () => {
     },
   };
   const idees = { idees: [{ id: 'a1', projet: 'leviaro', texte: 'Baisser le prix de l’offre A', statut: 'proposee', cree: '2026-10-05T10:00:00Z', maj: '2026-10-05T10:00:00Z' }] };
-  const html = pageProjet(configJournal, 'leviaro', {
+  const options = {
     business,
     journal: journalVide(),
     idees,
     jour: '2026-10-05',
     verifications: [{ projet: 'leviaro', nom: 'Site leviaro.fr', etat: 'ok', detail: 'répond en 80 ms' }],
-  });
+  };
+  const html = pageProjet(configJournal, 'leviaro', { ...options, onglet: 'mails' });
   assert.match(html, /Boulangerie Martin/);
   assert.match(html, /Pas intéressé, trop cher/);
   assert.match(html, /vraie réponse/);
   assert.match(html, /en discussion/);
-  assert.match(html, /Baisser le prix de l’offre A/);
-  assert.match(html, /Mes idées de modifications/);
+  // Les cinq onglets (refonte du 11/10) : idées dans « Actions et idées », surveillance dans la vue d'ensemble.
+  assert.match(html, /class="actif">Mails/);
+  const actions = pageProjet(configJournal, 'leviaro', { ...options, onglet: 'actions' });
+  assert.match(actions, /Baisser le prix de l’offre A/);
+  assert.match(actions, /Mes idées de modifications/);
+  assert.doesNotMatch(html, /Mes idées de modifications/);
+  const vue = pageProjet(configJournal, 'leviaro', options);
+  assert.match(vue, /Parcours commercial/);
+  assert.match(vue, /Rien ne bloque/);
   // Le petit ℹ️ qui explique les états en clair (demande de louis du 05/10).
   assert.match(html, /Que veulent dire ces mots/);
   assert.match(html, /ne correspond pas aux clients recherchés/);
-  assert.match(html, /Surveillance technique \(1\)/);
-  assert.match(html, /Retour au tableau de bord/);
+  assert.match(vue, /Surveillance technique \(1\)/);
+  assert.match(vue, /Tous les projets/);
+  assert.match(pageProjet(configJournal, 'leviaro', { ...options, onglet: 'resultats' }), /Les chiffres, période par période/);
   assert.equal(pageProjet(configJournal, 'inconnu', { business, journal: journalVide(), idees }), null);
 });
 
@@ -71,6 +80,7 @@ test('page projet Petites histoires vraies : vidéos listées avec lien', () => 
     idees: { idees: [] },
     jour: '2026-10-05',
     histoires: { publiees: [{ story_id: '19-amira', title: 'Amira', date: '2026-09-29T18:00:00', fb_video_id: '123' }], jobs: [] },
+    onglet: 'mails',
   });
   assert.match(html, /Vidéos publiées/);
   assert.match(html, /Amira/);
@@ -96,7 +106,7 @@ test('page projet Nūr Meet : réponses et mails à valider', () => {
       },
     },
   };
-  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05' });
+  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05', onglet: 'mails' });
   assert.match(html, /La Plume/);
   assert.match(html, /Chez Sam/);
   assert.match(html, /Vos soirées sur Nūr Meet/);

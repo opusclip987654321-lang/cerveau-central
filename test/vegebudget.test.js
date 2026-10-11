@@ -41,13 +41,13 @@ test('carte et page VégéBudget montrent l’entonnoir', async () => {
   assert.match(c.aDecider.join(' '), /composent une semaine/);
   assert.equal(c.secondaire.titre, 'Inscrits');
 
-  const html = pageProjet(configJournal, 'vegebudget', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07' });
+  const html = pageProjet(configJournal, 'vegebudget', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07', onglet: 'mails' });
   assert.match(html, /Le parcours sur 30 jours/);
   assert.match(html, /Ont cliqué sur payer/);
   assert.match(html, /google\.com/);
   assert.match(html, /6 membre\(s\)/);
 
-  const vide = pageProjet(configJournal, 'vegebudget', { business: { sources: {}, objectifs: {} }, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07' });
+  const vide = pageProjet(configJournal, 'vegebudget', { business: { sources: {}, objectifs: {} }, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07', onglet: 'mails' });
   assert.match(vide, /VEGEBUDGET_STATS_JETON/);
   const c2 = tableauDeBord({ business: { sources: {}, objectifs: {} }, journal: journalVide(), configJournal, jour: '2026-10-07' }).cartes.find((x) => x.id === 'vegebudget');
   assert.equal(c2.couleur, 'gris');
@@ -55,7 +55,7 @@ test('carte et page VégéBudget montrent l’entonnoir', async () => {
 
 test('page VégéBudget : parcours visite par visite et où ça bloque', async () => {
   const b = { sources: {}, objectifs: {} };
-  const avant = pageProjet(configJournal, 'vegebudget', { business: (await synchroniserVegebudget(b, { appel: async () => stats() }), b), journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07' });
+  const avant = pageProjet(configJournal, 'vegebudget', { business: (await synchroniserVegebudget(b, { appel: async () => stats() }), b), journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07', onglet: 'mails' });
   assert.match(avant, /arrive avec la mise à jour du site/);
   const parcours = {
     jours: 7, visites: 2, rebonds: 1,
@@ -68,7 +68,7 @@ test('page VégéBudget : parcours visite par visite et où ça bloque', async (
   };
   await synchroniserVegebudget(b, { appel: async () => ({ ...stats(), parcours }) });
   assert.equal(b.sources.vegebudget.parcours.visites, 2);
-  const html = pageProjet(configJournal, 'vegebudget', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07' });
+  const html = pageProjet(configJournal, 'vegebudget', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-07', onglet: 'mails' });
   assert.match(html, /Où ça bloque/);
   assert.match(html, /Plus gros décrochage/);
   assert.match(html, /1 min 24/);

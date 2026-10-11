@@ -794,7 +794,7 @@ const serveur = http.createServer(async (req, res) => {
       const etatCourant = await chargerEtat(fichierEtat);
       // Les vérifications techniques rattachées à ce projet business (mêmes ids, voir pauses.js).
       const idsSurveillance = new Set([id, ...(SURVEILLANCE[id] ?? [])]);
-      const verifications = Object.values(etatCourant.verifications).filter((v) => idsSurveillance.has(v.projet));
+      const verifications = Object.entries(etatCourant.verifications).filter(([, v]) => idsSurveillance.has(v.projet)).map(([cle, v]) => ({ cle, ...v }));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(
         pageProjet(configJournal, id, {
@@ -807,6 +807,8 @@ const serveur = http.createServer(async (req, res) => {
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifications,
+          actions: (await chargerActions(fichierActions)).actions,
+          onglet: url.searchParams.get('onglet') ?? 'vue',
           aRepondre,
           message: url.searchParams.get('message') ?? undefined,
           guide: guidesFonctionnement.has(id),

@@ -10,6 +10,9 @@ import { lienVideo, depuisHeureParis } from './histoires.js';
 import { grouperParJour, exempleDuJour, reponseAutomatique, lienGmail } from './mails.js';
 import { DECISIONS_TRI, cleTri } from './tri-mails.js';
 import { CHOIX_VERIF, cleVerif } from './verifs-impacteur.js';
+import { tunnel, htmlTunnel } from './tunnel.js';
+import { STATUTS_ACTION } from './actions.js';
+import { joursJusqua } from './business.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const date = (j) => (j ? new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—');
@@ -123,6 +126,22 @@ const texteCellule = (t) => {
 };
 const tonProspect = (s) => (s === 'repondu' ? 'ok' : s === 'propose' ? 'attente' : ['exclu', 'ecarte', 'echec'].includes(s) ? 'off' : '');
 
+// Les vidéos YouTube : shorts et vidéos longues séparés (demande de louis du 11/10),
+// d'après la durée ; tant que la durée n'est pas relue, une seule liste.
+function tablesVideos(videos) {
+  const n = (x) => Number(x ?? 0).toLocaleString('fr-FR');
+  const duree = (s) => (s === null || s === undefined ? '' : s >= 3600 ? `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}` : s >= 60 ? `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')}` : `${s} s`);
+  const ligne = (v) => ({ q: date(v.jour), t: `<a href="https://www.youtube.com/watch?v=${e(v.id)}" target="_blank" rel="noopener">${e(v.titre)}</a>`, d: duree(v.secondes), v: n(v.vues), a: n(v.aimes) });
+  const colonnes = [{ cle: 'q', titre: 'Publiée le' }, { cle: 't', titre: 'Vidéo' }, { cle: 'd', titre: 'Durée' }, { cle: 'v', titre: 'Vues' }, { cle: 'a', titre: '👍' }];
+  const triees = [...videos].sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1));
+  if (!triees.some((v) => v.format)) return table('Dernières vidéos', colonnes, triees.map(ligne), { visibles: 10 });
+  const aide = '<p class="vide">Short = 3 minutes ou moins, d’après la durée (YouTube ne dit pas le format).</p>';
+  return (
+    table('Vidéos longues', colonnes, triees.filter((v) => v.format === 'longue').map(ligne), { visibles: 8, vide: 'Aucune vidéo longue parmi les dernières publiées.', aide }) +
+    table('Shorts', colonnes, triees.filter((v) => v.format !== 'longue').map(ligne), { visibles: 8, vide: 'Aucun short parmi les dernières vidéos publiées.' })
+  );
+}
+
 // Les sections de détail, selon le projet.
 function sections(id, { business, journal, histoires, suivi, tri, verifs }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
@@ -133,11 +152,7 @@ function sections(id, { business, journal, histoires, suivi, tri, verifs }) {
     ? `<section class="bloc"><h3>Chaînes YouTube</h3><ul class="chaines">${chaines
         .map((c) => `<li><b>${e(c.titre)}</b> · ${n(c.abonnes)} abonnés · ${n(c.vues)} vues · ${n(c.nbVideos)} vidéos</li>`)
         .join('')}</ul></section>` +
-      table('Dernières vidéos', [{ cle: 'q', titre: 'Publiée le' }, { cle: 't', titre: 'Vidéo' }, { cle: 'v', titre: 'Vues' }, { cle: 'a', titre: '👍' }],
-        chaines
-          .flatMap((c) => c.videos)
-          .sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1))
-          .map((v) => ({ q: date(v.jour), t: `<a href="https://www.youtube.com/watch?v=${e(v.id)}" target="_blank" rel="noopener">${e(v.titre)}</a>`, v: n(v.vues), a: n(v.aimes) })), { visibles: 10 })
+      tablesVideos(chaines.flatMap((c) => c.videos))
     : '';
   const fin = (reste) => blocYoutube + reste;
   // Le bloc des notes est masqué tant qu'il est vide (demande de louis du 06/10) :
@@ -160,18 +175,7 @@ function sections(id, { business, journal, histoires, suivi, tri, verifs }) {
     const textes = pr.reponses ?? [];
     const nomsAvecTexte = new Set(textes.map((r) => r.nom).filter(Boolean));
 
-    // Le parcours commercial compte des restaurants, pas des messages.
-    const ab = business.sources?.stripe?.abonnements;
-    const etapes = [
-      { n: pr.prospects.length, t: 'trouvés' },
-      { n: pr.prospects.filter((x) => x.email).length, t: 'contactables' },
-      { n: pr.prospects.filter((x) => x.premier).length, t: 'contactés' },
-      { n: repondus.length, t: 'ont répondu' },
-      { n: ab?.actifs ?? '?', t: 'abonnés payants' },
-    ];
-    const parcours = `<section class="bloc"><h3>Parcours commercial <small>(restaurants, depuis le début)</small></h3>
-<div class="parcours">${etapes.map((s) => `<div class="etape"><b>${s.n}</b><span>${s.t}</span></div>`).join('<span class="fleche-p">›</span>')}</div>
-<p class="vide">${envois.filter((x) => x.statut === 'envoye').length} mails envoyés au total, relances comprises. L’inscription sur le site n’est pas encore branchée${ab ? '' : ' ; Stripe non plus' }.</p></section>`;
+    const parcours = `<p class="vide">${envois.filter((x) => x.statut === 'envoye').length} mails envoyés au total, relances comprises.</p>`;
 
     // Chaque réponse porte son suivi manuel (une étiquette : ça n'envoie jamais de mail).
     // Une réponse détectée sans texte est dite telle quelle, avec le lien Gmail : rien d'inventé.
@@ -430,18 +434,100 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
   return fin(blocNotes);
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifications = [], jour = jourParis(), message, aRepondre = 0, guide = false } = {}) {
+// Les cinq onglets d'une page projet (refonte du 11/10, choix de louis).
+const ONGLETS = [
+  ['vue', 'Vue d’ensemble'],
+  ['resultats', 'Résultats'],
+  ['mails', null], // « Mails » ou « Publications » selon le projet
+  ['actions', 'Actions et idées'],
+  ['guide', 'Comment ça marche'],
+];
+const PUBLICATIONS = new Set(['extrait-politique', 'histoires-vraies']);
+
+// Les chiffres de la carte sur quatre périodes, en un tableau (Résultats).
+function tableResultats(configJournal, id, { business, journal, pauses, jour }) {
+  const periodes = [
+    [1, 'Aujourd’hui'],
+    [7, '7 jours'],
+    [30, '30 jours'],
+    [365, '365 jours'],
+  ];
+  const cartes = periodes.map(([jours]) => tableauDeBord({ business, journal, configJournal, pauses, jour, jours }).cartes.find((c) => c.id === id));
+  if (!cartes[0] || cartes[0].couleur === 'gris') return '';
+  const titres = [cartes[1].principal.titre, ...cartes[1].chiffres.map((x) => x.titre)];
+  const valeur = (c, titre) => {
+    if (!c) return '—';
+    if (c.principal.titre === titre) return c.principal.total.toLocaleString('fr-FR');
+    const x = c.chiffres.find((y) => y.titre === titre);
+    if (!x) return '—';
+    return typeof x.valeur === 'number' ? x.valeur.toLocaleString('fr-FR') : e(String(x.valeur));
+  };
+  // Un chiffre qui ne dépend pas de la période (abonnés, budget, « à étudier ») se lit pareil partout : on le dit.
+  const stock = (titre) => /abonn[ée]s$|budget|à étudier|contactés en tout|à vérifier/i.test(titre) && !/gagn/i.test(titre);
+  return `<section class="bloc"><h3>Les chiffres, période par période</h3>
+<table><tr><th></th>${periodes.map(([, t]) => `<th class="num">${t}</th>`).join('')}</tr>
+${titres.map((titre) => `<tr><td>${e(titre)}${stock(titre) ? ' <small>(en tout, à ce jour)</small>' : ''}</td>${cartes.map((c) => `<td class="num">${valeur(c, titre)}</td>`).join('')}</tr>`).join('')}
+</table>
+<p class="vide">Les comparaisons ▲▼ de la page Aujourd’hui portent sur le jour contre la veille ; ici chaque colonne compte depuis le début de sa période.</p></section>`;
+}
+
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue' } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
+  if (!ONGLETS.some(([o]) => o === onglet)) onglet = 'vue';
   const tableau = tableauDeBord({ business, journal, configJournal, pauses, jour });
   const carte = tableau.cartes.find((c) => c.id === id);
+  const nomMails = PUBLICATIONS.has(id) ? 'Publications' : 'Mails';
+
+  const nav = `<nav class="onglets">${ONGLETS.map(([o, nom]) => {
+    const texte = nom ?? nomMails;
+    if (o === 'guide') return guide ? `<a href="/fonctionnement?projet=${e(id)}">⚙️ ${texte}</a>` : '';
+    return `<a href="/projet?projet=${e(id)}${o === 'vue' ? '' : `&onglet=${o}`}" class="${o === onglet ? 'actif' : ''}">${texte}</a>`;
+  }).join('')}</nav>`;
 
   // La surveillance technique de ce projet, en une ligne par vérification.
   const surveillance = verifications.length
     ? `<details class="bloc technique"><summary>Surveillance technique (${verifications.length})</summary><ul>${verifications
-        .map((v) => `<li>${PASTILLES[{ ok: 'vert', attention: 'orange', panne: 'rouge' }[v.etat] ?? 'gris']} ${e(v.nom)} : ${e(v.sens ?? v.detail)}</li>`)
+        .map((v) => `<li>${PASTILLES[{ ok: 'vert', orange: 'orange', panne: 'rouge', attention: 'orange' }[v.etat] ?? 'gris']} ${e(v.nom)} : ${e(v.sens ?? v.detail)}</li>`)
         .join('')}</ul></details>`
     : '';
+
+  // Les fiches d'action de ce projet (ouvertes d'abord), rattachées par le projet ou le nom.
+  const mesActions = actions.filter((a) => a.source?.projet === id || a.projet === projet.nom);
+  const ouvertes = mesActions.filter((a) => a.statut !== 'resolu');
+  const heure = (iso) => (iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—');
+  const listeActions = (liste) => `<ul class="liste-fiches">${liste.map((a) => `<li><a href="/action?id=${e(a.id)}"><b>${e(a.titre)}</b></a><small>${e(STATUTS_ACTION[a.statut]?.nom ?? a.statut)} · ${heure(a.maj)}</small></li>`).join('')}</ul>`;
+
+  // Vue d'ensemble : carte, tunnel, ce qui bloque, ce qui manque.
+  // Une panne et sa fiche ne font qu'une ligne : la panne, avec le lien vers la fiche quand elle existe.
+  const pannes = verifications.filter((v) => v.etat === 'panne');
+  const fichePanne = (v) => (v.cle ? ouvertes.find((a) => a.cle === `panne:${v.cle}`) : null);
+  const fichesPannes = new Set(pannes.map(fichePanne).filter(Boolean).map((a) => a.id));
+  const blocages = [
+    ...pannes.map((v) => {
+      const f = fichePanne(v);
+      return `<li>⛔ ${e(v.sens ?? v.detail)} <small>(${e(v.nom)})</small>${f ? ` <a href="/action?id=${e(f.id)}">fiche › ${e(STATUTS_ACTION[f.statut]?.nom ?? f.statut)}</a>` : ''}</li>`;
+    }),
+    ...ouvertes.filter((a) => !fichesPannes.has(a.id)).slice(0, 5).map((a) => `<li><a href="/action?id=${e(a.id)}">${e(a.titre)}</a> <small>${e(STATUTS_ACTION[a.statut]?.nom ?? a.statut)}</small></li>`),
+  ];
+  const blocBlocages = `<section class="bloc"><h3>Ce qui bloque</h3>${blocages.length ? `<ul class="blocages">${blocages.join('')}</ul>` : '<p class="vide">🟢 Rien ne bloque en ce moment.</p>'}</section>`;
+  const manques = carte?.manque ?? [];
+  const blocManque = manques.length ? `<section class="bloc"><h3>Données pas encore branchées</h3><p class="vide">${e(manques.join(' · '))}. Tant que ce n’est pas branché, ces chiffres sont « indisponibles », jamais 0.</p></section>` : '';
+  const vue = [
+    carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : '',
+    htmlTunnel(tunnel(id, business, { jours30: joursJusqua(jour, 30) })),
+    blocBlocages,
+    blocManque,
+    surveillance,
+  ].join('');
+
+  // Résultats : les chiffres sur 4 périodes, et la courbe sur 30 jours.
+  const carte30 = tableauDeBord({ business, journal, configJournal, pauses, jour, jours: 30 });
+  const c30 = carte30.cartes.find((c) => c.id === id);
+  const resultats = [
+    tableResultats(configJournal, id, { business, journal, pauses, jour }) || '<p class="vide">Pas encore de chiffres : la source de ce projet n’est pas branchée.</p>',
+    c30 && c30.couleur !== 'gris' ? `<h3 class="sous-titre">Sur 30 jours</h3><div class="bds une">${carteProjet({ ...c30, periode: carte30.periode }, 30)}</div>` : '',
+  ].join('');
 
   const mesIdees = idees.idees.filter((i) => i.projet === id);
   const options = (actuel) => Object.entries(STATUTS_IDEE).map(([v, t]) => `<option value="${v}"${v === actuel ? ' selected' : ''}>${t}</option>`).join('');
@@ -458,16 +544,24 @@ ${mesIdees.length ? `<ul>${mesIdees
     )
     .join('')}</ul>` : '<p class="vide">Écris ici tout ce que tu voudrais changer sur ce projet : c’est gardé, avec un suivi. Dis-le moi aussi dans notre discussion Claude pour que je m’y mette.</p>'}
 </section>`;
+  const resolues = mesActions.filter((a) => a.statut === 'resolu').slice(0, 10);
+  const blocActions = `<section class="bloc"><h3>Fiches d’action <small>(${ouvertes.length} ouverte(s))</small></h3>${ouvertes.length ? listeActions(ouvertes) : '<p class="vide">Aucune fiche ouverte sur ce projet.</p>'}${resolues.length ? `<details class="texte"><summary>Résolues récemment (${resolues.length})</summary>${listeActions(resolues)}</details>` : ''}</section>`;
+
+  const corps = { vue, resultats, mails: sections(id, { business, journal, histoires, suivi, tri, verifs }), actions: blocActions + blocIdees }[onglet];
 
   const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
-<p class="retour"><a href="/journal">‹ Retour au tableau de bord</a>${guide ? `<a class="guide-lien" href="/fonctionnement?projet=${e(id)}">⚙️ Comment ça marche</a>` : ''}</p>
-${carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : ''}
-${blocIdees}
-${sections(id, { business, journal, histoires, suivi, tri, verifs })}
-${surveillance}
+<p class="retour"><a href="/journal">‹ Tous les projets</a></p>
+<h2 class="nom-projet">${PASTILLES[carte?.couleur] ?? ''} ${e(projet.nom)}</h2>
+${nav}
+${corps}
 <style>
-.retour { margin:0 0 10px; display:flex; justify-content:space-between; gap:10px; } .retour a { color:var(--doux); text-decoration:none; }
-.retour .guide-lien { border:1px solid var(--bord); border-radius:8px; padding:3px 10px; font-size:13px; color:var(--texte); }
+.retour { margin:0 0 6px; } .retour a { color:var(--doux); text-decoration:none; }
+.nom-projet { margin:0 0 10px; font-size:22px; letter-spacing:-.4px; }
+.onglets { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 16px; border-bottom:1px solid var(--bord); }
+.onglets a { text-decoration:none; color:var(--doux); font-size:14px; padding:8px 12px; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.onglets a.actif { color:var(--or); border-bottom-color:var(--or); font-weight:650; }
+.onglets a:hover { color:var(--texte); }
+.sous-titre { font-size:15px; margin:18px 0 8px; }
 .bds.une { display:grid; margin-bottom:14px; }
 ${CSS_CARTE}
 .une .pied { display:none; }
@@ -479,6 +573,7 @@ ${CSS_CARTE}
 .bloc th { text-align:left; color:var(--doux); font-weight:500; padding:4px 10px 4px 0; border-bottom:1px solid var(--bord); white-space:nowrap; }
 .bloc td { padding:5px 10px 5px 0; border-bottom:1px solid var(--bord); vertical-align:top; }
 .bloc tr:last-child td { border-bottom:0; }
+.bloc .num { text-align:right; font-variant-numeric:tabular-nums; }
 .voir-plus { margin-top:8px; font-size:13px; }
 .aide { margin:0 0 8px; font-size:13px; color:var(--doux); }
 .aide summary { cursor:pointer; user-select:none; }
@@ -490,7 +585,14 @@ td .texte p { white-space:pre-wrap; margin:6px 0 2px; max-width:560px; }
 .etape { display:flex; flex-direction:column; min-width:72px; }
 .etape b { font-size:22px; line-height:1.1; }
 .etape span { font-size:12px; color:var(--doux); }
+.etape.petite b { font-size:16px; } .etape.inconnue b { color:var(--doux); }
 .fleche-p { color:var(--doux); font-size:18px; }
+.blocages { margin:0; padding-left:18px; font-size:14px; } .blocages li { margin:3px 0; } .blocages small { color:var(--doux); }
+.liste-fiches { list-style:none; margin:0; padding:0; }
+.liste-fiches li { display:flex; flex-direction:column; padding:7px 0; border-top:1px solid var(--bord); font-size:14px; }
+.liste-fiches li:first-child { border-top:0; }
+.liste-fiches a { color:var(--texte); text-decoration:none; } .liste-fiches a:hover { text-decoration:underline; }
+.liste-fiches small { color:var(--doux); font-size:12px; }
 .suivi-form { display:flex; flex-direction:column; gap:4px; min-width:170px; }
 .suivi-form select, .suivi-form input { font:inherit; font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
 .suivi-form button { align-self:flex-start; padding:3px 10px; font-size:12px; }

@@ -30,8 +30,8 @@ function fauxYoutube() {
       assert.equal(params.id, 'v1,v2');
       return {
         items: [
-          { id: 'v1', snippet: { title: 'Zapping du 4 octobre', publishedAt: '2026-10-04T18:00:00Z' }, statistics: { viewCount: '2300', likeCount: '150' } },
-          { id: 'v2', snippet: { title: 'Zapping du 3 octobre', publishedAt: '2026-10-03T18:00:00Z' }, statistics: { viewCount: '1800', likeCount: '90' } },
+          { id: 'v1', snippet: { title: 'Zapping du 4 octobre', publishedAt: '2026-10-04T18:00:00Z' }, statistics: { viewCount: '2300', likeCount: '150' }, contentDetails: { duration: 'PT12M30S' } },
+          { id: 'v2', snippet: { title: 'Zapping du 3 octobre', publishedAt: '2026-10-03T18:00:00Z' }, statistics: { viewCount: '1800', likeCount: '90' }, contentDetails: { duration: 'PT58S' } },
         ],
       };
     }
@@ -47,6 +47,7 @@ test('synchroniserYoutube lit la chaîne, ses vidéos et garde un relevé par jo
   const yt = b.sources.youtube;
   assert.equal(yt.chaines[0].abonnes, 1200);
   assert.equal(yt.chaines[0].videos.length, 2);
+  assert.deepEqual(yt.chaines[0].videos.map((v) => [v.secondes, v.format]), [[750, 'longue'], [58, 'short']]);
   assert.deepEqual(yt.historique['2026-10-05'], { UCextrait: { abonnes: 1200, vues: 90000 } });
   // Sans chaîne configurée ou sans clé : on ne fait rien.
   assert.deepEqual(await synchroniserYoutube({ sources: {} }, { chaines: {} }), { ignore: true });
@@ -68,8 +69,12 @@ test('gains sur la période et carte L’extrait politique', async () => {
   assert.match(c.chiffres[1].detail, /\+50 sur la période/);
   assert.match(c.manque[0], /revenus YouTube/);
 
-  const html = pageProjet(configJournal, 'extrait-politique', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05' });
+  const html = pageProjet(configJournal, 'extrait-politique', { business: b, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05', onglet: 'mails' });
   assert.match(html, /Chaînes YouTube/);
+  // Shorts et vidéos longues séparés d'après la durée (demande de louis du 11/10).
+  assert.match(html, /Vidéos longues/);
+  assert.match(html, /<h3>Shorts/);
+  assert.match(html, /12 min 30/);
   assert.match(html, /1 200 abonnés/);
   assert.match(html, /Zapping du 4 octobre/);
   assert.match(html, /youtube\.com\/watch\?v=v1/);
