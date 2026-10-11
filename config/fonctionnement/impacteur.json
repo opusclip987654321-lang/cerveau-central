@@ -1,12 +1,12 @@
 {
   "maj": "2026-10-11",
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
-  "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu tries sur Telegram, et les envois partent tout seuls, plafonnés à 8 par jour.",
+  "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu fournis les adresses e-mail (colonne email_contact du Sheet), tu tries sur Telegram ou sur la page Impacteur, et les envois partent tout seuls, plafonnés à 8 par jour.",
   "journee": [
     {
       "quand": "8 h 07",
-      "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit), recherche du contact de l'auteur, invitation rédigée par Claude, fiche dans le Sheet.",
-      "toi": "Trier sur Telegram : ✅ Valider / 🗑 Rejeter"
+      "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit), invitation rédigée par Claude, fiche dans le Sheet ; l'adresse e-mail vient de toi.",
+      "toi": "Remplir la colonne email_contact du Sheet, puis trier : Telegram ✅/🗑 ou page Impacteur"
     },
     {
       "quand": "8 h 33",
@@ -15,7 +15,7 @@
     },
     {
       "quand": "10 h 07 et 15 h 07",
-      "quoi": "Envois automatiques : les fiches prêtes (invitation conforme + e-mail trouvé) partent par Gmail, 8 par jour maximum.",
+      "quoi": "Envois automatiques : les fiches prêtes (invitation conforme + adresse fournie dans email_contact) partent par Gmail, 8 par jour maximum.",
       "toi": "Rien"
     },
     {
@@ -47,10 +47,10 @@
           "technique": "Comparaison avec l'onglet Prospection du Sheet, avant toute dépense."
         },
         {
-          "type": "auto",
-          "texte": "On cherche comment contacter l'auteur",
-          "outil": "Brave Search",
-          "technique": "Recherche web payante par API ; 4 pistes au plus."
+          "type": "toi",
+          "texte": "Tu fournis l'adresse de l'auteur dans la colonne email_contact du Sheet (Telegram te la demande fiche par fiche)",
+          "outil": "Google Sheets + Telegram",
+          "technique": "Plus de recherche automatique d'adresse depuis le 11/10 (ton choix) ; /email reste un dépannage."
         },
         {
           "type": "auto",
@@ -112,9 +112,9 @@
         },
         {
           "type": "auto",
-          "texte": "On écarte les doublons, on cherche le contact et on écrit l'invitation",
-          "outil": "Brave Search + Claude Haiku",
-          "technique": "Même recherche de contact et même rédaction que pour les livres."
+          "texte": "On écarte les doublons et on écrit l'invitation",
+          "outil": "Claude Haiku (API Anthropic)",
+          "technique": "Même rédaction que pour les livres ; l'adresse vient de toi (colonne email_contact)."
         },
         {
           "type": "toi",
@@ -132,12 +132,12 @@
           "type": "auto",
           "texte": "10 h 07 et 15 h 07 : on prend les fiches prêtes à partir",
           "outil": "Google Sheets",
-          "technique": "Fiches avec invitation conforme et e-mail trouvé ; adresses professionnelles en premier."
+          "technique": "Fiches avec invitation conforme et e-mail présent : d'abord ta colonne email_contact, sinon une adresse donnée par /email."
         },
         {
           "type": "securite",
           "texte": "8 envois par jour au plus, jamais deux fois la même personne",
-          "sinon": "fiche sans e-mail : notifiée sur Telegram, tu peux donner l'adresse avec /email",
+          "sinon": "fiche sans e-mail : Telegram te demande de remplir la colonne email_contact du Sheet (ou /email)",
           "technique": "Compteur du jour et liste des auteurs et adresses déjà contactés."
         },
         {
@@ -183,9 +183,9 @@
         },
         {
           "type": "toi",
-          "texte": "/email : tu donnes l'adresse qui manquait sur une fiche",
+          "texte": "/email : dépannage pour donner une adresse sans ouvrir le Sheet",
           "outil": "Telegram",
-          "technique": "Commande à taper : /email CLE adresse."
+          "technique": "Commande à taper : /email CLE adresse. Le plus simple reste la colonne email_contact du Sheet."
         },
         {
           "type": "toi",
@@ -227,17 +227,18 @@
         "Sur le tableau de bord, les fiches à vérifier et les brouillons Gmail en attente sont comptés par chaîne (Impacteur Afrique ou Impacteur Frexit), pour savoir dans quel compte regarder",
         "La « chaîne » affichée vient du Sheet : tant que l'automatisation n'enregistre pas le compte Gmail réellement utilisé (colonne compte_envoi), c'est une déclaration, pas une preuve ; dès qu'elle l'enregistre, le compte s'affiche sur chaque mail",
         "Le texte du mail s'affiche sur la fiche dès que l'automatisation le copie dans le Sheet (colonne corps) ; tant qu'il manque, la fiche le dit et renvoie vers Gmail pour lire l'échange réel",
-        "Les fiches « à vérifier » s'affichent sur la page Impacteur avec Valider / Rejeter : ton choix est noté dans le cerveau et rien ne part d'ici ; le ✅/🗑 Telegram reste le vrai interrupteur tant que le branchement direct (préparé avec Claude, montré avant activation) n'est pas en place"
+        "Les fiches « à vérifier » s'affichent sur la page Impacteur avec Valider / Rejeter : depuis le branchement du 11/10 (script impacteur-valider-et-emails), Valider fait exactement comme le ✅ Telegram (brouillon Gmail créé dans le compte de la chaîne, confirmation sur Telegram) et Rejeter écarte la fiche ; rien ne part sans ton clic Envoyer dans Gmail"
       ]
     }
   ],
   "role": {
     "quotidien": [
-      "Trier les fiches sur Telegram (✅ / 🗑)",
+      "Remplir la colonne email_contact du Sheet quand Telegram le demande",
+      "Trier les fiches : Telegram (✅ / 🗑) ou page Impacteur (Valider / Rejeter)",
       "Répondre aux auteurs qui acceptent une interview"
     ],
     "parfois": [
-      "Donner un e-mail manquant avec /email",
+      "Donner un e-mail avec /email quand le Sheet n'est pas sous la main",
       "Proposer une personnalité avec /inviter",
       "Lire le récap de 8 h 33"
     ]
@@ -249,7 +250,7 @@
     },
     {
       "sujet": "Coûts",
-      "detail": "Chaque découverte utilise la recherche Brave et Claude (Haiku). La BnF et les flux YouTube sont gratuits."
+      "detail": "Chaque découverte utilise Claude (Haiku) pour la rédaction ; la recherche Brave ne sert plus qu'aux fiches /inviter depuis le 11/10. La BnF et les flux YouTube sont gratuits."
     },
     {
       "sujet": "Exemple d'interview",
@@ -283,7 +284,7 @@
     },
     {
       "nom": "Brave Search (API)",
-      "role": "La recherche du contact de l'auteur sur le web"
+      "role": "Plus utilisée pour les fiches du jour (les adresses viennent de toi) ; sert encore aux fiches /inviter"
     },
     {
       "nom": "Claude (Haiku, API Anthropic)",
@@ -299,14 +300,14 @@
     },
     {
       "nom": "Telegram (bot)",
-      "role": "Validation ✅/🗑, récap de 8 h 33, /email et /inviter"
+      "role": "Validation ✅/🗑, demandes d'adresse (colonne email_contact), récap de 8 h 33, /email et /inviter"
     }
   ],
   "alertes": [
     {
       "message": "N fiche(s) d'invités attendent ta vérification avant l'envoi",
       "sens": "Des fiches prêtes ; personne n'est contacté sans ton accord.",
-      "faire": "Valider ou rejeter sur la page Impacteur, ou ✅/🗑 sur Telegram."
+      "faire": "Valider ou rejeter sur la page Impacteur, ou ✅/🗑 sur Telegram : les deux font la même chose depuis le 11/10."
     },
     {
       "message": "N brouillon(s) prêts dans Gmail, pas encore envoyés",
@@ -319,9 +320,9 @@
       "faire": "Corriger la fiche dans le Sheet, ou /valider CLE pour créer un brouillon à envoyer toi-même."
     },
     {
-      "message": "N auteur(s) peut-être décédé(s)",
-      "sens": "Le doute vient de la découverte automatique.",
-      "faire": "Vérifier avant tout contact, puis trier la fiche."
+      "message": "N fiche(s) encore marquée(s) « décès à vérifier »",
+      "sens": "Ancien garde-fou, retiré le 11/10 : ces fiches datent d'avant et restent bloquées.",
+      "faire": "Pour les relancer, passe leur statut à A_VERIFIER dans le Sheet."
     }
   ]
 }
