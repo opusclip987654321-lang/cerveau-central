@@ -13,6 +13,7 @@ import { CHOIX_VERIF, cleVerif } from './verifs-impacteur.js';
 import { tunnel, htmlTunnel } from './tunnel.js';
 import { STATUTS_ACTION } from './actions.js';
 import { joursJusqua } from './business.js';
+import { visitesDe, htmlVisites, CSS_VISITES } from './visites.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const date = (j) => (j ? new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—');
@@ -529,6 +530,7 @@ export function pageProjet(configJournal, id, { business, journal, pauses, histo
   const vue = [
     carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : '',
     htmlTunnel(tunnel(id, business, { jours30: joursJusqua(jour, 30) })),
+    htmlVisites(visitesDe(business, id)),
     blocBlocages,
     blocManque,
     surveillance,
@@ -577,6 +579,7 @@ ${corps}
 .sous-titre { font-size:15px; margin:18px 0 8px; }
 .bds.une { display:grid; margin-bottom:14px; }
 ${CSS_CARTE}
+${CSS_VISITES}
 .une .pied { display:none; }
 .graphe { max-width:460px; }
 .bloc { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:12px 14px; margin-bottom:14px; overflow-x:auto; }

@@ -49,6 +49,7 @@ import { synchroniserVegebudget } from './vegebudget.js';
 import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserImpacteur, tableauDeBord, messageSilences, validerObjectif } from './business.js';
 import { dossiersCode, listerCode, lireCode } from './code-source.js';
 import { etatConnexions, noterTentative } from './connexions.js';
+import { synchroniserVisites } from './visites.js';
 import { pageConnexions } from './page-connexions.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -86,6 +87,7 @@ const configArgent = JSON.parse(await readFile(fichierArgentDepart, 'utf8'));
 const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serveurs.json'), 'utf8'));
 const configJournal = JSON.parse(await readFile(path.join(racine, 'config/journal.json'), 'utf8'));
 const configYoutube = JSON.parse(await readFile(path.join(racine, 'config/youtube.json'), 'utf8'));
+const configVisites = JSON.parse(await readFile(path.join(racine, 'config/visites.json'), 'utf8'));
 const guidesFonctionnement = await chargerFonctionnement(path.join(racine, 'config/fonctionnement'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
@@ -221,6 +223,8 @@ async function synchroniserJournal() {
     await lireSource('stripe', () => avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE })));
     await lireSource('cambodge', () => avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })));
     await lireSource('vegebudget', () => avecBusiness((b) => synchroniserVegebudget(b, { url: env.VEGEBUDGET_URL || 'https://vegebudget.fr', jeton: env.VEGEBUDGET_STATS_JETON })));
+    // Les visites des sites, lues chez Umami (compteur sur le VPS Nūr).
+    await lireSource('visites', () => avecBusiness((b) => synchroniserVisites(b, { url: env.UMAMI_URL, cleApi: env.UMAMI_CLE_API, utilisateur: env.UMAMI_UTILISATEUR, motDePasse: env.UMAMI_MOT_DE_PASSE, sites: configVisites.sites })));
   } catch (err) {
     console.error(`Journal : ${err.message}`);
   }

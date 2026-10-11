@@ -1,0 +1,8 @@
+{
+  "_": "Les sites suivis par le compteur de visites Umami (VPS Nūr) : id du projet → domaine tel qu'il est déclaré dans Umami. Les accès (UMAMI_URL, UMAMI_UTILISATEUR, UMAMI_MOT_DE_PASSE ou UMAMI_CLE_API) sont dans le .env du serveur.",
+  "sites": {
+    "nour-meet": "nourmeet.com",
+    "leviaro": "leviaro.fr",
+    "vegebudget": "vegebudget.fr"
+  }
+}
