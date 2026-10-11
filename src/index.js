@@ -871,6 +871,7 @@ const serveur = http.createServer(async (req, res) => {
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
+          verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
           verifications,
           actions: (await chargerActions(fichierActions)).actions,
           onglet: url.searchParams.get('onglet') ?? 'vue',
@@ -898,13 +899,33 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(303, { location: `/projet?projet=nour-meet&message=${encodeURIComponent(message)}` });
       return res.end();
     }
-    // Choix de louis sur une fiche d'invité « à vérifier » (Impacteur) : noté dans
-    // le cerveau, rien ne part d'ici ; le ✅/🗑 Telegram reste l'interrupteur tant
-    // que le branchement n8n n'est pas montré à louis puis activé par lui.
+    // Choix de louis sur une fiche d'invité « à vérifier » (Impacteur). Depuis le
+    // branchement direct (11/10, IMPACTEUR_VALIDATION_URL dans le .env) le choix part
+    // aussi à n8n (IMPACTEUR D) : Valider crée le brouillon Gmail de la chaîne,
+    // Rejeter écarte la fiche — comme le ✅/🗑 Telegram. Sans cette ligne, on en reste
+    // au choix noté.
     if (req.method === 'POST' && url.pathname === '/verif-fiche') {
       const { auteur, livre, choix } = await lireCorps(req, 4_000);
       const r = await avecVerifs((d) => choisirVerif(d, { auteur, livre, choix }));
-      const message = r.erreur ?? `Choix noté (${CHOIX_VERIF[r.choix]}). Rien ne part d'ici : le ✅/🗑 Telegram reste l'interrupteur tant que le branchement n'est pas activé.`;
+      let message;
+      if (r.erreur) message = r.erreur;
+      else if (!env.IMPACTEUR_VALIDATION_URL) message = `Choix noté (${CHOIX_VERIF[r.choix]}). Rien ne part d'ici : le ✅/🗑 Telegram reste l'interrupteur tant que le branchement n'est pas activé.`;
+      else {
+        try {
+          const rep = await fetch(env.IMPACTEUR_VALIDATION_URL, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ auteur, livre, choix }),
+            signal: AbortSignal.timeout(8_000),
+          });
+          if (!rep.ok) throw new Error(`n8n répond ${rep.status}`);
+          message = r.choix === 'valider'
+            ? `Choix noté (${CHOIX_VERIF.valider}). Création du brouillon Gmail lancée : la confirmation arrive sur Telegram.`
+            : `Choix noté (${CHOIX_VERIF.rejeter}). La fiche va être écartée : la confirmation arrive sur Telegram.`;
+        } catch (err) {
+          message = `Choix noté (${CHOIX_VERIF[r.choix]}), mais l'automatisation n'a pas été prévenue (${err.message}) : utilise le ✅/🗑 Telegram.`;
+        }
+      }
       res.writeHead(303, { location: `/projet?projet=impacteur&message=${encodeURIComponent(message)}` });
       return res.end();
     }

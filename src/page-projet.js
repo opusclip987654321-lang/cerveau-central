@@ -144,7 +144,7 @@ function tablesVideos(videos) {
 }
 
 // Les sections de détail, selon le projet.
-function sections(id, { business, journal, histoires, suivi, tri, verifs }) {
+function sections(id, { business, journal, histoires, suivi, tri, verifs, verifDirect }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
   // Les chaînes YouTube du projet, quand elles sont branchées.
   const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
@@ -351,13 +351,17 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
       {
         visibles: 15,
         vide: 'Aucune fiche n’attend ta vérification avant envoi.',
-        aide: '<p class="note-mail">Ton choix est noté dans le cerveau, rien ne part d’ici : le ✅/🗑 sur Telegram reste le vrai interrupteur. Une fiche validée ou rejetée quitte cette liste et descend dans le bloc juste en dessous. Le branchement direct (Valider = brouillon créé dans la boîte Gmail de la chaîne, comme le ✅) est en préparation et te sera montré avant d’être activé.</p>',
+        aide: verifDirect
+          ? '<p class="note-mail">Valider crée le brouillon Gmail dans la boîte de la chaîne (comme le ✅ Telegram) et Rejeter écarte la fiche : la confirmation arrive sur Telegram. Rien ne part sans ton clic Envoyer dans Gmail. Fiche sans adresse : mets l’email dans la colonne email_contact du Sheet, puis Valider. Une fiche tranchée descend dans le bloc juste en dessous.</p>'
+          : '<p class="note-mail">Ton choix est noté dans le cerveau, rien ne part d’ici : le ✅/🗑 sur Telegram reste le vrai interrupteur. Une fiche validée ou rejetée quitte cette liste et descend dans le bloc juste en dessous. Le branchement direct (Valider = brouillon créé dans la boîte Gmail de la chaîne, comme le ✅) est en préparation et te sera montré avant d’être activé.</p>',
       },
     );
     const blocTranchees = tranchees.length
       ? table('Fiches déjà tranchées', colonnesVerif, tranchees.map(ligneVerif), {
           visibles: 5,
-          aide: '<p class="note-mail">Ton choix est noté ; les boutons restent là pour en changer. Tant que le branchement direct n’est pas activé, l’envoi réel passe toujours par le ✅ Telegram.</p>',
+          aide: verifDirect
+            ? '<p class="note-mail">Ton choix est fait ; les boutons restent là pour en changer (recliquer envoie le nouveau choix à l’automatisation).</p>'
+            : '<p class="note-mail">Ton choix est noté ; les boutons restent là pour en changer. Tant que le branchement direct n’est pas activé, l’envoi réel passe toujours par le ✅ Telegram.</p>',
         })
       : '';
     const sansEnvoi = fiches.filter((f) => !f.envoi && !f.statut?.startsWith('A_VERIFIER'));
@@ -485,7 +489,7 @@ ${titres.map((titre) => `<tr><td>${e(titre)}${stock(titre) ? ' <small>(en tout, 
 <p class="vide">Les comparaisons ▲▼ de la page Aujourd’hui portent sur le jour contre la veille ; ici chaque colonne compte depuis le début de sa période.</p></section>`;
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue' } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifDirect = false, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue' } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   if (!ONGLETS.some(([o]) => o === onglet)) onglet = 'vue';
@@ -562,7 +566,7 @@ ${mesIdees.length ? `<ul>${mesIdees
   const resolues = mesActions.filter((a) => a.statut === 'resolu').slice(0, 10);
   const blocActions = `<section class="bloc"><h3>Fiches d’action <small>(${ouvertes.length} ouverte(s))</small></h3>${ouvertes.length ? listeActions(ouvertes) : '<p class="vide">Aucune fiche ouverte sur ce projet.</p>'}${resolues.length ? `<details class="texte"><summary>Résolues récemment (${resolues.length})</summary>${listeActions(resolues)}</details>` : ''}</section>`;
 
-  const corps = { vue, resultats, mails: sections(id, { business, journal, histoires, suivi, tri, verifs }), actions: blocActions + blocIdees }[onglet];
+  const corps = { vue, resultats, mails: sections(id, { business, journal, histoires, suivi, tri, verifs, verifDirect }), actions: blocActions + blocIdees }[onglet];
 
   const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
 <p class="retour"><a href="/journal">‹ Tous les projets</a></p>

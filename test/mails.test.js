@@ -181,3 +181,36 @@ test('page Impacteur : plateforme de vérification des fiches, choix noté sans 
   assert.match(html, /décès à vérifier/);
   assert.ok(html.indexOf('D. Doute') < html.indexOf('Fiches déjà tranchées'), 'la fiche non tranchée reste dans la liste d’attente');
 });
+
+test('page Impacteur : branchement direct actif, Valider annonce le brouillon Gmail', () => {
+  const business = {
+    objectifs: {},
+    sources: {
+      impacteur: {
+        maj: '2026-10-05T18:00:00Z',
+        fiches: [
+          { auteur: 'C. Attente', livre: 'Livre C', chaine: 'Afrique', statut: 'A_VERIFIER' },
+          { auteur: 'E. Tranchee', livre: 'Livre E', chaine: 'Afrique', statut: 'A_VERIFIER' },
+        ],
+      },
+    },
+  };
+  const html = pageProjet(configJournal, 'impacteur', {
+    business,
+    journal: journalVide(),
+    jour: '2026-10-05',
+    idees: { idees: [] },
+    verifs: { choix: { [cleVerif('E. Tranchee', 'Livre E')]: { auteur: 'E. Tranchee', livre: 'Livre E', choix: 'valider', quand: '2026-10-05T10:00:00Z' } } },
+    verifDirect: true,
+    onglet: 'mails',
+  });
+  // L'aide dit ce que fait vraiment le bouton, et où mettre l'adresse qui manque.
+  assert.match(html, /Valider crée le brouillon Gmail dans la boîte de la chaîne/);
+  assert.match(html, /colonne email_contact du Sheet/);
+  assert.match(html, /Rien ne part sans ton clic Envoyer dans Gmail/);
+  // Plus de note « en préparation » ni de Telegram seul interrupteur.
+  assert.doesNotMatch(html, /en préparation/);
+  assert.doesNotMatch(html, /reste le vrai interrupteur/);
+  // Le bloc des fiches tranchées explique que recliquer renvoie le choix à l'automatisation.
+  assert.match(html, /recliquer envoie le nouveau choix à l’automatisation/);
+});
