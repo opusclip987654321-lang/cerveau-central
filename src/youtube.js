@@ -5,6 +5,15 @@
 import { jourDe } from './business.js';
 import { jourParis } from './questions.js';
 
+// Durée « PT1H2M3S » de l'API → secondes (null si absente).
+export function dureeSecondes(iso) {
+  const m = String(iso ?? '').match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  return m ? Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0) : null;
+}
+// Short ou vidéo longue, déduit de la durée (YouTube accepte les Shorts jusqu'à
+// 3 minutes) : l'API ne dit pas le format, c'est une déduction, la page le précise.
+export const formatVideo = (secondes) => (secondes === null ? null : secondes <= 180 ? 'short' : 'longue');
+
 // « https://www.youtube.com/@machin », « @machin » ou « UC… » → ce que l'API attend.
 export function referenceChaine(texte) {
   const t = String(texte ?? '').trim();
@@ -44,14 +53,19 @@ export async function synchroniserYoutube(business, { cle, chaines = {}, delaiMs
       const liste = await appel('playlistItems', { part: 'contentDetails', playlistId: envois, maxResults: '25' });
       const ids = (liste.items ?? []).map((v) => v.contentDetails?.videoId).filter(Boolean);
       if (ids.length) {
-        const stats = await appel('videos', { part: 'snippet,statistics', id: ids.join(',') });
-        videos = (stats.items ?? []).map((v) => ({
-          id: v.id,
-          titre: String(v.snippet?.title ?? '').slice(0, 120),
-          jour: jourDe(v.snippet?.publishedAt),
-          vues: Number(v.statistics?.viewCount ?? 0),
-          aimes: Number(v.statistics?.likeCount ?? 0),
-        }));
+        const stats = await appel('videos', { part: 'snippet,statistics,contentDetails', id: ids.join(',') });
+        videos = (stats.items ?? []).map((v) => {
+          const secondes = dureeSecondes(v.contentDetails?.duration);
+          return {
+            id: v.id,
+            titre: String(v.snippet?.title ?? '').slice(0, 120),
+            jour: jourDe(v.snippet?.publishedAt),
+            vues: Number(v.statistics?.viewCount ?? 0),
+            aimes: Number(v.statistics?.likeCount ?? 0),
+            secondes,
+            format: formatVideo(secondes),
+          };
+        });
       }
     }
     lues.push({

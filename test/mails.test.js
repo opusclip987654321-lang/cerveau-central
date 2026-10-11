@@ -65,6 +65,7 @@ test('page Nūr Meet : une ligne par journée, échange complet, contenu manquan
     idees: { idees: [] },
     suivi: { reponses: {} },
     tri: { decisions: { [cleTri('La Table')]: { nom: 'La Table', decision: 'abandonner', quand: 'x', doublon: false } } },
+    onglet: 'mails',
   });
   // Une ligne par journée, avec le bouton « Voir les N mails ».
   assert.match(html, /Mails envoyés, jour par jour/);
@@ -106,7 +107,7 @@ test('page Nūr Meet : le texte réellement envoyé s’affiche quand l’automa
       },
     },
   };
-  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), jour: '2026-10-05', idees: { idees: [] }, suivi: { reponses: {} }, tri: { decisions: {} } });
+  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), jour: '2026-10-05', idees: { idees: [] }, suivi: { reponses: {} }, tri: { decisions: {} }, onglet: 'mails' });
   assert.match(html, /Bonjour, on organise des soirées sans alcool…/);
   assert.match(html, /Je me permets de relancer mon précédent message\./);
   // Tous les textes sont là : plus de note « contenu non récupéré » sur cet échange.
@@ -134,6 +135,7 @@ test('page Impacteur : journées avec compte par chaîne, compte d’envoi non e
     journal: journalVide(),
     jour: '2026-10-05',
     idees: { idees: [] },
+    onglet: 'mails',
   });
   assert.match(html, /Invités contactés, jour par jour/);
   assert.match(html, /2 invité\(s\) contacté\(s\) <small>\((1 Afrique · 1 Frexit|1 Frexit · 1 Afrique)\)/);
@@ -164,6 +166,7 @@ test('page Impacteur : plateforme de vérification des fiches, choix noté sans 
     jour: '2026-10-05',
     idees: { idees: [] },
     verifs: { choix: { [cleVerif('C. Attente', 'Livre C')]: { auteur: 'C. Attente', livre: 'Livre C', choix: 'valider', quand: '2026-10-05T10:00:00Z' } } },
+    onglet: 'mails',
   });
   // Le bloc liste les fiches à vérifier avec les deux boutons et la note honnête.
   assert.match(html, /Fiches à vérifier avant envoi/);

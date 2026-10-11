@@ -151,7 +151,7 @@ test('Leviaro : catalogue par métier lu dans data/catalogue.json et affiché', 
   assert.equal(cat.metiers[0].elements.length, 3);
   assert.equal(cat.metiers[0].elements[2].lien, null);
   assert.deepEqual(cat.ecartees, ['FNE-Formation']);
-  const html = pageProjet(configJournal, 'leviaro', { business: b, journal: { evenements: [], n8n: { jours: {} } }, idees: { idees: [] }, jour: '2026-10-07' });
+  const html = pageProjet(configJournal, 'leviaro', { business: b, journal: { evenements: [], n8n: { jours: {} } }, idees: { idees: [] }, jour: '2026-10-07', onglet: 'mails' });
   assert.match(html, /Ce que Leviaro peut proposer, par métier/);
   assert.match(html, /Vos appels découverte/);
   assert.match(html, /Questionnaire trié › Rappels Calendly/);

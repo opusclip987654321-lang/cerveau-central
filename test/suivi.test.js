@@ -40,12 +40,13 @@ test('fiche Nūr Meet : parcours commercial et réponses séparées par suivi', 
     },
   };
   const suivi = { reponses: { [cleReponse(reponse)]: { etat: 'traite', action: null, echeance: null, maj: '2026-10-05T12:00:00Z' } } };
-  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), idees: { idees: [] }, suivi, jour: '2026-10-05' });
-  // Parcours : 3 trouvés, 2 contactables, 2 contactés, 2 ont répondu, 0 abonné.
-  assert.match(html, /Parcours commercial/);
-  assert.match(html, /<b>3<\/b><span>trouvés/);
-  assert.match(html, /<b>2<\/b><span>contactables/);
-  assert.match(html, /<b>0<\/b><span>abonnés payants/);
+  const vue = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), idees: { idees: [] }, suivi, jour: '2026-10-05' });
+  // Parcours (vue d'ensemble) : 3 trouvés, 2 contactables, 2 contactés, 2 ont répondu, 0 abonné.
+  assert.match(vue, /Parcours commercial/);
+  assert.match(vue, /<b>3<\/b><span>trouvés/);
+  assert.match(vue, /<b>2<\/b><span>contactables/);
+  assert.match(vue, /<b>0<\/b><span>abonnés payants/);
+  const html = pageProjet(configJournal, 'nour-meet', { business, journal: journalVide(), idees: { idees: [] }, suivi, jour: '2026-10-05', onglet: 'mails' });
   // Didon est « traité » → dans Réponses traitées ; La Plume (sans texte) reste à traiter.
   const aTraiter = html.slice(html.indexOf('Réponses à traiter'), html.indexOf('Réponses traitées <small>'));
   assert.match(aTraiter, /La Plume/);
