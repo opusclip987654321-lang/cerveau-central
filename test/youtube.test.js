@@ -3,6 +3,18 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { referenceChaine, synchroniserYoutube, gainsPeriode, synchroniserRevenus, revenusPeriode, urlAutorisation, echangerCode } from '../src/youtube.js';
 import { tableauDeBord, joursJusqua } from '../src/business.js';
+import { jourPublication } from '../src/youtube.js';
+
+test('jourPublication : le vrai jour de sortie, pas celui de l’envoi', () => {
+  // Vidéo programmée : envoyée le 2, sortie le 5 à 18 h Paris.
+  assert.equal(jourPublication({ envoi: '2026-10-02T10:00:00Z', publication: '2026-10-05T16:00:00Z' }), '2026-10-05');
+  // Première : le début réel compte.
+  assert.equal(jourPublication({ envoi: '2026-10-02T10:00:00Z', publication: '2026-10-02T10:00:00Z', premiere: '2026-10-07T16:00:00Z' }), '2026-10-07');
+  // Vidéo ordinaire : les dates concordent.
+  assert.equal(jourPublication({ envoi: '2026-10-04T18:00:00Z', publication: '2026-10-04T18:00:00Z' }), '2026-10-04');
+  assert.equal(jourPublication({ envoi: '2026-10-04T18:00:00Z' }), '2026-10-04');
+  assert.equal(jourPublication({}), null);
+});
 import { pageProjet } from '../src/page-projet.js';
 
 const configJournal = JSON.parse(await readFile(new URL('../config/journal.json', import.meta.url), 'utf8'));
@@ -24,14 +36,15 @@ function fauxYoutube() {
     }
     if (chemin === 'playlistItems') {
       assert.equal(params.playlistId, 'UUextrait');
-      return { items: [{ contentDetails: { videoId: 'v1' } }, { contentDetails: { videoId: 'v2' } }] };
+      // v2 : envoyée le 1er, programmée et sortie le 3 (videoPublishedAt).
+      return { items: [{ contentDetails: { videoId: 'v1', videoPublishedAt: '2026-10-04T18:00:00Z' } }, { contentDetails: { videoId: 'v2', videoPublishedAt: '2026-10-03T18:00:00Z' } }] };
     }
     if (chemin === 'videos') {
       assert.equal(params.id, 'v1,v2');
       return {
         items: [
           { id: 'v1', snippet: { title: 'Zapping du 4 octobre', publishedAt: '2026-10-04T18:00:00Z' }, statistics: { viewCount: '2300', likeCount: '150' }, contentDetails: { duration: 'PT12M30S' } },
-          { id: 'v2', snippet: { title: 'Zapping du 3 octobre', publishedAt: '2026-10-03T18:00:00Z' }, statistics: { viewCount: '1800', likeCount: '90' }, contentDetails: { duration: 'PT58S' } },
+          { id: 'v2', snippet: { title: 'Zapping du 3 octobre', publishedAt: '2026-10-01T09:00:00Z' }, statistics: { viewCount: '1800', likeCount: '90' }, contentDetails: { duration: 'PT58S' } },
         ],
       };
     }
