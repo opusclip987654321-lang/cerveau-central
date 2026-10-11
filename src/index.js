@@ -48,6 +48,8 @@ import { synchroniserLeviaro } from './leviaro.js';
 import { synchroniserVegebudget } from './vegebudget.js';
 import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserImpacteur, tableauDeBord, messageSilences, validerObjectif } from './business.js';
 import { dossiersCode, listerCode, lireCode } from './code-source.js';
+import { etatConnexions, noterTentative } from './connexions.js';
+import { pageConnexions } from './page-connexions.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -186,58 +188,39 @@ function avecJournal(fn) {
 }
 
 // Compte les exécutions n8n de l'heure écoulée pour le journal.
+// Chaque source est lue à son tour ; le résultat (lue, ignorée faute de clé, ou
+// en erreur) est noté dans business.connexions pour la page Connexions.
+async function lireSource(id, fn) {
+  let resultat = null;
+  let erreur = null;
+  try {
+    resultat = await fn();
+  } catch (err) {
+    erreur = err.message;
+    console.error(`Tableau de bord (${id}) : ${err.message}`);
+  }
+  await avecBusiness((b) => noterTentative(b, id, { erreur, ignore: Boolean(resultat?.ignore) })).catch((err) => console.error(`Connexions : ${err.message}`));
+  return resultat;
+}
+
 async function synchroniserJournal() {
   try {
-    for (const [instance, { url, cle }] of Object.entries(instancesN8n)) {
-      try {
-        await avecJournal((j) => synchroniserN8n(j, { url, cle, instance }));
-      } catch (err) {
-        console.error(`Journal n8n (${instance}) : ${err.message}`);
-      }
-    }
-    const histoires = await lireHistoires(dossierHistoires);
-    await avecJournal((j) => synchroniserHistoires(j, configJournal, histoires));
+    for (const [instance, { url, cle }] of Object.entries(instancesN8n))
+      await lireSource(instance === 'principal' ? 'n8n-principal' : 'n8n-actualite', async () => (url && cle ? avecJournal((j) => synchroniserN8n(j, { url, cle, instance })) : { ignore: true }));
+    await lireSource('histoires', async () => {
+      const histoires = await lireHistoires(dossierHistoires);
+      await avecJournal((j) => synchroniserHistoires(j, configJournal, histoires));
+      return histoires ? {} : { ignore: true };
+    });
     // Tableau de bord : la prospection Nūr Meet (tableaux de données du n8n principal).
-    try {
-      await avecBusiness((b) => synchroniserProspection(b, instancesN8n.principal ?? {}));
-    } catch (err) {
-      console.error(`Tableau de bord (prospection) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserLeviaro(b, dossierLeviaro));
-    } catch (err) {
-      console.error(`Tableau de bord (Leviaro) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserImpacteur(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON }));
-    } catch (err) {
-      console.error(`Tableau de bord (Impacteur) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserYoutube(b, { cle: env.YOUTUBE_API_KEY, chaines: configYoutube.chaines }));
-    } catch (err) {
-      console.error(`Tableau de bord (YouTube) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserRevenus(b, { clientId: env.YT_OAUTH_CLIENT_ID, clientSecret: env.YT_OAUTH_CLIENT_SECRET, refresh: env.YT_OAUTH_REFRESH }));
-    } catch (err) {
-      console.error(`Tableau de bord (revenus YouTube) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE }));
-    } catch (err) {
-      console.error(`Tableau de bord (Stripe) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON }));
-    } catch (err) {
-      console.error(`Tableau de bord (Cambodge) : ${err.message}`);
-    }
-    try {
-      await avecBusiness((b) => synchroniserVegebudget(b, { url: env.VEGEBUDGET_URL || 'https://vegebudget.fr', jeton: env.VEGEBUDGET_STATS_JETON }));
-    } catch (err) {
-      console.error(`Tableau de bord (VégéBudget) : ${err.message}`);
-    }
+    await lireSource('prospection', () => avecBusiness((b) => synchroniserProspection(b, instancesN8n.principal ?? {})));
+    await lireSource('leviaro', () => avecBusiness((b) => synchroniserLeviaro(b, dossierLeviaro)));
+    await lireSource('impacteur', () => avecBusiness((b) => synchroniserImpacteur(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })));
+    await lireSource('youtube', () => avecBusiness((b) => synchroniserYoutube(b, { cle: env.YOUTUBE_API_KEY, chaines: configYoutube.chaines })));
+    await lireSource('youtube-revenus', () => avecBusiness((b) => synchroniserRevenus(b, { clientId: env.YT_OAUTH_CLIENT_ID, clientSecret: env.YT_OAUTH_CLIENT_SECRET, refresh: env.YT_OAUTH_REFRESH })));
+    await lireSource('stripe', () => avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE })));
+    await lireSource('cambodge', () => avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })));
+    await lireSource('vegebudget', () => avecBusiness((b) => synchroniserVegebudget(b, { url: env.VEGEBUDGET_URL || 'https://vegebudget.fr', jeton: env.VEGEBUDGET_STATS_JETON })));
   } catch (err) {
     console.error(`Journal : ${err.message}`);
   }
@@ -584,7 +567,13 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       const pauses = await chargerPauses(fichierPauses);
       const projets = configJournal.projets.filter((p) => p.id !== 'autre');
-      return res.end(pageEtat(config, await chargerEtat(fichierEtat), aRepondre, { projets, pauses, horsN8n: HORS_N8N, message: url.searchParams.get('message') ?? undefined }));
+      const actionsS = (await chargerActions(fichierActions)).actions;
+      return res.end(pageEtat(config, await chargerEtat(fichierEtat), aRepondre, { projets, pauses, horsN8n: HORS_N8N, actions: actionsS, message: url.searchParams.get('message') ?? undefined }));
+    }
+    if (req.method === 'GET' && url.pathname === '/connexions') {
+      const connexions = etatConnexions({ business: await chargerBusiness(fichierBusiness), journal: await chargerJournal(fichierJournal), serveurs: await chargerServeurs(fichierServeurs) });
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageConnexions(connexions, { nomProjet: (id) => configJournal.projets.find((p) => p.id === id)?.nom ?? id, message: url.searchParams.get('message') ?? undefined }));
     }
     if (req.method === 'POST' && (url.pathname === '/projets/pause' || url.pathname === '/projets/reprendre')) {
       const { projet } = await lireCorps(req, 4_000);
