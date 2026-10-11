@@ -14,6 +14,17 @@ export function dureeSecondes(iso) {
 // 3 minutes) : l'API ne dit pas le format, c'est une déduction, la page le précise.
 export const formatVideo = (secondes) => (secondes === null ? null : secondes <= 180 ? 'short' : 'longue');
 
+// Le jour où une vidéo est vraiment sortie. YouTube donne trois dates : celle de
+// l'envoi (snippet.publishedAt, qui reste la date d'envoi pour une vidéo programmée
+// ou rendue publique plus tard), celle de la mise en ligne publique dans la liste des
+// envois (videoPublishedAt) et, pour une première, le début réel. On garde la plus
+// tardive : une vidéo ne sort jamais avant d'être envoyée.
+export function jourPublication({ envoi, publication, premiere } = {}) {
+  const dates = [envoi, publication, premiere].map((d) => (d ? new Date(d) : null)).filter((d) => d && !Number.isNaN(d));
+  if (!dates.length) return null;
+  return jourDe(new Date(Math.max(...dates)).toISOString());
+}
+
 // « https://www.youtube.com/@machin », « @machin » ou « UC… » → ce que l'API attend.
 export function referenceChaine(texte) {
   const t = String(texte ?? '').trim();
@@ -51,15 +62,18 @@ export async function synchroniserYoutube(business, { cle, chaines = {}, delaiMs
     let videos = [];
     if (envois) {
       const liste = await appel('playlistItems', { part: 'contentDetails', playlistId: envois, maxResults: '25' });
-      const ids = (liste.items ?? []).map((v) => v.contentDetails?.videoId).filter(Boolean);
+      // Date de mise en ligne publique selon la liste des envois : pour une vidéo
+      // programmée, c'est elle qui donne le vrai jour de sortie.
+      const publications = new Map((liste.items ?? []).filter((v) => v.contentDetails?.videoId).map((v) => [v.contentDetails.videoId, v.contentDetails.videoPublishedAt]));
+      const ids = [...publications.keys()];
       if (ids.length) {
-        const stats = await appel('videos', { part: 'snippet,statistics,contentDetails', id: ids.join(',') });
+        const stats = await appel('videos', { part: 'snippet,statistics,contentDetails,liveStreamingDetails', id: ids.join(',') });
         videos = (stats.items ?? []).map((v) => {
           const secondes = dureeSecondes(v.contentDetails?.duration);
           return {
             id: v.id,
             titre: String(v.snippet?.title ?? '').slice(0, 120),
-            jour: jourDe(v.snippet?.publishedAt),
+            jour: jourPublication({ envoi: v.snippet?.publishedAt, publication: publications.get(v.id), premiere: v.liveStreamingDetails?.actualStartTime }),
             vues: Number(v.statistics?.viewCount ?? 0),
             aimes: Number(v.statistics?.likeCount ?? 0),
             secondes,

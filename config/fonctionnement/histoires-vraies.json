@@ -1,7 +1,7 @@
 {
   "maj": "2026-10-11",
   "source": "Lu dans /opt/nour-video-agent le 05/10/2026, puis dans son mode d'emploi (INSTALL_FR.md, .env.example) le 06/10/2026",
-  "intro": "Des petites histoires vraies en vidéo. L'agent fabrique chaque vidéo étape par étape avec deux validations sur Telegram, puis c'est toi qui publies. Depuis le 5 octobre, la fabrication automatique est en pause (son décalé, voix robotique) : tu fais les vidéos à la main, le suivi continue.",
+  "intro": "Des petites histoires vraies en vidéo. L'agent fabrique chaque vidéo étape par étape avec deux validations sur Telegram, puis c'est toi qui publies. Depuis le 5 octobre, la fabrication automatique est en pause (son décalé, voix robotique) ; les vidéos continuent de sortir sur la chaîne YouTube (lundi, mercredi, vendredi à 18 h, un épisode et un short) et le suivi continue.",
   "journee": [
     {
       "quand": "9 h, un jour sur deux",
@@ -127,6 +127,7 @@
       "titre": "Comptage des vidéos (08/10/2026)",
       "points": [
         "Le cerveau lit chaque heure la chaîne YouTube Petites Histoires Vraies (vidéos, vues, abonnés) : toutes les vidéos de la chaîne y sont comptées automatiquement, sans rien noter",
+        "Depuis le 11/10, une vidéo compte le jour où elle est vraiment sortie (mise en ligne programmée ou première à 18 h), pas le jour où elle a été envoyée sur YouTube : avant, une vidéo envoyée à l'avance était comptée trop tôt et la carte pouvait afficher « 0 vidéo » à tort",
         "Il compte aussi les vidéos publiées par le programme (Facebook, Instagram) et celles notées à la main ; une même vidéo sortie le même jour sur plusieurs réseaux ne compte qu'une fois"
       ]
     },
