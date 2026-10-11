@@ -86,16 +86,24 @@ document.getElementById('verifier').onclick = async (ev) => {
 
 const frequence = (min) => (min % 60 === 0 ? `${min / 60} h` : `${min} min`);
 
-export function gabarit({ onglet, aRepondre = 0, contenu, titre }) {
-  const badge = aRepondre ? ` <span class="badge">${aRepondre}</span>` : '';
-  const TITRES = { etat: 'Surveillance', journal: 'Pilotage', actions: 'Actions', activite: 'Activité', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs' };
+// Le compteur du menu « Actions » : combien de fiches attendent louis. Posé par
+// le serveur à chaque requête (src/index.js), pour ne pas le passer page par page.
+let compteurActions = 0;
+export const definirCompteurActions = (n) => (compteurActions = Number(n) || 0);
+
+// `aRepondre` (questions du jour) reste accepté pour les anciennes pages mais ne
+// s'affiche plus dans le menu depuis la refonte du 11/10 (choix de louis, 5A).
+export function gabarit({ onglet, aRepondre = 0, aFaire = compteurActions, contenu, titre }) {
+  void aRepondre;
+  const badge = aFaire ? ` <span class="badge">${aFaire}</span>` : '';
+  const TITRES = { aujourdhui: 'Aujourd’hui', etat: 'Surveillance', journal: 'Projets', actions: 'Actions', activite: 'Journal', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs', connexions: 'Connexions' };
   const lien = (id, href, symbole, texte) => `<a href="${href}" class="${onglet === id ? 'actif' : ''}" data-s="${symbole}">${texte}</a>`;
   return `<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${onglet === 'etat' ? '<meta http-equiv="refresh" content="300">' : ''}
+${onglet === 'etat' || onglet === 'aujourdhui' ? '<meta http-equiv="refresh" content="300">' : ''}
 <title>Cerveau central</title>
 <style>
 /* Palette « pilotage premium » (maquette validée par louis le 05/10/2026) :
@@ -122,6 +130,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .menu nav a::before { content:attr(data-s); width:18px; text-align:center; font-size:14px; }
 .menu nav a:hover { background:var(--carte2); color:var(--texte); }
 .menu nav a.actif { background:var(--or-doux); color:var(--or); font-weight:650; }
+.menu nav.secondaire { padding-top:12px; border-top:1px solid var(--bord); }
+.menu nav.secondaire a { font-size:12px; padding:7px 11px; }
 .menu-pied { margin-top:auto; padding:16px 8px 0; border-top:1px solid var(--bord); font-size:12px; }
 .menu-pied a { color:var(--doux); text-decoration:none; }
 main { min-width:0; padding:0 30px 44px; max-width:1280px; }
@@ -164,7 +174,8 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 @media (max-width:700px) {
   .coquille { display:block; min-height:0; }
   .menu { border-right:0; border-bottom:1px solid var(--bord); padding:14px; }
-  .menu nav { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+  .menu nav { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); }
+  .menu nav.secondaire { padding-top:8px; }
   .menu nav a { justify-content:center; text-align:center; min-height:42px; font-size:12px; padding:8px 4px; }
   .menu nav a::before { display:none; }
   .menu nav a .badge { margin-left:4px; }
@@ -176,8 +187,9 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 <body>
 <div class="coquille">
 <aside class="menu">
-<a class="logo" href="/journal"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
-<nav>${lien('journal', '/journal', '◆', 'Pilotage')}${lien('actions', '/actions', '✓', 'Actions')}${lien('activite', '/journal?vue=activite', '☰', 'Activité')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('questions', '/questions', '✎', 'Questions du jour' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}${lien('etat', '/', '●', 'Surveillance')}</nav>
+<a class="logo" href="/"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
+<nav>${lien('aujourdhui', '/', '☀', 'Aujourd’hui')}${lien('journal', '/journal', '◆', 'Projets')}${lien('actions', '/actions', '✓', 'Actions' + badge)}${lien('argent', '/argent', '€', 'Argent')}</nav>
+<nav class="secondaire">${lien('etat', '/surveillance', '●', 'Surveillance')}${lien('activite', '/journal?vue=activite', '☰', 'Journal')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}</nav>
 <div class="menu-pied"><a href="/deconnexion">Se déconnecter</a></div>
 </aside>
 <main>

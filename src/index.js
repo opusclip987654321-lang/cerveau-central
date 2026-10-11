@@ -8,7 +8,9 @@ import path from 'node:path';
 import { toutVerifier } from './verifier.js';
 import { chargerEtat } from './etat.js';
 import { envoyerTelegram } from './telegram.js';
-import { pageEtat } from './page.js';
+import { pageEtat, definirCompteurActions } from './page.js';
+import { pageAujourdhui } from './page-aujourdhui.js';
+import { lignesProjets, priorites, changementsDepuisHier, fraicheur } from './aujourdhui.js';
 import { resumeQuotidien } from './resume.js';
 import { creerAcces, lireCookie, pageConnexion } from './acces.js';
 import { pageQuestions } from './page-questions.js';
@@ -296,6 +298,10 @@ async function rappelDuMatin() {
 
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
 
+// Les fiches d'action où c'est à louis de jouer (même règle que la page Actions).
+const A_TOI = new Set(['question_posee', 'proposition_a_valider', 'a_transmettre', 'resultat_a_verifier']);
+const compterAFaire = (actions = []) => actions.filter((a) => A_TOI.has(a.statut)).length;
+
 // Écrit (ou réécrit) le bilan de la semaine `semaine` : utilisé par le rendez-vous
 // du lundi et par le bouton « Refaire le bilan » de la page Analyses.
 async function ecrireBilan(semaine) {
@@ -488,7 +494,28 @@ const serveur = http.createServer(async (req, res) => {
         return res.end('Connexion nécessaire');
       }
     }
+    // Le compteur « Actions » du menu : les fiches où c'est à louis de jouer.
+    if (req.method === 'GET') definirCompteurActions(compterAFaire((await chargerActions(fichierActions)).actions));
+    // L'accueil : la page « Aujourd'hui » (refonte du 11/10). La surveillance a déménagé sur /surveillance.
     if (req.method === 'GET' && url.pathname === '/') {
+      const [business, journal, pauses, etatCourant] = await Promise.all([chargerBusiness(fichierBusiness), chargerJournal(fichierJournal), chargerPauses(fichierPauses), chargerEtat(fichierEtat)]);
+      const tableau = tableauDeBord({ business, journal, configJournal, pauses });
+      const actions = await avecActions((d) => synchroniserActions(d, { etat: etatCourant, cartes: tableau.cartes, config, configJournal }));
+      definirCompteurActions(compterAFaire(actions));
+      const prio = priorites({ etat: etatCourant, cartes: tableau.cartes, actions, config });
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(
+        pageAujourdhui({
+          lignes: lignesProjets({ business, journal, configJournal, pauses, analyses: business.analyses ?? {} }),
+          priorites: prio.priorites,
+          autres: prio.autres,
+          changements: changementsDepuisHier({ business, journal, configJournal, pauses }),
+          fraicheur: fraicheur(business),
+          message: url.searchParams.get('message') ?? undefined,
+        }),
+      );
+    }
+    if (req.method === 'GET' && url.pathname === '/surveillance') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       const pauses = await chargerPauses(fichierPauses);
@@ -508,7 +535,7 @@ const serveur = http.createServer(async (req, res) => {
         message = r.deja ? `${p.nom} n'était pas en pause` : `${p.nom} relancé : ${r.relances.length} automatisation(s) n8n remise(s) en route${r.erreurs.length ? `. Pas relancé : ${r.erreurs.join(' ; ')} (le projet reste en pause, réessaie)` : ''}`;
         console.log(`${new Date().toISOString()} reprise ${p.id}`);
       }
-      res.writeHead(303, { location: '/?message=' + encodeURIComponent(message) });
+      res.writeHead(303, { location: '/surveillance?message=' + encodeURIComponent(message) });
       return res.end();
     }
     // L'ancien chat global « Discuter » a été supprimé (demande de louis du 06/10) :

@@ -1,13 +1,13 @@
 # Cerveau central
 
-Surveille les projets de louis, le prévient sur Telegram quand quelque chose casse ou se répare, et affiche une page d'état.
+Surveille les projets de louis, le prévient sur Telegram quand quelque chose casse, et lui montre chaque matin où en sont ses projets (page « Aujourd'hui » : priorités du jour, une ligne par projet, ce qui a changé depuis hier). La surveillance technique est sur `/surveillance`.
 
 C'est l'**étape 2** du cahier des charges : « Est-ce que tout tourne ? ». Le cerveau **ne corrige rien** : il observe et prévient.
 
 ## Ce qu'il fait
 
-- Vérifie toutes les 3 heures que tout tourne, et prévient sur Telegram.
-- Envoie chaque matin un résumé sur Telegram : état des projets, incidents des dernières 24 h, questions du jour.
+- Vérifie toutes les 3 heures que tout tourne, et prévient sur Telegram des pannes seulement (plus d'alertes orange ni de retours au vert depuis le 11/10).
+- Envoie chaque matin un résumé sur Telegram : pannes en cours, incidents des dernières 24 h, projets à relancer, renouvellements à venir ; le 1er du mois, le total des dépenses du mois fini.
 - Pose 3 questions par jour et par projet sur la page.
 
 ## Ce qu'il vérifie
