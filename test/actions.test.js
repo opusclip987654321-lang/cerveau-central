@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pageActions } from '../src/page-actions.js';
 import { pageAction } from '../src/page-action.js';
-import { synchroniserActions, ouvrirAction, changerStatutAction, enregistrerEchange, dossierPourClaude, cleProbleme, STATUTS_ACTION } from '../src/actions.js';
+import { synchroniserActions, ouvrirAction, changerStatutAction, enregistrerEchange, dossierPourClaude, cleProbleme, STATUTS_ACTION, normaliserStatut } from '../src/actions.js';
 
 const config = { projets: [{ id: 'nour-meet', nom: 'Nūr Meet' }] };
 const configJournal = { projets: [{ id: 'nour-meet', nom: 'Nūr Meet' }, { id: 'leviaro', nom: 'Leviaro' }] };
@@ -22,9 +22,15 @@ test('synchroniserActions : une panne ou un « à décider » = une fiche, ratta
   const fiche = d.actions.find((a) => a.cle.startsWith('decider:'));
   assert.match(fiche.constat, /23 réponse/); // le constat suit le dernier état
   assert.equal(fiche.historique.filter((h) => h.type === 'occurrence').length, 1);
-  // Le signal disparaît : la fiche passe « Résultat à vérifier », jamais « resolu » toute seule.
+  // Le signal disparaît : le cerveau propose de clore (« Action proposée à Walid »), jamais « resolu » tout seul.
   synchroniserActions(d, { etat: { verifications: {} }, cartes: [], config, configJournal });
-  assert.ok(d.actions.filter((a) => /^(panne:|decider:)/.test(a.cle)).every((a) => a.statut === 'resultat_a_verifier'));
+  const revenues = d.actions.filter((a) => /^(panne:|decider:)/.test(a.cle));
+  assert.ok(revenues.every((a) => a.statut === 'proposition_a_valider' && a.retourAuVert));
+  assert.match(revenues[0].discussion.at(-1).texte, /revenu au vert/);
+  // Le signal revient : la fiche repart côté cerveau, sans doublon.
+  synchroniserActions(d, { etat, cartes: [], config, configJournal });
+  assert.equal(d.actions.filter((a) => a.cle === 'panne:a').length, 1);
+  assert.equal(d.actions.find((a) => a.cle === 'panne:a').retourAuVert, undefined);
   // Une fiche revenus résolue par louis ne revient pas à la synchronisation suivante.
   d.actions.find((a) => a.cle === 'revenu:youtube').statut = 'resolu';
   synchroniserActions(d, { etat: { verifications: {} }, cartes: [], config, configJournal });
@@ -34,12 +40,29 @@ test('synchroniserActions : une panne ou un « à décider » = une fiche, ratta
 test('changerStatutAction et enregistrerEchange : seuls les événements réels bougent le statut', () => {
   const d = vide();
   const a = ouvrirAction(d, { cle: 'decider:x', projet: 'Leviaro', titre: 'File qui grossit', constat: 'La file grossit.' });
+  assert.equal(a.statut, 'reponse_a_analyser'); // une fiche neuve attend le cerveau
   changerStatutAction(d, a.id, 'question_posee');
-  // louis répond à la question : la fiche passe « Réponse du cerveau attendue ».
-  enregistrerEchange(d, a.id, 'Oui, augmente le rythme.', { texte: 'Bien noté, voilà ce que je propose…', cout: 0.01 });
-  assert.equal(a.statut, 'reponse_a_analyser');
+  // louis répond à la question : le cerveau répond et dit ce qu'il attend (ici une action à valider).
+  const r = enregistrerEchange(d, a.id, 'Oui, augmente le rythme.', { texte: 'Bien noté, voilà ce que je propose…', suite: 'proposition', cout: 0.01 });
+  assert.deepEqual([r.avant, r.apres], ['question_posee', 'proposition_a_valider']);
+  assert.equal(a.statut, 'proposition_a_valider');
   assert.equal(a.discussion.length, 2);
   assert.ok(a.historique.some((h) => h.type === 'reponse'));
+  assert.ok(a.historique.some((h) => /Ta réponse a changé le statut/.test(h.texte)));
+  // Sans réponse du cerveau (plafond atteint), la fiche reste en attente du cerveau.
+  enregistrerEchange(d, a.id, 'Et sinon ?', { erreur: 'Plafond atteint', cout: 0 });
+  assert.equal(a.statut, 'reponse_a_analyser');
+  // Reporter : la fiche se tait jusqu'à la date, puis revient où elle en était.
+  changerStatutAction(d, a.id, 'reporte', new Date('2026-10-11T10:00:00Z'), { jusquau: '2026-10-15' });
+  assert.equal(a.reporteJusquau, '2026-10-15');
+  synchroniserActions(d, { etat: { verifications: {} }, cartes: [], config, configJournal }, new Date('2026-10-14T10:00:00Z'));
+  assert.equal(a.statut, 'reporte');
+  synchroniserActions(d, { etat: { verifications: {} }, cartes: [], config, configJournal }, new Date('2026-10-15T10:00:00Z'));
+  assert.equal(a.statut, 'reponse_a_analyser');
+  assert.equal(a.reporteJusquau, undefined);
+  // Les anciens statuts se lisent encore.
+  assert.equal(normaliserStatut('resultat_a_verifier'), 'proposition_a_valider');
+  assert.equal(normaliserStatut('a_analyser'), 'reponse_a_analyser');
   // resolu se change comme un autre statut, mais uniquement via la route (donc louis).
   assert.equal(changerStatutAction(d, a.id, 'resolu').action.statut, 'resolu');
   assert.ok(changerStatutAction(d, 'inconnu', 'resolu').erreur);
@@ -80,7 +103,8 @@ test('page Actions : fiches ouvertes devant, objectifs, questions et idées cons
   assert.ok(html.indexOf('3 restaurateurs à relancer') < html.indexOf('Nūr Meet : le site ne répond plus'));
   assert.match(html, /Nūr Meet : 40 par semaine \(proposé\)/);
   assert.doesNotMatch(html, /Leviaro : 1 par semaine/);
-  assert.match(html, /3 question\(s\) attendent tes réponses/);
+  assert.doesNotMatch(html, /Questions du jour/); // disparues du parcours (choix de louis du 11/10)
+  assert.match(html, /Question posée à Walid/);
   assert.match(html, /Relancer les &lt;b&gt;agences&lt;\/b&gt;/);
   assert.match(html, /class="actif" data-s="[^"]*">Actions/);
   assert.doesNotMatch(html, />Discuter</); // l'onglet Discuter a disparu du menu
@@ -104,6 +128,8 @@ test('fiche d’action : problème, discussion, décision, Préparer pour Claude
   assert.match(html, /action="\/action\/discuter"/);
   assert.match(html, /Marquer résolu/);
   assert.match(html, /\/action\/dossier\?id=/);
+  assert.match(html, /Ta réponse passe la fiche en/);
+  assert.match(html, /name="jusquau"/);
   assert.match(html, /1.50 \$ sur 10 \$/);
   // Sans clé IA : pas de formulaire, un message honnête.
   assert.match(pageAction(a, { actif: false }), /clé Claude n’est pas branchée/);

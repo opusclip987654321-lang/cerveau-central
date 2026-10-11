@@ -26,10 +26,24 @@ Cette discussion porte sur UNE fiche d'action précise (un problème à résoudr
 Aide louis à comprendre la cause et à décider : distingue les faits vérifiés des hypothèses, propose un diagnostic et des solutions concrètes qui améliorent ou rétablissent ses automatisations (jamais « fais-le à la main » comme seule réponse).
 Appuie-toi uniquement sur les données ci-dessous ; si une information manque, dis laquelle et comment l'obtenir, au lieu d'inventer.
 Rien ne se change tout seul : tu proposes, louis décide, et les corrections passent par Claude ou les outils après son accord.
-Réponds en français simple, sans jargon, 8 lignes au plus sauf s'il demande du détail.`;
+Réponds en français simple, sans jargon, 8 lignes au plus sauf s'il demande du détail.
+Termine toujours par ce que tu attends de lui : soit une question précise (suite = question), soit une action concrète à valider, y compris « clore la fiche » si tout est réglé (suite = proposition).`;
+
+// Sur une fiche, la réponse dit aussi ce qu'elle change : une question posée à
+// louis, ou une action proposée qu'il valide. C'est elle qui fixe le statut.
+const SCHEMA_FICHE = {
+  type: 'object',
+  properties: {
+    reponse: { type: 'string', description: 'Ta réponse à louis, en français simple, 8 lignes au plus' },
+    suite: { type: 'string', enum: ['question', 'proposition'], description: 'question : tu as besoin d’une précision de louis ; proposition : tu lui proposes une action concrète (ou de clore) qu’il valide' },
+  },
+  required: ['reponse', 'suite'],
+  additionalProperties: false,
+};
 
 // `client` est injectable pour les tests. Renvoie { texte, cout } ou { erreur, cout }.
-export async function repondre(historique, question, { client, contexte, maxEchanges = 10, consigne = CONSIGNE }) {
+// Avec `fiche: true`, renvoie aussi `suite` ('question' ou 'proposition').
+export async function repondre(historique, question, { client, contexte, maxEchanges = 10, consigne = CONSIGNE, fiche = false }) {
   if (!client) return { erreur: 'La clé Claude n’est pas branchée sur le cerveau.', cout: 0 };
   const passes = historique.slice(-maxEchanges * 2).map((m) => ({ role: m.role === 'louis' ? 'user' : 'assistant', content: m.texte }));
   // L'API veut une alternance qui commence par louis : on fusionne les messages
@@ -48,14 +62,17 @@ export async function repondre(historique, question, { client, contexte, maxEcha
       max_tokens: 1500,
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      output_config: { effort: 'low' },
+      output_config: fiche ? { effort: 'low', format: { type: 'json_schema', schema: SCHEMA_FICHE } } : { effort: 'low' },
       system: `${consigne}\n\nDonnées du cerveau au ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })} :\n${contexte}`,
       messages: [...passes, { role: 'user', content: question }],
     });
     cout = coutDollars(reponse.usage);
-    const texte = reponse.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
-    if (!texte) throw new Error('réponse vide');
-    return { texte, cout };
+    const brut = reponse.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+    if (!brut) throw new Error('réponse vide');
+    if (!fiche) return { texte: brut, cout };
+    const lu = JSON.parse(brut);
+    if (!String(lu.reponse ?? '').trim()) throw new Error('réponse vide');
+    return { texte: String(lu.reponse).trim(), suite: lu.suite === 'question' ? 'question' : 'proposition', cout };
   } catch (err) {
     return { erreur: `Réponse impossible : ${err.message}`, cout };
   }

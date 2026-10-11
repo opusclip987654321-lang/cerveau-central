@@ -26,7 +26,8 @@ import { pageJournal } from './page-journal.js';
 import { pageActions } from './page-actions.js';
 import { chargerPauses, sauverPauses, pauserProjet, reprendreProjet, alertesCoupees, HORS_N8N, SURVEILLANCE } from './pauses.js';
 import { repondre, CONSIGNE_ACTION } from './discussion.js';
-import { chargerActions, sauverActions, synchroniserActions, changerStatutAction, enregistrerEchange, dossierPourClaude, ouvrirAction, ajouterEchangeAction, cleProbleme } from './actions.js';
+import { chargerActions, sauverActions, synchroniserActions, changerStatutAction, enregistrerEchange, dossierPourClaude, ouvrirAction, ajouterEchangeAction, cleProbleme, A_TOI, STATUTS_ACTION } from './actions.js';
+import { chargerMatin, sauverMatin, matinAFaire, analyserMatin, analysesDuJour, contexteProjets, messageMatin, depenseMatinDuMois } from './matin.js';
 import { pageAction } from './page-action.js';
 import { contexteCerveau } from './contexte.js';
 import { synchroniserYoutube, synchroniserRevenus, urlAutorisation, echangerCode } from './youtube.js';
@@ -39,7 +40,7 @@ import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './ide
 import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
 import { chargerTri, sauverTri, decider } from './tri-mails.js';
 import { chargerVerifs, sauverVerifs, choisirVerif, CHOIX_VERIF } from './verifs-impacteur.js';
-import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, lundiDe } from './bilan.js';
+import { chargerBilans, sauverBilans, bilanAFaire, genererBilan, lundiDe, depenseBilansDuMois } from './bilan.js';
 import { pageAnalyses } from './page-analyses.js';
 import { pageProjet } from './page-projet.js';
 import { depenseIaDuMois } from './factures.js';
@@ -72,6 +73,9 @@ const fichierTri = path.join(path.dirname(fichierEtat), 'tri-mails.json');
 const fichierVerifs = path.join(path.dirname(fichierEtat), 'verifs-impacteur.json');
 const fichierBilans = path.join(path.dirname(fichierEtat), 'bilans.json');
 const plafondBilans = Number(env.PLAFOND_BILAN_DOLLARS ?? 10);
+// L'analyse du matin (refonte du 11/10) : budget à part, ~4 $/mois attendus.
+const fichierMatin = path.join(path.dirname(fichierEtat), 'matin.json');
+const plafondMatin = Number(env.PLAFOND_MATIN_DOLLARS ?? 5);
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -166,6 +170,7 @@ const avecBusiness = fileDAttente(chargerBusiness, sauverBusiness, fichierBusine
 const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
 const avecBilans = fileDAttente(chargerBilans, sauverBilans, fichierBilans);
+const avecMatin = fileDAttente(chargerMatin, sauverMatin, fichierMatin);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -277,7 +282,7 @@ async function rappelDuMatin() {
   try {
     const n = await avecReponses((h) => matinARappeler(configQuestions, h, { heure: Number(env.RESUME_HEURE ?? env.QUESTIONS_HEURE ?? 9) }));
     if (n === null) return;
-    await envoyer(resumeQuotidien(await chargerEtat(fichierEtat), n));
+    await envoyer(resumeQuotidien(await chargerEtat(fichierEtat), compterAFaire((await chargerActions(fichierActions)).actions)));
     const hier = await avecJournal((j) => messageHier(j, configJournal));
     if (hier) await envoyer(hier);
     const silences = messageSilences(
@@ -299,7 +304,6 @@ async function rappelDuMatin() {
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
 
 // Les fiches d'action où c'est à louis de jouer (même règle que la page Actions).
-const A_TOI = new Set(['question_posee', 'proposition_a_valider', 'a_transmettre', 'resultat_a_verifier']);
 const compterAFaire = (actions = []) => actions.filter((a) => A_TOI.has(a.statut)).length;
 
 // Écrit (ou réécrit) le bilan de la semaine `semaine` : utilisé par le rendez-vous
@@ -346,6 +350,66 @@ async function ecrireBilan(semaine) {
     });
   }
   return entree;
+}
+
+// L'analyse du matin : vérifiée toutes les 10 minutes, faite une fois par jour vers
+// 7 h. Une phrase par projet (page Aujourd'hui), une fiche au plus par projet, et
+// les réponses aux fiches où louis a écrit. Puis le message Telegram.
+async function analyseDuMatin() {
+  if (!clientClaude) return;
+  try {
+    const jour = matinAFaire(await chargerMatin(fichierMatin), { heure: Number(env.MATIN_HEURE ?? 7) });
+    if (!jour) return;
+    const [business, journal, pauses, etatCourant] = await Promise.all([chargerBusiness(fichierBusiness), chargerJournal(fichierJournal), chargerPauses(fichierPauses), chargerEtat(fichierEtat)]);
+    const cartes7 = tableauDeBord({ business, journal, configJournal, pauses, jour }).cartes;
+    const cartes1 = tableauDeBord({ business, journal, configJournal, pauses, jour, jours: 1 }).cartes;
+    const actions = await avecActions((d) => synchroniserActions(d, { etat: etatCourant, cartes: cartes7, config, configJournal }));
+    const contexte = `${contexteProjets({ cartes7, cartes1 })}\n\n${contexteCerveau({
+      etat: etatCourant,
+      argent: await chargerArgent(fichierArgent, fichierArgentDepart),
+      journal,
+      serveurs: await chargerServeurs(fichierServeurs),
+      configServeurs,
+      configJournal,
+      pauses,
+      business,
+      reponses: await chargerReponses(fichierReponses),
+      jour,
+    })}`;
+    const ouvertes = actions.filter((a) => a.statut !== 'resolu');
+    const entree = await avecMatin((d) =>
+      analyserMatin(d, {
+        client: clientClaude,
+        contexte,
+        projets: cartes7.map((c) => ({ id: c.id, nom: c.nom })),
+        fichesAttente: ouvertes.filter((a) => a.statut === 'reponse_a_analyser' && a.discussion.some((m) => m.role === 'louis')),
+        fichesOuvertes: ouvertes.map((a) => ({ projet: a.projet, titre: a.titre, statut: a.statut })),
+        jour,
+        plafondDollars: plafondMatin,
+      }),
+    );
+    // Les fiches du matin et les réponses du cerveau, enregistrées sur les fiches.
+    const nomB = (id) => configJournal.projets.find((p) => p.id === id)?.nom ?? id;
+    await avecActions((d) => {
+      for (const [id, p] of Object.entries(entree.projets)) {
+        if (!p.fiche) continue;
+        const action = ouvrirAction(d, { cle: cleProbleme(`matin:${id}`, p.fiche.titre), projet: nomB(id), titre: p.fiche.titre, constat: p.fiche.titre, source: { type: 'matin', projet: id, jour } });
+        if (p.fiche.texte) ajouterEchangeAction(action, 'cerveau', p.fiche.texte);
+        if (action.statut === 'reponse_a_analyser') action.statut = p.fiche.type === 'question' ? 'question_posee' : 'proposition_a_valider';
+      }
+      for (const r of entree.reponses) {
+        const action = d.actions.find((a) => a.id === r.id);
+        if (!action || action.statut !== 'reponse_a_analyser') continue;
+        ajouterEchangeAction(action, 'cerveau', r.texte);
+        action.statut = r.suite === 'question' ? 'question_posee' : 'proposition_a_valider';
+        action.historique.push({ quand: new Date().toISOString(), type: 'statut', texte: `Réponse du cerveau (analyse du matin) : ${STATUTS_ACTION[action.statut].nom}` });
+      }
+    });
+    await envoyer(messageMatin(entree, nomB));
+    console.log(`${new Date().toISOString()} analyse du matin ${jour} : ${Object.keys(entree.projets).length} projet(s), ${entree.cout.toFixed(4)} $${entree.erreur ? ` · ${entree.erreur}` : ''}`);
+  } catch (err) {
+    console.error(`Analyse du matin impossible : ${err.message}`);
+  }
 }
 
 // Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
@@ -506,7 +570,7 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(
         pageAujourdhui({
-          lignes: lignesProjets({ business, journal, configJournal, pauses, analyses: business.analyses ?? {} }),
+          lignes: lignesProjets({ business, journal, configJournal, pauses, analyses: analysesDuJour(await chargerMatin(fichierMatin)) }),
           priorites: prio.priorites,
           autres: prio.autres,
           changements: changementsDepuisHier({ business, journal, configJournal, pauses }),
@@ -557,9 +621,10 @@ const serveur = http.createServer(async (req, res) => {
       return res.end(pageAction(action, { aRepondre, actif: Boolean(clientClaude), depenseIa, plafondIa, message: url.searchParams.get('message') ?? undefined }));
     }
     if (req.method === 'POST' && url.pathname === '/action/statut') {
-      const { id, statut } = await lireCorps(req, 4_000);
-      const r = await avecActions((d) => changerStatutAction(d, id, statut));
-      res.writeHead(303, { location: r.erreur ? '/actions' : `/action?id=${encodeURIComponent(id)}&message=${encodeURIComponent(statut === 'resolu' ? 'Marqué résolu. Bien joué.' : 'Statut changé.')}` });
+      const { id, statut, jusquau } = await lireCorps(req, 4_000);
+      const r = await avecActions((d) => changerStatutAction(d, id, statut, new Date(), { jusquau }));
+      const mot = statut === 'resolu' ? 'Marqué résolu. Bien joué.' : statut === 'reporte' ? `Reportée jusqu’au ${r.action?.reporteJusquau ?? ''} : elle reviendra toute seule.` : 'Statut changé.';
+      res.writeHead(303, { location: r.erreur ? '/actions' : `/action?id=${encodeURIComponent(id)}&message=${encodeURIComponent(mot)}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/action/discuter') {
@@ -583,10 +648,13 @@ const serveur = http.createServer(async (req, res) => {
             business: await chargerBusiness(fichierBusiness),
             reponses: await chargerReponses(fichierReponses),
           })}\n\n## La fiche d'action discutée\n${dossierPourClaude(action)}`;
-          resultat = await repondre(action.discussion.filter((m) => !m.erreur), question, { client: clientClaude, contexte, consigne: CONSIGNE_ACTION });
+          resultat = await repondre(action.discussion.filter((m) => !m.erreur), question, { client: clientClaude, contexte, consigne: CONSIGNE_ACTION, fiche: true });
         }
         if (resultat.cout) await avecArgent((d) => appliquerLecture(d, null, { lecture: null, erreur: null, cout: resultat.cout }));
-        await avecActions((d) => enregistrerEchange(d, id, question, resultat));
+        const r = await avecActions((d) => enregistrerEchange(d, id, question, resultat));
+        const mot = r.apres && r.apres !== r.avant ? `Ta réponse a changé le statut : ${STATUTS_ACTION[r.apres].nom}.` : resultat.erreur ? 'Réponse enregistrée ; le cerveau n’a pas pu répondre tout de suite, il le fera à son passage du matin.' : null;
+        res.writeHead(303, { location: `/action?id=${encodeURIComponent(id)}${mot ? `&message=${encodeURIComponent(mot)}` : ''}` });
+        return res.end();
       }
       res.writeHead(303, { location: `/action?id=${encodeURIComponent(id)}` });
       return res.end();
@@ -656,8 +724,12 @@ const serveur = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/argent') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
+      const iaDuMois = [
+        { nom: 'Analyse du matin (une phrase par projet, fiches)', depense: depenseMatinDuMois(await chargerMatin(fichierMatin)), plafond: plafondMatin },
+        { nom: 'Bilan du lundi', depense: depenseBilansDuMois(await chargerBilans(fichierBilans)), plafond: plafondBilans },
+      ];
       const html = await avecArgent((d) => (corrigerDepuisFactures(d), d)).then((d) =>
-        pageArgent(configArgent, d, { message: url.searchParams.get('message') ?? undefined, aRepondre, lectureActive: Boolean(clientClaude), plafondIa }),
+        pageArgent(configArgent, d, { message: url.searchParams.get('message') ?? undefined, aRepondre, lectureActive: Boolean(clientClaude), plafondIa, ia: iaDuMois }),
       );
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(html);
@@ -967,3 +1039,5 @@ rappelDuMatin();
 setInterval(rappelDuMatin, 10 * 60_000);
 bilanDuLundi();
 setInterval(bilanDuLundi, 10 * 60_000);
+analyseDuMatin();
+setInterval(analyseDuMatin, 10 * 60_000);

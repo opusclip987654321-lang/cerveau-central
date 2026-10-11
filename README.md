@@ -30,13 +30,13 @@ Règles des alertes :
 - Un site qui rate une fois est revérifié 30 secondes plus tard avant d'alerter (pas de fausse alerte pour un raté passager).
 - Une seule alerte par panne : pas de répétition tant qu'elle dure.
 
-## Questions du jour
+## Analyse du matin et fiches d'action
 
-Chaque jour, l'onglet « Questions du jour » pose 3 questions par projet (les 8 projets) : une note sur 5 chaque jour, pour suivre la tendance, et deux questions qui changent. Une question déjà posée revient au plus tôt 7 jours plus tard. On répond à ce qu'on veut, le reste peut rester vide.
+Chaque matin vers 7 h (`MATIN_HEURE`), le cerveau lit les chiffres de la veille projet par projet et écrit, pour chacun, une phrase qui challenge (page **Aujourd'hui**), ouvre au besoin une fiche d'action (une question, ou une action proposée) et répond aux fiches où louis a écrit. Un message Telegram reprend ces lignes. Budget à part (`PLAFOND_MATIN_DOLLARS`, 5 $ par mois par défaut), affiché dans Argent ; rien ne se change tout seul.
 
-Le résumé Telegram du matin (9 h par défaut, `RESUME_HEURE`) rappelle combien de questions attendent. Les réponses sont gardées dans `data/reponses.json` ; l'analyse quotidienne par l'IA (étape suivante) s'en servira pour repérer les axes de progrès de chaque projet.
+Une fiche d'action a quatre statuts, plus « reporté » : **Question posée à Walid** (une précision attendue), **Réponse du cerveau attendue** (le cerveau doit analyser, à son passage du matin ou tout de suite quand louis lui écrit dans la fiche), **Action proposée à Walid** (une action concrète à valider, ou la fiche à clore quand le signal est revenu au vert), **Résolu** (seul louis le pose). **Reporté** fait taire la fiche jusqu'à une date, puis elle revient où elle en était. Dans la fiche, la réponse de louis change le statut tout de suite : le cerveau répond et dit ce qu'il attend ensuite.
 
-Les questions se modifient dans [`config/questions.json`](config/questions.json) (types : `note`, `nombre`, `choix`, `texte`).
+Les anciennes « Questions du jour » (3 questions par projet, `config/questions.json`) ne sont plus proposées depuis le 11/10 : la page `/questions` reste lisible pour l'historique.
 
 ## Journal
 
