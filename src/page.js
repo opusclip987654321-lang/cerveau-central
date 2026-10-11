@@ -1,6 +1,7 @@
 // Page d'état : une page simple qui montre si tout tourne.
 
 import { expliquerAncien } from './sens.js';
+import { schemaParcours, etapeBloquee, PROJETS_TOUCHES, PARCOURS, CSS_PARCOURS } from './parcours.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const PASTILLE = { ok: '🟢', attention: '🟠', panne: '🔴', ignore: '⚪' };
@@ -26,10 +27,31 @@ function blocProjets(projets, pauses, horsN8n) {
   return `<h3>Tes projets</h3><ul class="projets">${lignes}</ul>`;
 }
 
-export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = null, horsN8n = {}, message } = {}) {
+export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = null, horsN8n = {}, message, actions = [], nomProjet = (id) => config.projets.find((p) => p.id === id)?.nom ?? id } = {}) {
   const toutes = Object.values(etat.verifications);
   const pannes = toutes.filter((v) => v.etat === 'panne').length;
   const attentions = toutes.filter((v) => v.etat === 'attention').length;
+
+  // Ce qui est rouge, d'abord et en mots simples (choix de louis du 11/10) : le sens
+  // pour le projet, depuis quand, la fiche, et le schéma du parcours avec l'étape
+  // bloquée quand on la reconnaît. Le détail technique reste en petit.
+  const rouges = Object.entries(etat.verifications)
+    .filter(([, v]) => v.etat === 'panne')
+    .map(([k, v]) => {
+      const fiche = actions.find((a) => a.cle === `panne:${k}` && a.statut !== 'resolu');
+      // Le schéma ne s'affiche que si l'étape bloquée est reconnue dans le contrôle lui-même
+      // (pas dans la phrase de sens, qui parle de mails même pour un site en panne).
+      const texteIncident = `${v.nom} ${v.detail}`;
+      const candidats = (PROJETS_TOUCHES[v.projet] ?? [v.projet]).filter((p) => PARCOURS[p]);
+      const trouve = candidats.map((p) => [p, etapeBloquee(p, texteIncident)]).find(([, idx]) => idx !== null) ?? null;
+      return `<article class="rouge">
+<p class="sens-r">⛔ ${e(v.sens ?? `${v.nom} ne répond plus`)}</p>
+<p class="meta-r">${e(nomProjet(v.projet))} · depuis ${heure(v.depuis)} · <small class="technique">${e(v.nom)} : ${e(v.detail)}</small></p>
+${trouve ? schemaParcours(trouve[0], { nom: nomProjet(trouve[0]), etape: trouve[1] }) : ''}
+<p class="faire-r"><a href="${fiche ? `/action?id=${e(fiche.id)}` : '/actions'}">${fiche ? 'Ouvrir la fiche ›' : 'Voir les actions ›'}</a></p>
+</article>`;
+    });
+  const blocRouge = rouges.length ? `<div class="rouges">${rouges.join('')}</div>` : '<p class="calme-s">🟢 Rien en panne : tout ce que le cerveau surveille répond.</p>';
   const resume = !etat.derniereVerification
     ? 'Première vérification en cours…'
     : pannes
@@ -69,12 +91,25 @@ export function pageEtat(config, etat, aRepondre = 0, { projets = [], pauses = n
 
   const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}<div class="actions"><button id="verifier">Vérifier maintenant</button></div>
 <div class="resume" style="border-left-color:var(--${ton})">${PASTILLE[ton]} ${e(resume)}<small>Dernière vérification : ${heure(etat.derniereVerification)} · prochaine dans ${frequence(config.intervalleMinutes ?? 180)} au plus</small></div>
+<h3>Ce qui est en panne</h3>
+${blocRouge}
+<details class="tout-vert"><summary>Le détail des ${toutes.length} contrôles${attentions ? ` (${attentions} à surveiller)` : ''}</summary>
 <div class="grille">
 ${cartes}
-</div>
+</div></details>
 ${blocProjets(projets, pauses, horsN8n)}
 <h3>Derniers incidents</h3>
 ${journal}
+<style>
+.rouges { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.rouge { background:var(--carte); border:1px solid var(--bord); border-left:4px solid var(--panne); border-radius:12px; padding:12px 16px; }
+.sens-r { margin:0; font-size:15px; font-weight:600; }
+.meta-r { margin:4px 0 0; font-size:13px; color:var(--doux); } .meta-r .technique { font-size:12px; }
+.faire-r { margin:8px 0 0; font-size:13px; font-weight:600; } .faire-r a { text-decoration:none; }
+.calme-s { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:12px 16px; margin-bottom:16px; }
+.tout-vert { margin-bottom:16px; } .tout-vert summary { cursor:pointer; font-weight:600; margin-bottom:10px; }
+${CSS_PARCOURS}
+</style>
 <script>
 document.getElementById('verifier').onclick = async (ev) => {
   ev.target.disabled = true; ev.target.textContent = 'Vérification…';
@@ -174,7 +209,8 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 @media (max-width:700px) {
   .coquille { display:block; min-height:0; }
   .menu { border-right:0; border-bottom:1px solid var(--bord); padding:14px; }
-  .menu nav { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); }
+  .menu nav { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); }
+  .menu nav.secondaire { grid-template-columns:repeat(4, minmax(0,1fr)); }
   .menu nav.secondaire { padding-top:8px; }
   .menu nav a { justify-content:center; text-align:center; min-height:42px; font-size:12px; padding:8px 4px; }
   .menu nav a::before { display:none; }
@@ -188,7 +224,7 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 <div class="coquille">
 <aside class="menu">
 <a class="logo" href="/"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
-<nav>${lien('aujourdhui', '/', '☀', 'Aujourd’hui')}${lien('journal', '/journal', '◆', 'Projets')}${lien('actions', '/actions', '✓', 'Actions' + badge)}${lien('argent', '/argent', '€', 'Argent')}</nav>
+<nav>${lien('aujourdhui', '/', '☀', 'Aujourd’hui')}${lien('journal', '/journal', '◆', 'Projets')}${lien('actions', '/actions', '✓', 'Actions' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('connexions', '/connexions', '⚡', 'Connexions')}</nav>
 <nav class="secondaire">${lien('etat', '/surveillance', '●', 'Surveillance')}${lien('activite', '/journal?vue=activite', '☰', 'Journal')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}</nav>
 <div class="menu-pied"><a href="/deconnexion">Se déconnecter</a></div>
 </aside>

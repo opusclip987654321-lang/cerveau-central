@@ -38,6 +38,12 @@ Une fiche d'action a quatre statuts, plus « reporté » : **Question posée à 
 
 Les anciennes « Questions du jour » (3 questions par projet, `config/questions.json`) ne sont plus proposées depuis le 11/10 : la page `/questions` reste lisible pour l'historique.
 
+## Connexions et Surveillance
+
+La page **Connexions** montre d'où viennent les chiffres : une fiche par source (n8n, prospection, agent Leviaro, Sheet Impacteur, YouTube, revenus YouTube, Stripe, Gmail Cambodge, VégéBudget, histoires, relevé des serveurs) avec son état (branchée, silencieuse, en erreur, pas branchée), sa dernière lecture et ce qu'il faut pour la brancher (le nom de la variable du .env, jamais sa valeur). Le serveur note chaque tentative de lecture dans `data/business.json` (`connexions`). Ce qui reste à brancher est listé en bas.
+
+La page **Surveillance** met d'abord ce qui est en panne, en mots simples (ce que ça veut dire pour le projet, depuis quand, la fiche d'action, et le schéma du parcours avec l'étape bloquée quand le contrôle la désigne) ; le détail des contrôles au vert est replié.
+
 ## Journal
 
 L'onglet **Journal** montre, jour par jour et projet par projet, ce qui a été fait : vidéos publiées (avec leur lien), mails envoyés, rendez-vous, notes… et un bilan des 7 derniers jours. Chaque matin, le résumé Telegram ajoute « Hier, projet par projet ».
