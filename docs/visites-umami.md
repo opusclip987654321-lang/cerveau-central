@@ -91,7 +91,7 @@ Les domaines doivent être ceux de `config/visites.json` du cerveau : c'est comm
 
 ## 5. La ligne de suivi sur chaque site
 
-Où elle va (fait le 11/10) : Nūr Meet dans `~/nour-v2/apps/web/index.html` puis `docker compose -f docker-compose.prod.yml up -d --build web` ; Leviaro dans chaque `.html` de `~/leviaro-site/public` (servis tels quels, rien à reconstruire) ; VégéBudget dans `/opt/vegebudget/app/layout.tsx` (bloc `<head>` sous `<html lang="fr">`) puis `docker compose up -d --build` dans `/opt/vegebudget`.
+Où elle va (fait le 11/10) : Nūr Meet dans `~/nour-v2/apps/web/index.html` puis `docker compose -f docker-compose.prod.yml up -d --build web` ; Leviaro dans chaque `.html` de `~/leviaro-site/public` (servis tels quels, rien à reconstruire) ; VégéBudget : la ligne est **dans le code du site** depuis le 11/10 (dépôt v-g-budget, `app/layout.tsx`, PR #11) ; ne pas modifier `/opt/vegebudget` à la main, c'est un dépôt git et toute modification locale bloque ses mises à jour (voir « Règles des serveurs » dans le README).
 
 Pour chaque site, Umami donne (Edit › Tracking code) une ligne du genre :
 
