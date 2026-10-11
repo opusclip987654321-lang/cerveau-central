@@ -12,10 +12,10 @@ import { pageEtat } from './page.js';
 import { resumeQuotidien } from './resume.js';
 import { creerAcces, lireCookie, pageConnexion } from './acces.js';
 import { pageQuestions } from './page-questions.js';
-import { chargerReponses, sauverReponses, enAttente, enregistrerReponses, matinARappeler } from './questions.js';
-import { chargerArgent, sauverArgent, lireLigne, rappelsARenvoyer, messageRappels } from './argent.js';
+import { chargerReponses, sauverReponses, enAttente, enregistrerReponses, matinARappeler, jourParis } from './questions.js';
+import { chargerArgent, sauverArgent, lireLigne, rappelsARenvoyer, messageRappels, messageMoisPasse } from './argent.js';
 import { lireHistoires, synchroniserHistoires } from './histoires.js';
-import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient, corrigerDepuisFactures, annulerCorrection, marquerOrphelinesARelire, messageCorrections } from './factures.js';
+import { deposerFacture, supprimerFacture, lireFacture, appliquerLecture, creerClient, corrigerDepuisFactures, annulerCorrection, marquerOrphelinesARelire } from './factures.js';
 import { pageArgent } from './page-argent.js';
 import { chargerServeurs, sauverServeurs, lireReleve, enregistrerReleve } from './serveurs.js';
 import { pageServeurs } from './page-serveurs.js';
@@ -116,11 +116,12 @@ function lireFacturesEnAttente() {
       const { donnees, facture } = await avecArgent((d) => ({ donnees: structuredClone(d), facture: d.factures?.find((f) => !f.lecture && !f.erreur) }));
       if (!facture) break;
       const resultat = await lireFacture(donnees, dossierFactures, facture, { client: clientClaude, plafondDollars: plafondIa, projets: configArgent.projets });
-      const corrections = await avecArgent((d) => {
+      // Les corrections restent visibles et annulables sur la page Argent ; louis ne
+      // veut plus les recevoir sur Telegram (document du 11/10).
+      await avecArgent((d) => {
         appliquerLecture(d, facture.id, resultat);
         return corrigerDepuisFactures(d);
       });
-      if (corrections.length) await envoyer(messageCorrections(corrections)).catch((err) => console.error(`Telegram : ${err.message}`));
       if (!resultat.lecture && !resultat.erreur) break;
     }
   })()
@@ -283,6 +284,11 @@ async function rappelDuMatin() {
     if (silences) await envoyer(silences);
     const rappels = await avecArgent((d) => rappelsARenvoyer(d, { joursAvant: configArgent.rappelJoursAvant ?? 3 }));
     if (rappels.length) await envoyer(messageRappels(rappels));
+    // Le 1er du mois : bilan des dépenses du mois fini, comparé aux mois d'avant.
+    if (jourParis().endsWith('-01')) {
+      const mois = await avecArgent((d) => messageMoisPasse(d.lignes));
+      if (mois) await envoyer(mois);
+    }
   } catch (err) {
     console.error(`Résumé du matin impossible : ${err.message}`);
   }
@@ -784,10 +790,6 @@ const serveur = http.createServer(async (req, res) => {
       const { projet, texte } = await lireCorps(req, 8_000);
       const connu = configJournal.projets.some((p) => p.id === projet && p.id !== 'autre');
       const r = connu ? await avecIdees((d) => ajouterIdee(d, projet, texte)) : { erreur: 'Projet inconnu.' };
-      if (r.idee) {
-        const nom = configJournal.projets.find((p) => p.id === projet)?.nom ?? projet;
-        envoyer(`💡 <b>Idée notée</b> (${nom})\n${r.idee.texte.slice(0, 300)}`).catch(() => {});
-      }
       res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet)}&message=${encodeURIComponent(r.erreur ?? 'Idée notée. Claude vient lire les idées deux fois par jour et te répond dans votre discussion.')}` });
       return res.end();
     }

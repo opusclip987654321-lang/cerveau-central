@@ -1,6 +1,6 @@
 // Page « Argent » : ce que coûtent les projets, et les factures déposées par louis.
 import { gabarit } from './page.js';
-import { bilan, historique, moisLisible, prochaineEcheance, totalLisible, montantLisible, FREQUENCES, DEVISES } from './argent.js';
+import { bilan, historique, moisLisible, prochaineEcheance, totalLisible, montantLisible, cleDepense, FREQUENCES, DEVISES } from './argent.js';
 import { rapprochement, depenseIaDuMois, decrireCorrection, TYPES, TAILLE_MAX } from './factures.js';
 import { jourParis } from './questions.js';
 
@@ -30,22 +30,44 @@ ${tuile('Factures', factures.length ? `${aJour} / ${r.lignes.length} à jour` : 
     const ecart = x.ecart ? `<br><span class="manque">⚠️ ${montantLisible(f.montant, f.devise)} sur la facture</span>` : '';
     return `<span class="${x.aJour ? 'ok' : 'manque'}">${x.aJour ? '✅' : '⏳'} ${dateCourte(f.date)}</span>${ecart}`;
   };
-  const lignes = [...donnees.lignes]
-    .sort((a, b2) => ['mois', 'an', 'une-fois'].indexOf(a.frequence) - ['mois', 'an', 'une-fois'].indexOf(b2.frequence) || (b2.date ?? '').localeCompare(a.date ?? ''))
-    .map((l) => {
-      const echeance = prochaineEcheance(l, jour);
-      const quand = l.frequence === 'une-fois' ? dateCourte(l.date) : echeance ? `prochain : ${dateCourte(echeance)}` : '<span class="doux">date à préciser</span>';
-      return `<tr><td>${e(l.libelle)}<small>${e(nomProjet(l.projet))}</small></td><td class="num">${montantLisible(l.montant, l.devise)}<small>${FREQUENCES[l.frequence]}</small></td><td>${quand}</td><td>${statutFacture(l)}</td>
+  const ligneDepense = (l, groupe = '') => {
+    const echeance = prochaineEcheance(l, jour);
+    const quand = l.frequence === 'une-fois' ? dateCourte(l.date) : echeance ? `prochain : ${dateCourte(echeance)}` : '<span class="doux">date à préciser</span>';
+    return `<tr${groupe ? ` class="sous" data-groupe="${groupe}" hidden` : ''}><td>${e(l.libelle)}<small>${e(nomProjet(l.projet))}</small></td><td class="num">${montantLisible(l.montant, l.devise)}<small>${FREQUENCES[l.frequence]}</small></td><td>${quand}</td><td>${statutFacture(l)}</td>
 <td><form method="post" action="/argent/supprimer" onsubmit="return confirm('Retirer « ${e(l.libelle).replace(/'/g, '’')} » de la liste ?')"><input type="hidden" name="id" value="${e(l.id)}"><button class="petit" title="Retirer">✕</button></form></td></tr>`;
-    });
-  const lignesVisibles = lignes.slice(0, 3).join('\n');
-  const lignesCachees = lignes.slice(3).join('\n');
+  };
+  // Une ligne par dépense (même nom = même dépense, ex. toutes les recharges
+  // Anthropic) : le total en tête, le détail se déplie d'un clic.
+  const triees = [...donnees.lignes].sort(
+    (a, b2) => ['mois', 'an', 'une-fois'].indexOf(a.frequence) - ['mois', 'an', 'une-fois'].indexOf(b2.frequence) || (b2.date ?? '').localeCompare(a.date ?? ''),
+  );
+  const groupes = [];
+  for (const l of triees) {
+    const g = groupes.find((x) => x.cle === cleDepense(l.libelle));
+    if (g) g.lignes.push(l);
+    else groupes.push({ cle: cleDepense(l.libelle), lignes: [l] });
+  }
+  const lignes = groupes.map((g, i) => {
+    if (g.lignes.length === 1) return ligneDepense(g.lignes[0]);
+    const total = {};
+    for (const l of g.lignes) total[l.devise] = Math.round(((total[l.devise] ?? 0) + l.montant) * 100) / 100;
+    const projetsG = [...new Set(g.lignes.map((l) => nomProjet(l.projet)))].join(', ');
+    const derniere = g.lignes.map((l) => l.date).filter(Boolean).sort().at(-1);
+    const id = `g${i}`;
+    return `<tr class="groupe"><td><button type="button" class="deplier" aria-expanded="false" onclick="const o=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!o));document.querySelectorAll('[data-groupe=${id}]').forEach((r)=>r.hidden=o)"><span class="fleche">▸</span> ${e(g.lignes[0].libelle)}</button><small>${e(projetsG)}</small></td><td class="num"><b>${totalLisible(total)}</b><small>${g.lignes.length} paiements</small></td><td>${derniere ? `dernier : ${dateCourte(derniere)}` : ''}</td><td></td><td></td></tr>
+${g.lignes.map((l) => ligneDepense(l, id)).join('\n')}`;
+  });
+  const VISIBLES = 8;
+  const lignesVisibles = lignes.slice(0, VISIBLES).join('\n');
+  const lignesCachees = lignes.slice(VISIBLES).join('\n');
 
   const h = historique(donnees.lignes, jour);
+  const detail = (xs) =>
+    xs.length ? `<ul class="detail">${xs.map((x) => `<li><span>${e(x.libelle)}</span><span class="num">${montantLisible(x.montant, x.devise)}</span></li>`).join('')}</ul>` : '<span class="doux">—</span>';
   const ligneMois = (x) =>
-    `<tr><td>${moisLisible(x.mois)}${x.mois === jour.slice(0, 7) ? ' <small>en cours</small>' : ''}</td><td class="num">${totalLisible(x.abonnements)}</td><td class="num">${totalLisible(x.recharges)}</td><td class="num"><b>${totalLisible(x.total)}</b></td></tr>`;
+    `<tr><td>${moisLisible(x.mois)}${x.mois === jour.slice(0, 7) ? ' <small>en cours</small>' : ''}</td><td>${detail(x.detail.abonnements)}</td><td>${detail(x.detail.recharges)}</td><td class="num"><b>${totalLisible(x.total)}</b></td></tr>`;
   const tableMois = (liste) =>
-    `<div class="defile"><table><thead><tr><th>Mois</th><th class="num">Abonnements</th><th class="num">Recharges</th><th class="num">Total</th></tr></thead><tbody>${liste.map(ligneMois).join('')}</tbody></table></div>`;
+    `<div class="defile"><table class="mois"><thead><tr><th>Mois</th><th>Abonnements</th><th>Recharges</th><th class="num">Total</th></tr></thead><tbody>${liste.map(ligneMois).join('')}</tbody></table></div>`;
   const historiqueHtml = `${tableMois(h.mois.slice(0, 3))}${
     h.mois.length > 3 ? `<details class="plus"><summary>Voir ${h.mois.length - 3} mois de plus</summary>${tableMois(h.mois.slice(3))}</details>` : ''
   }
@@ -54,10 +76,20 @@ ${tuile('Factures', factures.length ? `${aJour} / ${r.lignes.length} à jour` : 
     .map(([a, t]) => `<span>${a} : <b>${totalLisible(t)}</b></span>`)
     .join('')}<span>Depuis ${moisLisible(h.debut).toLowerCase()} : <b>${totalLisible(h.depuisLeDebut)}</b></span></p>`;
 
-  const parProjet = Object.entries(b.projets)
-    .sort(([, x], [, y]) => (y.ceMois['€'] ?? 0) - (x.ceMois['€'] ?? 0))
-    .map(([id, x]) => `<tr><td>${e(nomProjet(id))}</td><td class="num">${totalLisible(x.fixe)}</td><td class="num">${totalLisible(x.ceMois)}</td></tr>`)
-    .join('');
+  // Par projet : un mois par ligne, un projet par colonne, et le total de chaque projet en bas.
+  const idsProjets = [...new Set(h.mois.flatMap((x) => Object.keys(x.projets)))].sort((a, b2) => (a === 'commun') - (b2 === 'commun') || nomProjet(a).localeCompare(nomProjet(b2)));
+  const totauxProjets = Object.fromEntries(idsProjets.map((id) => [id, {}]));
+  for (const x of h.mois)
+    for (const [id, p] of Object.entries(x.projets))
+      for (const [d, v] of Object.entries(p.total)) totauxProjets[id][d] = Math.round(((totauxProjets[id][d] ?? 0) + v) * 100) / 100;
+  const celluleProjet = (p) => (p ? `${detail(p.lignes)}<div class="sous-total">${totalLisible(p.total)}</div>` : '<span class="doux">—</span>');
+  const tableProjets = (liste, avecTotal) =>
+    `<div class="defile"><table class="mois"><thead><tr><th>Mois</th>${idsProjets.map((id) => `<th>${e(nomProjet(id))}</th>`).join('')}</tr></thead><tbody>${liste
+      .map((x) => `<tr><td>${moisLisible(x.mois)}${x.mois === jour.slice(0, 7) ? ' <small>en cours</small>' : ''}</td>${idsProjets.map((id) => `<td>${celluleProjet(x.projets[id])}</td>`).join('')}</tr>`)
+      .join('')}${avecTotal ? `<tr class="total"><td><b>Total</b><small>depuis ${moisLisible(h.debut).toLowerCase()}</small></td>${idsProjets.map((id) => `<td class="num"><b>${totalLisible(totauxProjets[id])}</b></td>`).join('')}</tr>` : ''}</tbody></table></div>`;
+  const parProjetHtml = h.mois.length > 3
+    ? `${tableProjets(h.mois.slice(0, 3), false)}<details class="plus"><summary>Voir ${h.mois.length - 3} mois de plus</summary>${tableProjets(h.mois.slice(3), false)}</details>${tableProjets([], true)}`
+    : tableProjets(h.mois, true);
 
   const ligneFacture = (f) => {
     const l = f.lecture;
@@ -115,7 +147,8 @@ ${corrections}
 <div class="defile"><table class="depenses"><thead><tr><th>Dépense</th><th class="num">Montant</th><th>Quand</th><th>Facture</th><th></th></tr></thead><tbody>
 ${lignesVisibles}
 </tbody>${lignesCachees ? `<tbody id="depenses-plus" hidden>${lignesCachees}</tbody>` : ''}</table></div>
-${lignesCachees ? `<button type="button" class="voir-plus" onclick="const t=document.getElementById('depenses-plus');t.hidden=!t.hidden;this.textContent=t.hidden?'Voir plus (${lignes.length - 3})':'Voir moins'">Voir plus (${lignes.length - 3})</button>` : ''}
+${lignesCachees ? `<button type="button" class="voir-plus" onclick="const t=document.getElementById('depenses-plus');t.hidden=!t.hidden;this.textContent=t.hidden?'Voir plus (${lignes.length - VISIBLES})':'Voir moins'">Voir plus (${lignes.length - VISIBLES})</button>` : ''}
+<p class="doux petit-texte">Les dépenses du même nom (ex. les recharges Anthropic) sont regroupées : clique sur ▸ pour voir chaque paiement.</p>
 <details class="ajout"><summary>+ Ajouter une dépense</summary>
 <form method="post" action="/argent/ajouter" class="formulaire">
 <label>Nom<input name="libelle" required maxlength="80" placeholder="ex. Recharge OpenAI"></label>
@@ -136,8 +169,8 @@ ${historiqueHtml}
 
 <section class="bloc">
 <h3>Par projet</h3>
-<div class="defile"><table><thead><tr><th>Projet</th><th class="num">Fixe par mois</th><th class="num">Ce mois-ci</th></tr></thead><tbody>${parProjet}</tbody></table></div>
-<p class="doux petit-texte">Les dépenses partagées (VPS Nūr, Claude, ChatGPT…) sont dans « Commun ». L'argent qui rentre (Stripe, YouTube) arrivera ici quand on les branchera.</p>
+${parProjetHtml}
+<p class="doux petit-texte">Les dépenses partagées (VPS Nūr, Claude, ChatGPT…) sont dans « Commun ». Abonnements comptés chaque mois (domaines lissés sur 12 mois), recharges à leur date.</p>
 </section>
 
 <style>
@@ -177,6 +210,18 @@ button.petit { padding:2px 8px; font-size:13px; }
 }
 .corrections { margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--fond); border:1px solid var(--bord); font-size:14px; }
 .voir-plus { margin:8px 0 4px; font-size:14px; padding:6px 12px; }
+.deplier { background:none; border:0; padding:0; font:inherit; color:inherit; cursor:pointer; text-align:left; }
+.deplier .fleche { display:inline-block; transition:transform .15s; color:var(--doux); }
+.deplier[aria-expanded="true"] .fleche { transform:rotate(90deg); }
+.depenses tr.sous td:first-child { padding-left:24px; }
+.depenses tr.sous { opacity:.85; }
+.depenses tr[hidden] { display:none; }
+.detail { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.detail li { display:flex; justify-content:space-between; gap:12px; }
+.sous-total { border-top:1px dashed var(--bord); margin-top:4px; padding-top:2px; text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
+table.mois td { min-width:140px; }
+table.mois td:first-child { min-width:100px; }
+tr.total td { border-top:2px solid var(--bord); }
 .annees { display:flex; flex-wrap:wrap; gap:8px 18px; margin:12px 0 0; font-size:14px; }
 .plus > summary { cursor:pointer; list-style:none; display:inline-block; margin:8px 0 4px; padding:6px 12px; border:1px solid var(--bord); border-radius:8px; font-size:14px; }
 .plus > summary::-webkit-details-marker { display:none; }

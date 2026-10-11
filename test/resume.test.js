@@ -7,7 +7,7 @@ const maintenant = new Date('2026-10-05T09:00:00Z');
 test('résumé : tout va bien', () => {
   const etat = { derniereVerification: '2026-10-05T08:00:00Z', verifications: { a: { nom: 'Site', etat: 'ok', detail: 'ok' } }, historique: [] };
   const t = resumeQuotidien(etat, 21, maintenant);
-  assert.match(t, /🟢 Tout tourne/);
+  assert.match(t, /Aucune panne en cours/);
   assert.match(t, /aucun incident/);
   assert.match(t, /21 question\(s\) du jour/);
 });
@@ -27,7 +27,7 @@ test('résumé : pannes, points à surveiller et incidents récents', () => {
   };
   const t = resumeQuotidien(etat, 0, maintenant);
   assert.match(t, /🔴 1 panne\(s\) en cours :\n• Site leviaro.fr : répond 502/);
-  assert.match(t, /🟠 À surveiller :\n• Espace disque/);
+  assert.doesNotMatch(t, /À surveiller|Espace disque|🟠/, 'plus d’alerte orange sur Telegram');
   assert.match(t, /1 incident\(s\)/);
   assert.doesNotMatch(t, /question/);
 });
