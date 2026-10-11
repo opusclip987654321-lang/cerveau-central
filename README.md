@@ -89,6 +89,21 @@ nano ~/.cerveau-releve && chmod 600 ~/.cerveau-releve
 
 Si un VPS n'envoie plus rien pendant 3 h, une alerte Telegram part.
 
+## Règles des serveurs (pour tous les projets)
+
+Plusieurs projets partagent le VPS Nūr. Pour qu'aucun n'en casse un autre :
+
+- **Les sites déployés depuis un dépôt git ne se modifient jamais à la main sur le serveur.** Une modification locale bloque leur `git pull` et se perd à la mise à jour suivante. Pour changer un site, on passe par son dépôt (pull request), puis on met à jour avec sa commande habituelle. Si le changement concerne le site d'un autre projet, on le demande dans ce projet-là.
+- Qui gère quoi :
+
+| Site | Dossier sur le VPS Nūr | Dépôt | Mise à jour |
+|---|---|---|---|
+| VégéBudget | `/opt/vegebudget` | `v-g-budget` | `cd /opt/vegebudget && git pull && docker compose up -d --build` |
+| Cerveau | `~/cerveau-central` | `cerveau-central` | `cd ~/cerveau-central && git pull && docker compose up -d --build` |
+| Nūr Meet | `~/nour-v2` | `nour-meet` | toujours avec `-f docker-compose.prod.yml` (voir docs/visites-umami.md) |
+
+- Si un `git pull` refuse à cause de « local changes », ne pas forcer : afficher la différence (`git diff`) et la donner au projet du site, qui la remet dans son dépôt avant la mise à jour.
+
 ## Installer sur le VPS
 
 Prérequis : Docker (déjà présent sur le serveur).
