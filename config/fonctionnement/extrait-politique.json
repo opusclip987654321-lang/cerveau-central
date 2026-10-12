@@ -237,6 +237,8 @@
         "Pas d'autocensure : personne n'est retiré de la liste tant que la chaîne ne reçoit pas d'avertissement YouTube",
         "La veille donne 0 à toute vidéo où aucune de ces personnes ne parle ; l'extrait choisi doit montrer l'une d'elles en train de parler",
         "Les chaînes YouTube à leur nom sont ajoutées aux sources de la veille ; ils restent aussi repérés quand ils passent sur les médias déjà suivis",
+        "Interviews ailleurs : toutes les heures, la veille cherche aussi sur tout YouTube les vidéos longues (plus de 20 min, publiées depuis 3 h) qui citent une de ces personnalités, puis les note comme les autres (scripts/extrait-interviews.py ; clé YouTube du cerveau, 2 400 points de quota par jour sur 10 000)",
+        "Une interview longue retenue est transcrite en entier par Deepgram avant le choix de l'extrait : environ 40 centimes pour 1 h 30 de vidéo",
         "Mise en place et changement de liste : scripts/extrait-personnalites.py, lancé par louis sur le VPS Nūr (sans option il montre, avec --appliquer il modifie n8n)",
         "Confrontation : la vidéo principale vient de la veille (donc d'une personnalité de la liste), celle qui lui répond peut être de n'importe qui ; le zapping de 19h et Impacteur Afrique ne sont pas concernés"
       ]
