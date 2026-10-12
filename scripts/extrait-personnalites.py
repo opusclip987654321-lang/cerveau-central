@@ -144,7 +144,9 @@ for p in PERSONNALITES:
     nom_famille = simple(p.split()[-1])
     trouve = None
     for r in youtube("search", part="snippet", type="channel", maxResults=5, q=p).get("items", []):
-        if nom_famille in simple(r["snippet"]["channelTitle"]):
+        titre = r["snippet"]["channelTitle"]
+        # « X - Topic » = chaîne musicale créée automatiquement par YouTube : pas de vidéos à extraire.
+        if nom_famille in simple(titre) and not titre.rstrip().endswith("- Topic"):
             trouve = r["snippet"]
             break
     if not trouve:
