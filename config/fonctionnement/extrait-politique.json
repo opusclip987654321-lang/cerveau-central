@@ -1,11 +1,11 @@
 {
-  "maj": "2026-10-11",
+  "maj": "2026-10-12",
   "source": "Guide « fonctionnement v4 » écrit avec louis le 04/10/2026 ; outils relus dans le code de l'atelier (/opt/atelier) le 06/10/2026",
   "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique des Shorts et un zapping quotidien, les publie, puis apprend de ses résultats et de tes choix.",
   "journee": [
     {
       "quand": "Toutes les heures",
-      "quoi": "Veille des 38 chaînes : Claude note les nouvelles vidéos et t'envoie les 5 meilleures sur Telegram.",
+      "quoi": "Veille des chaînes suivies (médias + chaînes des personnalités choisies) : Claude note les nouvelles vidéos ; seules celles où parle une personnalité de ta liste peuvent devenir un Short.",
       "toi": "Trier : ✅ / ❌ / 🚫"
     },
     {
@@ -41,7 +41,7 @@
         },
         {
           "type": "auto",
-          "texte": "Chaque vidéo reçoit une note sur 10, selon tes goûts et ce qui a marché",
+          "texte": "Chaque vidéo reçoit une note sur 10 ; depuis le 12/10, 0 si aucune personnalité de ta liste n'y parle",
           "outil": "Claude (API Anthropic)",
           "technique": "L'IA reçoit la vidéo à noter avec tes goûts et les leçons du moment."
         },
@@ -227,7 +227,18 @@
         "Extraits à risque élevé écartés (violence, rumeurs, accusations non établies, grossièretés)",
         "Pas d'insulte dans les titres et miniatures, titres non trompeurs",
         "Sujet sensible : traité sobrement, jamais en ouverture ni en miniature",
-        "Équilibre entre les camps politiques, ton neutre"
+        "Zapping de 19h : équilibre entre les camps politiques, ton neutre"
+      ]
+    },
+    {
+      "titre": "Ligne éditoriale des Shorts (choix de louis du 12/10)",
+      "points": [
+        "Les Shorts ne montrent que des personnalités choisies : Florian Philippot, Alain Soral, Juan Branco, François Asselineau, Nicolas Dupont-Aignan, Jean Lassalle, Étienne Chouard, Idriss Aberkane, Didier Raoult, Éric Zemmour, Marion Maréchal, Sarah Knafo, Jean-Luc Mélenchon, Rima Hassan, François Ruffin",
+        "Pas d'autocensure : personne n'est retiré de la liste tant que la chaîne ne reçoit pas d'avertissement YouTube",
+        "La veille donne 0 à toute vidéo où aucune de ces personnes ne parle ; l'extrait choisi doit montrer l'une d'elles en train de parler",
+        "Les chaînes YouTube à leur nom sont ajoutées aux sources de la veille ; ils restent aussi repérés quand ils passent sur les médias déjà suivis",
+        "Mise en place et changement de liste : scripts/extrait-personnalites.py, lancé par louis sur le VPS Nūr (sans option il montre, avec --appliquer il modifie n8n)",
+        "Confrontation : la vidéo principale vient de la veille (donc d'une personnalité de la liste), celle qui lui répond peut être de n'importe qui ; le zapping de 19h et Impacteur Afrique ne sont pas concernés"
       ]
     },
     {
