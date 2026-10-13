@@ -452,7 +452,7 @@ function adresse(req) {
 let enCours = null;
 function verifier() {
   enCours ??= chargerPauses(fichierPauses)
-    .then((pauses) => toutVerifier({ config, fichierEtat, envoyer, options, enPause: alertesCoupees(pauses) }))
+    .then((pauses) => toutVerifier({ config, fichierEtat, options, enPause: alertesCoupees(pauses) }))
     .then(({ messages }) => console.log(`${new Date().toISOString()} vérification terminée, ${messages.length} alerte(s)`))
     .catch((err) => console.error(`Vérification échouée : ${err.stack}`))
     .finally(() => (enCours = null));

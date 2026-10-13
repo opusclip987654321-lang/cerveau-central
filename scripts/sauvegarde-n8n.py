@@ -13,7 +13,7 @@ Lecture seule côté n8n. Les accès (credentials) n'en sortent que par leur nom
 valeur ; une clé écrite en clair dans un nœud est remplacée par un repère « à ressaisir » ;
 les données d'essai épinglées (pinData) et l'état interne (staticData) ne sont pas copiés, et les
 adresses e-mail hors des domaines de louis sont remplacées : le dépôt de sauvegarde est public.
-En cas d'échec, une alerte part sur le Telegram du cerveau.
+En cas d'échec, le message reste dans le log du cron (plus de Telegram depuis le 13/10).
 Réglage facultatif dans le .env : SAUVEGARDE_N8N_DOSSIER (par défaut ~/sauvegarde-n8n).
 """
 import json
@@ -135,17 +135,6 @@ def git(dossier, *args):
     return subprocess.run(["git", "-C", str(dossier), *args], check=True, capture_output=True, text=True).stdout
 
 
-def telegram(env, texte):
-    jeton, chat = env.get("TELEGRAM_BOT_TOKEN"), env.get("TELEGRAM_CHAT_ID")
-    if not (jeton and chat):
-        return
-    donnees = urllib.parse.urlencode({"chat_id": chat, "text": texte}).encode()
-    try:
-        urllib.request.urlopen(f"https://api.telegram.org/bot{jeton}/sendMessage", data=donnees, timeout=20)
-    except Exception:
-        pass
-
-
 def main():
     essai = "--essai" in sys.argv
     env = lire_env(RACINE / ".env")
@@ -181,13 +170,12 @@ def main():
             print("Aucun changement depuis la dernière sauvegarde.")
 
     if erreurs or not resume:
-        telegram(env, "⚠️ Sauvegarde n8n incomplète : " + ("; ".join(erreurs) or "aucun n8n lu"))
-        sys.exit(1)
+        # Plus de Telegram (louis, 13/10 : il ne peut rien y faire) : l'échec reste dans le log du cron.
+        sys.exit("⚠️ Sauvegarde n8n incomplète : " + ("; ".join(erreurs) or "aucun n8n lu"))
 
 
 if __name__ == "__main__":
     try:
         main()
     except subprocess.CalledProcessError as e:
-        telegram(lire_env(RACINE / ".env"), f"⚠️ Sauvegarde n8n : l'envoi sur GitHub a échoué ({(e.stderr or '').strip()[:300]})")
         sys.exit(f"git a échoué : {e.stderr}")

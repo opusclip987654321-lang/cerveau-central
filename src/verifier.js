@@ -22,7 +22,7 @@ const VERIFICATEURS = {
 
 export const cle = (projet, verif, i) => `${projet.id}/${verif.nom ?? verif.type}#${i}`;
 
-export async function toutVerifier({ config, fichierEtat, envoyer, options = {}, enPause = new Set() }) {
+export async function toutVerifier({ config, fichierEtat, options = {}, enPause = new Set() }) {
   const etat = await chargerEtat(fichierEtat);
   const maintenant = new Date().toISOString();
   const optionsPar = {
@@ -56,9 +56,9 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {},
     const avant = etat.verifications[k];
     const type = changement(avant, resultat);
     if (type) {
-      // Projet mis en pause par louis : on note le changement, sans le prévenir.
-      // Telegram ne porte que les pannes (🔴) : louis ne veut plus d'alertes orange
-      // ni de retours au vert (document du 11/10). Tout reste dans l'historique.
+      // Plus aucune panne sur Telegram (louis, 13/10 : il ne peut rien y faire) :
+      // les pannes sont rédigées pour le journal du serveur, et tout reste dans
+      // l'historique (pages Aujourd'hui et Surveillance).
       if (!enPause.has(projet.id) && type === 'panne') messages.push(redigerAlerte(type, projet, verif, resultat, avant));
       const { pour, texte } = expliquer(projet, verif, resultat, type);
       etat.historique.unshift({ date: maintenant, projet: projet.nom, verification: verif.nom, type, detail: resultat.detail, pour, sens: texte });
@@ -83,12 +83,5 @@ export async function toutVerifier({ config, fichierEtat, envoyer, options = {},
   etat.derniereVerification = maintenant;
   await sauverEtat(fichierEtat, etat);
 
-  if (messages.length && envoyer) {
-    try {
-      await envoyer(messages.join('\n\n'));
-    } catch (err) {
-      console.error(`Envoi Telegram impossible : ${err.message}`);
-    }
-  }
   return { etat, messages };
 }
