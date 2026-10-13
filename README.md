@@ -1,12 +1,12 @@
 # Cerveau central
 
-Surveille les projets de louis, le prévient sur Telegram quand quelque chose casse, et lui montre chaque matin où en sont ses projets (page « Aujourd'hui » : priorités du jour, une ligne par projet, ce qui a changé depuis hier). La surveillance technique est sur `/surveillance`.
+Surveille les projets de louis, note quand quelque chose casse, et lui montre chaque matin où en sont ses projets (page « Aujourd'hui » : priorités du jour, une ligne par projet, ce qui a changé depuis hier). La surveillance technique est sur `/surveillance`.
 
 C'est l'**étape 2** du cahier des charges : « Est-ce que tout tourne ? ». Le cerveau **ne corrige rien** : il observe et prévient.
 
 ## Ce qu'il fait
 
-- Vérifie toutes les 3 heures que tout tourne, et prévient sur Telegram des pannes seulement (plus d'alertes orange ni de retours au vert depuis le 11/10).
+- Vérifie toutes les 3 heures que tout tourne. Les pannes sont notées sur les pages Aujourd'hui et Surveillance, plus envoyées sur Telegram depuis le 13/10 (louis n'y peut rien ; Telegram ne garde que ce qui lui demande une action).
 - Envoie chaque matin un résumé sur Telegram : pannes en cours, incidents des dernières 24 h, projets à relancer, renouvellements à venir ; le 1er du mois, le total des dépenses du mois fini.
 - Pose 3 questions par jour et par projet sur la page.
 
@@ -87,7 +87,7 @@ nano ~/.cerveau-releve && chmod 600 ~/.cerveau-releve
 (crontab -l 2>/dev/null; echo "7 * * * * $HOME/cerveau-releve/releve.sh >/dev/null 2>&1") | crontab -
 ```
 
-Si un VPS n'envoie plus rien pendant 3 h, une alerte Telegram part.
+Si un VPS n'envoie plus rien pendant 3 h, la panne s'affiche sur la page Surveillance (pas de Telegram depuis le 13/10).
 
 ## Règles des serveurs (pour tous les projets)
 
@@ -169,7 +169,7 @@ Dans n8n : *Settings → n8n API → Create an API key*, puis la mettre dans `N8
 
 ## Sauvegarde des automatisations n8n
 
-Chaque nuit à 3 h 30, `scripts/sauvegarde-n8n.py` copie toutes les automatisations des deux n8n (n8n.nourmeet.com et n8n.actualitevideo.fr) dans le dépôt GitHub `sauvegarde-n8n`, un fichier par automatisation. Seuls les changements sont enregistrés, donc on peut retrouver n'importe quelle automatisation telle qu'elle était à une date passée. Lecture seule côté n8n. Le dépôt étant public, une clé écrite en clair dans un nœud est remplacée par « à ressaisir », les adresses e-mail de prospects sont retirées (seules restent celles de nourmeet.com, leviaro.fr, actualitevideo.fr), et les données d'essai (pinData) ne sont pas copiées. Si la sauvegarde échoue, une alerte part sur Telegram.
+Chaque nuit à 3 h 30, `scripts/sauvegarde-n8n.py` copie toutes les automatisations des deux n8n (n8n.nourmeet.com et n8n.actualitevideo.fr) dans le dépôt GitHub `sauvegarde-n8n`, un fichier par automatisation. Seuls les changements sont enregistrés, donc on peut retrouver n'importe quelle automatisation telle qu'elle était à une date passée. Lecture seule côté n8n. Le dépôt étant public, une clé écrite en clair dans un nœud est remplacée par « à ressaisir », les adresses e-mail de prospects sont retirées (seules restent celles de nourmeet.com, leviaro.fr, actualitevideo.fr), et les données d'essai (pinData) ne sont pas copiées. Si la sauvegarde échoue, l'erreur reste dans le log du cron (plus de Telegram depuis le 13/10).
 
 Installation, une fois, sur le VPS Nūr (il utilise les clés n8n du `.env` du cerveau) :
 
@@ -201,7 +201,7 @@ npm start              # la page d'état sur http://127.0.0.1:8090
 
 ## Pause / Reprendre, et Discuter
 
-- **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, retient lesquelles, et coupe ses alertes Telegram. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, programme de Petites histoires vraies) n'est pas touché.
+- **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, et retient lesquelles. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, programme de Petites histoires vraies) n'est pas touché.
 - **Discuter** : louis pose une question, Claude (Sonnet) répond à partir des données du cerveau (état, argent, journal, serveurs). Il ne modifie rien. Le coût compte dans le plafond `PLAFOND_IA_DOLLARS`.
 
 ## Tableau de bord business (onglet Journal)
@@ -215,4 +215,4 @@ En tête du Journal : une carte par projet avec sa pastille (🟢 ça avance, �
 
 ## Pages par projet et idées
 
-Chaque carte du tableau de bord mène à `/projet?projet=<id>` : la carte business du projet, puis son détail (Nūr Meet : réponses, mails à valider, derniers mails ; Leviaro : réponses avec extrait, mails, entreprises et où ça en est ; Impacteur : invités avec auteur/livre/état ; Petites histoires vraies : vidéos publiées avec lien), les notes du journal et la surveillance technique repliée. En haut, « Mes idées de modifications » : louis note ses idées, chacune suivie (proposée, en cours, faite, écartée) dans `data/idees.json`, et chaque nouvelle idée part aussi sur Telegram.
+Chaque carte du tableau de bord mène à `/projet?projet=<id>` : la carte business du projet, puis son détail (Nūr Meet : réponses, mails à valider, derniers mails ; Leviaro : réponses avec extrait, mails, entreprises et où ça en est ; Impacteur : invités avec auteur/livre/état ; Petites histoires vraies : vidéos publiées avec lien), les notes du journal et la surveillance technique repliée. En haut, « Mes idées de modifications » : louis note ses idées, chacune suivie (proposée, en cours, faite, écartée) dans `data/idees.json`.

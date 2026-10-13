@@ -20,7 +20,7 @@ test('changement : alerte seulement quand l’état change', () => {
   assert.equal(changement({ etat: 'ok' }, { etat: 'attention', evenement: true, erreurs: [{}] }), 'evenement');
 });
 
-test('scénario complet : panne, une seule alerte, puis rétablissement', async () => {
+test('scénario complet : panne notée sans Telegram, puis rétablissement', async () => {
   let enPanne = false;
   const serveur = http.createServer((req, res) => { res.writeHead(enPanne ? 502 : 200); res.end(); });
   await new Promise((r) => serveur.listen(0, '127.0.0.1', r));
@@ -29,24 +29,21 @@ test('scénario complet : panne, une seule alerte, puis rétablissement', async 
     projets: [{ id: 'nour-meet', nom: 'Nūr Meet', verifications: [{ type: 'site', nom: 'Site', url: `http://127.0.0.1:${serveur.address().port}/` }] }],
     seuils: { lenteurMs: 4000 },
   };
-  const envoyes = [];
-  const lancer = () => toutVerifier({ config, fichierEtat: path.join(dossier, 'etat.json'), envoyer: async (m) => envoyes.push(m), options: { site: { pauseMs: 5 } } });
+  const lancer = () => toutVerifier({ config, fichierEtat: path.join(dossier, 'etat.json'), options: { site: { pauseMs: 5 } } });
 
   try {
-    await lancer();
-    assert.equal(envoyes.length, 0, 'rien à signaler au démarrage si tout va bien');
+    assert.equal((await lancer()).messages.length, 0, 'rien à signaler au démarrage si tout va bien');
 
     enPanne = true;
-    await lancer();
-    assert.equal(envoyes.length, 1);
-    assert.match(envoyes[0], /🔴 <b>Nūr Meet<\/b>\nLe site ne répond plus\..*\n<i>Site : répond 502<\/i>/);
+    const { messages } = await lancer();
+    assert.equal(messages.length, 1);
+    assert.match(messages[0], /🔴 <b>Nūr Meet<\/b>\nLe site ne répond plus\..*\n<i>Site : répond 502<\/i>/);
 
-    await lancer();
-    assert.equal(envoyes.length, 1, 'pas de répétition tant que la panne dure');
+    assert.equal((await lancer()).messages.length, 0, 'pas de répétition tant que la panne dure');
 
     enPanne = false;
-    const { etat } = await lancer();
-    assert.equal(envoyes.length, 1, 'le retour au vert n’est plus envoyé sur Telegram (seulement noté)');
+    const { etat, messages: retour } = await lancer();
+    assert.equal(retour.length, 0, 'le retour au vert est seulement noté');
     assert.equal(etat.historique.length, 2);
 
     const html = pageEtat(config, etat);

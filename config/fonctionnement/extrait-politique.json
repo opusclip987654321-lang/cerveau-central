@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-12",
+  "maj": "2026-10-13",
   "source": "Guide « fonctionnement v4 » écrit avec louis le 04/10/2026 ; outils relus dans le code de l'atelier (/opt/atelier) le 06/10/2026",
   "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique des Shorts et un zapping quotidien, les publie, puis apprend de ses résultats et de tes choix.",
   "journee": [
@@ -10,7 +10,7 @@
     },
     {
       "quand": "Après ton ✅",
-      "quoi": "Fabrication d'un Short (environ 1 min 30), envoyé sur Telegram.",
+      "quoi": "Fabrication d'un Short (environ 1 min 30), sans message Telegram depuis le 13/10.",
       "toi": "Valider, demander un autre moment, ou abandonner"
     },
     {
@@ -142,9 +142,9 @@
         },
         {
           "type": "auto",
-          "texte": "Tu reçois le sommaire, les liens et l'idée testée du jour",
-          "outil": "Telegram",
-          "technique": "Message du bot, rien à faire."
+          "texte": "Plus de récap sur Telegram depuis le 13/10 : la vidéo est sur la chaîne",
+          "outil": "YouTube",
+          "technique": "Choix de louis du 13/10 : le sommaire et les liens ne sont plus envoyés, rien à faire."
         }
       ]
     },
@@ -161,7 +161,7 @@
         {
           "type": "securite",
           "texte": "Une vidéo a-t-elle été retirée, refusée ou bloquée ?",
-          "sinon": "+1 pénalité à chaque source de la vidéo · exclue à 3 · alerte Telegram",
+          "sinon": "+1 pénalité à chaque source de la vidéo · exclue à 3 · signalé dans le bilan de 10h (plus d'alerte Telegram séparée depuis le 13/10)",
           "outil": "YouTube",
           "technique": "Le statut de la vidéo renvoyé par YouTube."
         },
@@ -257,6 +257,17 @@
         "Depuis le 11/10, la page Publications du projet sépare les shorts des vidéos longues d'après la durée relue chez YouTube : 3 minutes ou moins = short (YouTube ne dit pas le format, c'est une déduction)",
         "Le tunnel « Parcours des vidéos » compte les 30 derniers jours : vidéos publiées, shorts, longues, vues de ces vidéos, abonnés, revenus (« ? » tant que les revenus ne sont pas branchés)"
       ]
+    },
+    {
+      "titre": "Messages Telegram (choix de louis du 13/10)",
+      "points": [
+        "Restent : la vidéo à poster sur TikTok (L'extrait politique et Impacteur Afrique), le bilan et leçons de 10h, et les erreurs « 🔴 ACTION REQUISE » qui disent quoi faire",
+        "Coupés : « Je lance un Short », la vidéo du Short avec son bouton Annuler, les annonces de programmation, de doublon et d'annulation, le récap de publication, le récap de la vidéo longue de 19h, l'alerte droits d'auteur séparée",
+        "Coupés aussi : les erreurs 🟠 (le système réessaie seul), ⚪ (info), celles dont la consigne est « Rien », et les messages « … refonctionne »",
+        "Impacteur Afrique : « Je lance un Short », vidéo écartée, vidéo du Short, programmation, doublon, récap de publication et récap de la vidéo longue de 20h sont coupés",
+        "Tout continue d'être enregistré dans n8n ; seuls les messages Telegram changent",
+        "Mise en place : scripts/telegram-coupes.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer coupe, --remettre rétablit)"
+      ]
     }
   ],
   "alertes": [
@@ -282,7 +293,7 @@
       "faire": "Rien. Pas de zapping ce jour-là."
     },
     {
-      "message": "🚨 Alerte droits d'auteur",
+      "message": "🚨 Droits d'auteur (rubrique du bilan de 10h)",
       "sens": "Une vidéo publiée a été retirée, rejetée ou bloquée. Ses sources sont pénalisées.",
       "faire": "Regarder YouTube Studio, rubrique Droits d'auteur, et dire à Claude quelle chaîne a réclamé.",
       "niveau": "important"
@@ -293,7 +304,7 @@
       "faire": "YouTube Studio → Paramètres → Chaîne → Éligibilité aux fonctionnalités."
     },
     {
-      "message": "❌ Facebook ou ❌ Instagram dans un récap",
+      "message": "🔴 ACTION REQUISE : Facebook ou Instagram",
       "sens": "Publication refusée par Meta (jeton, format ou durée).",
       "faire": "Transmettre le message à Claude."
     }

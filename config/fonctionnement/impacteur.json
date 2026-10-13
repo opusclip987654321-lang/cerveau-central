@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-11",
+  "maj": "2026-10-13",
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
   "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu fournis les adresses e-mail (colonne email_contact du Sheet), tu tries sur Telegram ou sur la page Impacteur, et les envois partent tout seuls, plafonnés à 8 par jour.",
   "journee": [
@@ -143,7 +143,7 @@
         {
           "type": "securite",
           "texte": "L'invitation suit-elle bien le modèle ?",
-          "sinon": "retenue : rien ne part, la liste arrive sur Telegram (un message par tournée)",
+          "sinon": "retenue : rien ne part, la fiche reste dans le Sheet (plus de message Telegram depuis le 13/10)",
           "technique": "Le texte doit contenir l'exemple d'interview et finir par « Walid » + le nom de la chaîne."
         },
         {
@@ -216,7 +216,7 @@
       "points": [
         "Rédigées par Claude au nom de Walid, avec un exemple d'interview en bas de mail",
         "Les informations douteuses ne bloquent rien : elles sont signalées sur la fiche à la validation",
-        "Contrôle du texte avant envoi (depuis le 06/10) : une invitation qui ne correspond pas au modèle de sa chaîne (exemple d'interview + signature Walid + nom de la chaîne) ne part pas ; tu reçois sur Telegram la liste des fiches retenues, un seul message par tournée",
+        "Contrôle du texte avant envoi (depuis le 06/10) : une invitation qui ne correspond pas au modèle de sa chaîne (exemple d'interview + signature Walid + nom de la chaîne) ne part pas et reste dans le Sheet ; plus de message Telegram pour ça depuis le 13/10 (choix de louis)",
         "Le brouillon Gmail créé au ✅ est, depuis le 06/10, un mail mis en forme avec le logo de la chaîne en signature (logos gardés par le cerveau aux adresses publiques /logos/impacteur-afrique.png et /logos/impacteur-frexit.png), créé dans le compte Gmail de sa chaîne"
       ]
     },
@@ -228,6 +228,14 @@
         "La « chaîne » affichée vient du Sheet : tant que l'automatisation n'enregistre pas le compte Gmail réellement utilisé (colonne compte_envoi), c'est une déclaration, pas une preuve ; dès qu'elle l'enregistre, le compte s'affiche sur chaque mail",
         "Le texte du mail s'affiche sur la fiche dès que l'automatisation le copie dans le Sheet (colonne corps) ; tant qu'il manque, la fiche le dit et renvoie vers Gmail pour lire l'échange réel",
         "Les fiches « à vérifier » s'affichent sur la page Impacteur avec Valider / Rejeter : depuis le branchement du 11/10 (script impacteur-valider-et-emails), Valider fait exactement comme le ✅ Telegram (brouillon Gmail créé dans le compte de la chaîne, confirmation sur Telegram) et Rejeter écarte la fiche ; rien ne part sans ton clic Envoyer dans Gmail"
+      ]
+    },
+    {
+      "titre": "Messages Telegram (choix de louis du 13/10)",
+      "points": [
+        "Restent : la fiche « Fiche prête » quand l'adresse e-mail manque (elle te demande de remplir email_contact), le récap de 8 h 33 et les réponses à tes boutons et commandes",
+        "Coupés : le rapport de chaque découverte (livres 8 h 07, YouTube 12 h 07) et la liste des invitations retenues avant envoi (10 h 07 et 15 h 07)",
+        "Mise en place : scripts/telegram-coupes.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer coupe, --remettre rétablit)"
       ]
     }
   ],
@@ -315,7 +323,7 @@
       "faire": "Ouvrir le compte Gmail de la chaîne indiquée et envoyer (depuis le 06/10, chaque brouillon est créé dans le compte de sa chaîne, avec le logo en signature)."
     },
     {
-      "message": "⚠️ N invitation(s) retenue(s) avant envoi (message Telegram)",
+      "message": "N invitation(s) retenue(s) avant envoi (plus envoyé sur Telegram depuis le 13/10)",
       "sens": "Le contrôle du texte a bloqué ces invitations : le texte ne correspond pas au modèle de la chaîne, rien n'est parti.",
       "faire": "Corriger la fiche dans le Sheet, ou /valider CLE pour créer un brouillon à envoyer toi-même."
     },
