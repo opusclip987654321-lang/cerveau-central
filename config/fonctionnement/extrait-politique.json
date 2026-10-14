@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-13",
+  "maj": "2026-10-14",
   "source": "Guide « fonctionnement v4 » écrit avec louis le 04/10/2026 ; outils relus dans le code de l'atelier (/opt/atelier) le 06/10/2026",
   "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique des Shorts et un zapping quotidien, les publie, puis apprend de ses résultats et de tes choix.",
   "journee": [
@@ -15,8 +15,8 @@
     },
     {
       "quand": "Après ta validation",
-      "quoi": "Publication programmée : 1 Short par heure au maximum (YouTube, Facebook, Instagram), plus la vidéo pour TikTok.",
-      "toi": "Poster sur TikTok ; passer YouTube en public (jusqu'à l'audit)"
+      "quoi": "Publication programmée : 1 Short par heure au maximum (YouTube, Facebook, Instagram, et TikTok via Post for Me).",
+      "toi": "Passer YouTube en public (jusqu'à l'audit)"
     },
     {
       "quand": "18h → 19h",
@@ -82,10 +82,10 @@
           "technique": "API YouTube (en privé jusqu'à l'audit, 1 600 points sur 10 000 par jour) et API Meta (accès à renouveler vers janvier 2027)."
         },
         {
-          "type": "toi",
-          "texte": "Tu postes toi-même la vidéo sur TikTok",
-          "outil": "Telegram",
-          "technique": "La vidéo et sa légende arrivent dans le bot ; l'envoi direct à TikTok existe mais n'est pas utilisé."
+          "type": "auto",
+          "texte": "La vidéo part aussi sur TikTok, avec la même légende",
+          "outil": "Post for Me",
+          "technique": "Choix de louis du 14/10 : Post for Me (mode Quickstart, leur appli TikTok déjà validée) reçoit le lien public temporaire de la vidéo. Comptes : L'extrait politique et @impacteur_afrique. Un échec TikTok n'empêche pas Facebook et Instagram ; il est noté dans le récapitulatif et les alertes. Branché par scripts/tiktok-postforme.py (--remettre pour revenir au TikTok à la main)."
         },
         {
           "type": "toi",
@@ -261,8 +261,8 @@
     {
       "titre": "Messages Telegram (choix de louis du 13/10)",
       "points": [
-        "Restent : la vidéo à poster sur TikTok (L'extrait politique et Impacteur Afrique), le bilan et leçons de 10h, et les erreurs « 🔴 ACTION REQUISE » qui disent quoi faire",
-        "Coupés : « Je lance un Short », la vidéo du Short avec son bouton Annuler, les annonces de programmation, de doublon et d'annulation, le récap de publication, le récap de la vidéo longue de 19h, l'alerte droits d'auteur séparée",
+        "Restent : le bilan et leçons de 10h, et les erreurs « 🔴 ACTION REQUISE » qui disent quoi faire",
+        "Coupés : « Je lance un Short », la vidéo du Short avec son bouton Annuler, les annonces de programmation, de doublon et d'annulation, le récap de publication, le récap de la vidéo longue de 19h, la vidéo à poster sur TikTok (TikTok part seul via Post for Me depuis le 14/10), l'alerte droits d'auteur séparée",
         "Coupés aussi : les erreurs 🟠 (le système réessaie seul), ⚪ (info), celles dont la consigne est « Rien », et les messages « … refonctionne »",
         "Impacteur Afrique : « Je lance un Short », vidéo écartée, vidéo du Short, programmation, doublon, récap de publication et récap de la vidéo longue de 20h sont coupés",
         "Tout continue d'être enregistré dans n8n ; seuls les messages Telegram changent",
@@ -313,7 +313,6 @@
     "quotidien": [
       "Trier les propositions (ça entraîne l'agent)",
       "Valider les Shorts",
-      "Poster sur TikTok (vidéo et légende fournies)",
       "Passer les vidéos YouTube en public, jusqu'à la validation de l'audit"
     ],
     "parfois": [
@@ -367,8 +366,8 @@
       "role": "La publication des vidéos ; accès à réautoriser vers début janvier 2027"
     },
     {
-      "nom": "TikTok (API officielle)",
-      "role": "La publication directe existe dans l'atelier mais n'est pas utilisée : tu postes toi-même les vidéos TikTok (confirmé le 06/10)"
+      "nom": "Post for Me (TikTok)",
+      "role": "Publie les Shorts de L'extrait politique et d'Impacteur Afrique sur TikTok (environ 10 $ les 1 000 vidéos, clé POSTFORME_API_KEY dans le .env du cerveau). L'appli TikTok de l'atelier (tiktok.py) n'est plus utilisée : TikTok l'a refusée le 09/10 (usage personnel)."
     },
     {
       "nom": "Telegram (bot)",

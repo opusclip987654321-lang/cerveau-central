@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-13",
+  "maj": "2026-10-14",
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
   "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu fournis les adresses e-mail (colonne email_contact du Sheet), tu tries sur Telegram ou sur la page Impacteur, et les envois partent tout seuls, plafonnés à 8 par jour.",
   "journee": [
@@ -275,7 +275,7 @@
   ],
   "aCompleter": [
     "Les réponses des auteurs (acceptations d'interview) ne sont notées nulle part dans le Sheet : le cerveau ne peut pas encore les compter.",
-    "TikTok (@impacteur_afrique, @impacteur_frexit) n'est pas branché."
+    "TikTok : les Shorts d'Impacteur Afrique partent seuls sur @impacteur_afrique via Post for Me depuis le 14/10 (voir le guide de L'extrait politique, qui publie ces Shorts) ; @impacteur_frexit n'a pas de Shorts à publier."
   ],
   "outils": [
     {
