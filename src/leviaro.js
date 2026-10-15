@@ -21,6 +21,9 @@ export function extraireLeviaro(db, maintenant = new Date()) {
     echecs: tout("select created_at from messages where status = 'erreur_permanente'").map((m) => jour(m.created_at)),
     // Réponses de vraies personnes (pas les absences ni les erreurs techniques).
     reponses: tout("select received_at, handled from replies where category = 'humaine'").map((r) => ({ jour: jour(r.received_at), traitee: Boolean(r.handled) })),
+    // Ouvertures (pixel) et clics sur le lien du site : colonnes opened_at / clicked_at de
+    // messages, écrites par l'agent depuis le 15/10. Colonnes absentes = « non mesuré », jamais 0.
+    suivi: suiviLeviaro(db),
     oppositions: un("select count(*) from replies where category = 'opposition'"),
     entreprises: tout('select created_at from companies').map((c) => jour(c.created_at)),
     aValider: un("select count(*) from messages where status = 'attente_validation'"),
@@ -36,13 +39,31 @@ export function extraireLeviaro(db, maintenant = new Date()) {
   };
 }
 
+function suiviLeviaro(db) {
+  const colonnes = new Set(db.prepare('pragma table_info(messages)').all().map((c) => c.name));
+  // Pour chaque mail ouvert (ou cliqué) : le jour, et l'entreprise pour le tunnel.
+  const lire = (col) => (colonnes.has(col)
+    ? db.prepare(`select ${col} t, company_id e from messages where status = 'envoye' and ${col} is not null`).all()
+    : null);
+  const [o, c] = [lire('opened_at'), lire('clicked_at')];
+  const entreprises = (l) => (l ? new Set(l.map((m) => m.e)).size : null);
+  return {
+    ouvertures: o && o.map((m) => jour(m.t)),
+    clics: c && c.map((m) => jour(m.t)),
+    entreprisesOuvertes: entreprises(o),
+    entreprisesCliquees: entreprises(c),
+  };
+}
+
 // Si le schéma de leviaro-agent change, on perd le détail mais jamais les chiffres.
 function detailLeviaro(db) {
   const tout = (sql) => db.prepare(sql).all();
+  const colonnes = new Set(tout('pragma table_info(messages)').map((c) => c.name));
+  const suivi = [['opened_at', 'ouvert'], ['clicked_at', 'clic']].map(([c, nom]) => `${colonnes.has(c) ? `m.${c}` : 'null'} ${nom}`).join(', ');
   try {
     return {
       entreprises: tout('select c.name nom, c.city ville, c.sector secteur, c.state etat, c.created_at creee from companies c order by c.id desc limit 300').map((x) => ({ ...x, creee: jour(x.creee) })),
-      messages: tout("select m.step etape, m.status etat, m.subject objet, m.sent_at envoye, m.created_at cree, coalesce(c.name, '?') entreprise from messages m left join companies c on c.id = m.company_id order by m.id desc limit 300").map((x) => ({ ...x, envoye: jour(x.envoye), cree: jour(x.cree) })),
+      messages: tout(`select m.step etape, m.status etat, m.subject objet, m.sent_at envoye, m.created_at cree, coalesce(c.name, '?') entreprise, ${suivi} from messages m left join companies c on c.id = m.company_id order by m.id desc limit 300`).map((x) => ({ ...x, envoye: jour(x.envoye), cree: jour(x.cree), ouvert: jour(x.ouvert), clic: jour(x.clic) })),
       reponses: tout("select r.from_email de, r.subject objet, r.snippet extrait, r.category categorie, r.received_at recu, r.handled traitee, coalesce(c.name, '') entreprise from replies r left join companies c on c.id = r.company_id order by r.id desc limit 200").map((x) => ({ ...x, recu: jour(x.recu), traitee: Boolean(x.traitee) })),
     };
   } catch {

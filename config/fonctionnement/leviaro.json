@@ -101,7 +101,7 @@
           "type": "auto",
           "texte": "Le mail part, puis 2 relances s'il n'y a pas de réponse",
           "outil": "Boîte mail (SMTP)",
-          "technique": "Envoi en heures ouvrées, dans les quotas, avec signature légale et lien de désinscription ; pas de suivi d'ouverture."
+          "technique": "Envoi en heures ouvrées, dans les quotas, avec signature légale et lien de désinscription. Suivi demandé le 15/10 : pixel d'ouverture et lien vers le site suivi par prospect, l'agent écrit la première ouverture dans messages.opened_at et le premier clic dans messages.clicked_at."
         },
         {
           "type": "auto",
@@ -216,7 +216,8 @@
       "titre": "Relances et mesure",
       "points": [
         "Deux relances au maximum après le premier mail",
-        "Pas de pixel de suivi : les ouvertures ne sont pas mesurées"
+        "Ouvertures (pixel) et clics sur le lien du site : décidés le 15/10, écrits par l'agent dans messages.opened_at et messages.clicked_at (heure UTC, premier événement). Tant que ces colonnes n'existent pas, le cerveau affiche « indisponible », jamais 0",
+        "Tunnel de la page Leviaro : contactées → ont ouvert → ont cliqué vers le site → ont répondu → en discussion. Les ouvertures sont approximatives (Apple Mail en compte trop, certaines boîtes bloquent les images) ; le clic est le signal fiable"
       ]
     },
     {
