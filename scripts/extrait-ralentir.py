@@ -4,7 +4,9 @@ marche mieux, le budget économisé va là-bas).
 - 2 Shorts par jour au plus (au lieu d'un par créneau de 3 h entre 7 h et 22 h) ;
 - 1 vidéo longue par semaine sur YouTube : le dimanche à 19 h, avec le meilleur
   des 7 derniers jours (au lieu d'un zapping chaque soir avec les 30 dernières heures).
-Impacteur Afrique (veille, Shorts, vidéo de 20 h) n'est pas touché.
+Complément de louis du 15/10 : Impacteur Afrique passe aussi à une vidéo longue par
+semaine, le samedi à 20 h (ses Shorts sont déjà à 2 par jour, 12 h et 18 h, dans
+PUBLICATION AFRIQUE : pas touchés ici).
 
 À lancer sur le VPS Nūr (là où est le .env du cerveau) :
     python3 scripts/extrait-ralentir.py              (montre tout, ne change rien)
@@ -19,6 +21,8 @@ Ce que fait --appliquer :
 3. ZAPPING 1 : candidats pris sur 7 jours au lieu de 30 h, et les textes « chaque
    soir », « à demain », « du jour » deviennent « chaque dimanche », « dimanche
    prochain », « de la semaine » (consignes de Claude, fin de vidéo, description).
+4. VIDÉO LONGUE AFRIQUE : même chose, 16 h 45 le samedi seulement (publication à
+   20 h), candidats sur 7 jours, textes « chaque samedi », « samedi prochain ».
 Les noms des automatisations ne changent pas (telegram-coupes.py et
 tiktok-postforme.py les retrouvent par leur nom). Ce script ne touche ni PUBLICATION 1
 ni les nœuds Telegram : les trois scripts s'appliquent dans n'importe quel ordre.
@@ -33,6 +37,7 @@ APPLIQUER = "--appliquer" in sys.argv or "--remettre" in sys.argv
 REMETTRE = "--remettre" in sys.argv
 NOM_VEILLE = "VEILLE 1 - Détection des moments forts"
 NOM_ZAPPING = "ZAPPING 1 - Vidéo longue 19h (zapping / extrait long / confrontation)"
+NOM_AFRIQUE = "VIDÉO LONGUE AFRIQUE - 20h (zapping / extrait long / confrontation)"
 ICI = pathlib.Path(__file__).resolve().parent
 
 env = {}
@@ -123,7 +128,48 @@ ZAPPING = [
      "le meilleur de la politique française, chaque dimanche à 19h.",
      "Description YouTube : « chaque dimanche à 19h »"),
 ]
-CRON_AVANT, CRON_APRES = "30 17 * * *", "30 17 * * 0"
+AFRIQUE = [
+    ("Choisir les candidats",
+     "// Vidéo longue quotidienne Impacteur Afrique : candidats = vidéos repérées par VEILLE AFRIQUE depuis 30 h",
+     "// Vidéo longue hebdomadaire Impacteur Afrique (samedi 20h, choix de louis du 15/10) : candidats = vidéos repérées par VEILLE AFRIQUE depuis 7 jours",
+     "Afrique : commentaire"),
+    ("Choisir les candidats",
+     "now - Date.parse(v.publiee_le) < 30 * 3600e3",
+     "now - Date.parse(v.publiee_le) < 7 * 24 * 3600e3",
+     "Afrique : candidats des 7 derniers jours au lieu de 30 h"),
+    ("Choisir les candidats",
+     "vidéos sur 30 h)`",
+     "vidéos sur 7 jours)`",
+     "Afrique : message d'erreur"),
+    ("Préparer les moments",
+     "qui publie chaque soir à 20h une vidéo longue",
+     "qui publie chaque samedi à 20h une vidéo longue (le meilleur de la semaine)",
+     "Afrique, consigne de Claude (choix des moments) : chaque samedi"),
+    ("Rédaction",
+     "Chaque soir à 20h, une vidéo longue.",
+     "Chaque samedi à 20h, une vidéo longue : le meilleur de la semaine.",
+     "Afrique, consigne de Claude (conducteur) : chaque samedi"),
+    ("Rédaction",
+     "le meilleur de l'actualité africaine du jour ;",
+     "le meilleur de l'actualité africaine de la semaine ;",
+     "Afrique, consigne de Claude : le meilleur de la semaine"),
+    ("Rédaction",
+     "(rendez-vous demain + abonnement)",
+     "(rendez-vous samedi prochain + abonnement)",
+     "Afrique, voix de fin : rendez-vous samedi prochain"),
+    ("Conducteur",
+     "zapping: `L'actualité africaine du ${prev.dateLabel}`, extrait_long: 'Le moment fort du jour'",
+     "zapping: \"L'actualité africaine de la semaine\", extrait_long: 'Le moment fort de la semaine'",
+     "Afrique, écran d'ouverture : « de la semaine »"),
+    ("Conducteur",
+     "outro_gros: 'À DEMAIN, 20H'",
+     "outro_gros: 'SAMEDI PROCHAIN, 20H'",
+     "Afrique, écran de fin : « SAMEDI PROCHAIN, 20H »"),
+    ("Description",
+     "l'actualité africaine en français, chaque soir à 20h.",
+     "l'actualité africaine en français, chaque samedi à 20h.",
+     "Afrique, description YouTube : « chaque samedi à 20h »"),
+]
 
 
 def actif(nom):
@@ -156,26 +202,31 @@ def remplacer(w, liste):
         changements.append(message)
 
 
-wv, wz = actif(NOM_VEILLE), actif(NOM_ZAPPING)
+def declencheur(w, cron_avant, cron_apres, quoi):
+    """Le déclencheur horaire de la vidéo longue : chaque jour → un jour par semaine."""
+    declencheurs = [n for n in w["nodes"] if n["type"].endswith("scheduleTrigger")]
+    if len(declencheurs) != 1:
+        stop(f"{w['name']} : {len(declencheurs)} déclencheur(s) horaire(s), il en faut exactement un.")
+    regles = declencheurs[0]["parameters"].get("rule", {}).get("interval", [])
+    avant, apres = (cron_apres, cron_avant) if REMETTRE else (cron_avant, cron_apres)
+    if [r.get("expression") for r in regles] == [apres]:
+        changements.append(f"{quoi} : déclencheur déjà réglé")
+    elif [r.get("expression") for r in regles] == [avant]:
+        regles[0]["expression"] = apres
+        modifies.add(w["id"])
+        changements.append(f"{quoi} : " + ("de nouveau chaque jour" if REMETTRE else "un jour par semaine au lieu de chaque jour"))
+    else:
+        stop(f"Déclencheur inattendu dans {w['name']} : {json.dumps(regles, ensure_ascii=False)}")
+
+
+wv, wz, wa = actif(NOM_VEILLE), actif(NOM_ZAPPING), actif(NOM_AFRIQUE)
 remplacer(wv, VEILLE)
 remplacer(wz, ZAPPING)
+declencheur(wz, "30 17 * * *", "30 17 * * 0", "Vidéo longue : montage le dimanche à 17 h 30 (publication à 19 h)")
+remplacer(wa, AFRIQUE)
+declencheur(wa, "45 16 * * *", "45 16 * * 6", "Afrique : montage le samedi à 16 h 45 (publication à 20 h)")
 
-# Le déclencheur du zapping : 17 h 30 chaque jour → le dimanche seulement.
-declencheurs = [n for n in wz["nodes"] if n["type"].endswith("scheduleTrigger")]
-if len(declencheurs) != 1:
-    stop(f"{NOM_ZAPPING} : {len(declencheurs)} déclencheur(s) horaire(s), il en faut exactement un.")
-regles = declencheurs[0]["parameters"].get("rule", {}).get("interval", [])
-avant, apres = (CRON_APRES, CRON_AVANT) if REMETTRE else (CRON_AVANT, CRON_APRES)
-if [r.get("expression") for r in regles] == [apres]:
-    changements.append("Vidéo longue : déclencheur déjà réglé")
-elif [r.get("expression") for r in regles] == [avant]:
-    regles[0]["expression"] = apres
-    modifies.add(wz["id"])
-    changements.append("Vidéo longue : " + ("de nouveau chaque jour à 17 h 30" if REMETTRE else "17 h 30 le dimanche seulement au lieu de chaque jour") + " (publication à 19 h)")
-else:
-    stop(f"Déclencheur inattendu dans {NOM_ZAPPING} : {json.dumps(regles, ensure_ascii=False)}")
-
-print("Retour au rythme d'avant :" if REMETTRE else "Ralentissement de L'extrait politique (Impacteur Afrique inchangé) :")
+print("Retour au rythme d'avant :" if REMETTRE else "Ralentissement de L'extrait politique et de la vidéo longue d'Impacteur Afrique :")
 for c in changements:
     print(f"  - {c}")
 
@@ -186,7 +237,7 @@ if not modifies:
     print("\nTout est déjà en place, rien à enregistrer.")
     sys.exit(0)
 
-for w in (wv, wz):
+for w in (wv, wz, wa):
     if w["id"] not in modifies:
         continue
     api("PUT", f"/api/v1/workflows/{w['id']}", {"name": w["name"], "nodes": w["nodes"], "connections": w["connections"], "settings": w.get("settings", {})})
@@ -196,7 +247,7 @@ for w in (wv, wz):
         pass
     print(f"Enregistré : {w['name']}")
 if REMETTRE:
-    print("\nRythme d'avant rétabli : un Short par créneau de 3 h et la vidéo longue chaque soir.")
+    print("\nRythme d'avant rétabli : un Short par créneau de 3 h et les vidéos longues chaque soir.")
 else:
-    print("\nC'est en place : 2 Shorts par jour au plus dès la prochaine veille, et la vidéo longue"
-          "\nle dimanche à 19 h (la prochaine sort dimanche, plus rien les autres soirs).")
+    print("\nC'est en place : 2 Shorts par jour au plus dès la prochaine veille, la vidéo longue"
+          "\nde L'extrait politique le dimanche à 19 h et celle d'Impacteur Afrique le samedi à 20 h.")

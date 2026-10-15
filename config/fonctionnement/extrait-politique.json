@@ -210,8 +210,8 @@
         "Shorts : la veille ne lance plus de Short quand 2 ont déjà été lancés dans la journée (heure de Paris) ; un Short abandonné ne compte pas",
         "Vidéo longue : le dimanche seulement, avec les vidéos des 7 derniers jours (avant : chaque soir, 30 dernières heures) ; les textes disent « chaque dimanche » et « dimanche prochain, 19h »",
         "Économie estimée : environ 45 € par mois (Claude, Deepgram, image de miniature), à confirmer sur les factures ; la veille horaire reste au même coût (environ 0,75 € par jour)",
-        "Impacteur Afrique (veille, Shorts, vidéo de 20h) n'est pas concerné",
-        "Mise en place : scripts/extrait-ralentir.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer ralentit, --remettre revient au rythme d'avant)"
+        "Impacteur Afrique (complément de louis du 15/10) : vidéo longue le samedi seulement (montage 16h45, publication 20h), avec les vidéos des 7 derniers jours ; ses Shorts restent à 2 par jour, à 12h et 18h (réglés dans PUBLICATION AFRIQUE)",
+        "Mise en place : scripts/extrait-ralentir.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer ralentit les deux chaînes, --remettre revient au rythme d'avant)"
       ]
     },
     {
