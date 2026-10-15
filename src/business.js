@@ -401,6 +401,10 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
       aDecider,
       extra: [
         { titre: 'Réponses', valeur: somme(parJour(periode, reponses)), detail: `${pct(reponses.length, premiers.length) ?? 0} % de réponse depuis le début (${nombre(reponses.length)} sur ${nombre(premiers.length)})` },
+        // Ouvertures et clics : « indisponible » tant que l'agent ne les écrit pas, jamais 0.
+        ...[['Mails ouverts', lv.suivi?.ouvertures, lv.suivi?.entreprisesOuvertes], ['Clics vers le site', lv.suivi?.clics, lv.suivi?.entreprisesCliquees]].map(([titre, l, n]) => (l
+          ? { titre, valeur: somme(parJour(periode, l)), detail: `${pct(n, premiers.length) ?? 0} % des entreprises contactées depuis le début (${nombre(n)} sur ${nombre(premiers.length)})` }
+          : { titre, valeur: 'indisponible', detail: 'pas encore mesuré par l’agent Leviaro' })),
         { titre: 'Relances envoyées', valeur: somme(parJour(periode, relances)) },
         { titre: 'Entreprises trouvées', valeur: somme(parJour(periode, lv.entreprises)), detail: `${nombre(lv.enDiscussion)} en discussion · coût IA du mois ${lv.coutMois.toLocaleString('fr-FR')} €` },
         ...(diag ? [{

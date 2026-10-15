@@ -56,10 +56,41 @@ test('synchroniserLeviaro lit une copie de la base et en tire les chiffres', asy
   const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-05' }).cartes.find((c) => c.id === 'leviaro');
   assert.equal(carte.principal.total, 2);
   assert.equal(carte.chiffres[0].valeur, 1);
-  assert.equal(carte.chiffres[1].valeur, 1);
+  assert.equal(carte.chiffres.find((x) => x.titre === 'Relances envoyées').valeur, 1);
+  // Base sans colonnes de suivi : « indisponible », jamais 0.
+  assert.equal(carte.chiffres.find((x) => x.titre === 'Mails ouverts').valeur, 'indisponible');
+  assert.equal(lv.suivi.ouvertures, null);
   assert.equal(carte.couleur, 'orange'); // un échec définitif
   assert.ok(carte.aDecider.some((t) => /1 réponse\(s\) de prospect pas encore traitée/.test(t)));
   assert.ok(carte.aDecider.some((t) => /1 recommandation/.test(t)));
+});
+
+test('Leviaro : ouvertures et clics lus dans messages, comptés par entreprise pour le tunnel', async () => {
+  const dossier = await baseExemple();
+  const db = new DatabaseSync(path.join(dossier, 'leviaro.db'));
+  db.exec(`
+    alter table messages add column opened_at text;
+    alter table messages add column clicked_at text;
+    update messages set company_id = 1;
+    update messages set opened_at = '2026-10-04 10:00:00' where id in (1, 3);
+    update messages set clicked_at = '2026-10-04 23:30:00' where id = 2;
+    update messages set opened_at = '2026-10-05 08:00:00' where id = 4;
+  `);
+  db.close();
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserLeviaro(b, dossier, { maintenant: new Date('2026-10-05T12:00:00Z') });
+  const lv = b.sources.leviaro;
+  assert.deepEqual(lv.suivi.ouvertures, ['2026-10-04', '2026-10-04']); // le mail non envoyé ne compte pas
+  assert.deepEqual(lv.suivi.clics, ['2026-10-05']);
+  assert.equal(lv.suivi.entreprisesOuvertes, 1);
+  assert.equal(lv.detail.messages.find((m) => m.clic).clic, '2026-10-05');
+  const carte = tableauDeBord({ business: b, journal: { evenements: [], n8n: { jours: {} } }, configJournal, jour: '2026-10-05' }).cartes.find((c) => c.id === 'leviaro');
+  assert.equal(carte.chiffres.find((x) => x.titre === 'Mails ouverts').valeur, 2);
+  assert.equal(carte.chiffres.find((x) => x.titre === 'Clics vers le site').valeur, 1);
+  const { tunnel } = await import('../src/tunnel.js');
+  const etapes = tunnel('leviaro', b).etapes;
+  assert.equal(etapes.find((x) => x.t === 'ont ouvert le mail').n, 1);
+  assert.equal(etapes.find((x) => x.t === 'ont cliqué vers le site').n, 1);
 });
 
 test('synchroniserLeviaro : pas de base, rien à faire', async () => {

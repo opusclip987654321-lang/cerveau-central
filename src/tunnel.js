@@ -37,6 +37,8 @@ export function tunnel(id, business, { jours30 = null } = {}) {
           { n: ent.length ? trouvees - etat('decouverte') : '?', t: 'étudiées' },
           { n: ent.length ? etat('attente_validation', 'sequence_active', 'discussion_active', 'cloturee') : '?', t: 'contact trouvé' },
           { n: lv.envois.filter((m) => m.etape === 0).length, t: 'contactées' },
+          { n: lv.suivi?.entreprisesOuvertes ?? '?', t: 'ont ouvert le mail', manque: lv.suivi?.ouvertures ? null : 'ouvertures (pixel de l’agent)' },
+          { n: lv.suivi?.entreprisesCliquees ?? '?', t: 'ont cliqué vers le site', manque: lv.suivi?.clics ? null : 'clics sur le lien (agent)' },
           { n: lv.reponses.length, t: 'ont répondu' },
           { n: lv.enDiscussion ?? '?', t: 'en discussion' },
           { n: '?', t: 'clientes', manque: 'clients signés' },
