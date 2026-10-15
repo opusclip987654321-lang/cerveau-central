@@ -1,7 +1,7 @@
 {
-  "maj": "2026-10-14",
+  "maj": "2026-10-15",
   "source": "Guide « fonctionnement v4 » écrit avec louis le 04/10/2026 ; outils relus dans le code de l'atelier (/opt/atelier) le 06/10/2026",
-  "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique des Shorts et un zapping quotidien, les publie, puis apprend de ses résultats et de tes choix.",
+  "intro": "L'agent tourne seul, jour et nuit, sur le serveur YouTube. Il repère les moments forts de la politique française, fabrique 2 Shorts par jour et une vidéo longue chaque dimanche, les publie, puis apprend de ses résultats et de tes choix.",
   "journee": [
     {
       "quand": "Toutes les heures",
@@ -10,7 +10,7 @@
     },
     {
       "quand": "Après ton ✅",
-      "quoi": "Fabrication d'un Short (environ 1 min 30), sans message Telegram depuis le 13/10.",
+      "quoi": "Fabrication d'un Short (environ 1 min 30), sans message Telegram depuis le 13/10. Depuis le 15/10, l'IA en lance 2 par jour au plus.",
       "toi": "Valider, demander un autre moment, ou abandonner"
     },
     {
@@ -19,8 +19,8 @@
       "toi": "Passer YouTube en public (jusqu'à l'audit)"
     },
     {
-      "quand": "18h → 19h",
-      "quoi": "Fabrication puis publication du zapping quotidien (8 à 10 min), sans validation.",
+      "quand": "Dimanche 17h30 → 19h",
+      "quoi": "Fabrication puis publication de la vidéo longue de la semaine (8 à 15 min), sans validation. Plus de vidéo longue les autres soirs depuis le 15/10.",
       "toi": "Passer la vidéo YouTube en public (jusqu'à l'audit)"
     },
     {
@@ -96,12 +96,12 @@
       ]
     },
     {
-      "titre": "Le zapping de 19h",
-      "note": "Tous les jours, sans validation de ta part. L'IA choisit seule, en tenant compte de tes ✅ et de ce qu'elle a appris.",
+      "titre": "La vidéo longue du dimanche (19h)",
+      "note": "Une fois par semaine depuis le 15/10 (choix de louis : Petites histoires vraies marche mieux, le budget économisé va là-bas). Sans validation de ta part : l'IA choisit seule, en tenant compte de tes ✅ et de ce qu'elle a appris.",
       "etapes": [
         {
           "type": "auto",
-          "texte": "18 h : on rassemble les vidéos des 30 dernières heures, jamais utilisées dans un zapping",
+          "texte": "Dimanche 17 h 30 : on rassemble les vidéos des 7 derniers jours, jamais utilisées dans une vidéo longue",
           "outil": "YouTube",
           "technique": "Seulement les sources autorisées ; téléchargement via le proxy IPRoyal (payant au Go)."
         },
@@ -118,25 +118,25 @@
         },
         {
           "type": "auto",
-          "texte": "L'IA compose l'émission : 9 à 14 extraits, 8 à 10 minutes, rien de risqué",
+          "texte": "L'IA compose l'émission avec le meilleur de la semaine : zapping, extrait long ou face à face, 8 à 15 minutes, rien de risqué",
           "outil": "Claude (API Anthropic)",
           "technique": "Consignes : au plus 2 extraits par chaîne TV, environ 20 % d'essais, extraits à risque écartés."
         },
         {
           "type": "auto",
-          "texte": "Montage du zapping : intro, bandeaux, sous-titres, sources, fin, chapitres et miniature",
+          "texte": "Montage : intro « de la semaine », bandeaux, sous-titres, sources, fin « dimanche prochain, 19h », chapitres et miniature",
           "outil": "Atelier (ffmpeg) + OpenAI",
           "technique": "L'atelier monte la vidéo 16:9 ; le visuel de la miniature vient de l'API images d'OpenAI."
         },
         {
           "type": "auto",
-          "texte": "19 h : le zapping est publié sur YouTube et Facebook",
+          "texte": "Dimanche 19 h : la vidéo est publiée sur YouTube et Facebook",
           "outil": "YouTube et Meta",
           "technique": "Mise en ligne par l'API YouTube (en privé jusqu'à l'audit) et l'API Meta."
         },
         {
           "type": "toi",
-          "texte": "Tu passes le zapping YouTube en public",
+          "texte": "Tu passes la vidéo YouTube en public",
           "outil": "YouTube Studio",
           "technique": "Tant que l'audit de l'API YouTube n'est pas validé, les vidéos arrivent en privé."
         },
@@ -197,25 +197,36 @@
     {
       "titre": "Rythme",
       "points": [
-        "Veille : une fois par heure",
-        "Shorts : 1 par heure au maximum, mis en file d'attente automatiquement",
-        "Zapping : tous les jours, montage à 18h, publication à 19h",
+        "Veille : une fois par heure (elle continue de noter les vidéos, la vidéo du dimanche s'en sert)",
+        "Shorts : 2 par jour au plus, lancés par l'IA entre 7h et 22h, 1 par heure au maximum à la publication",
+        "Vidéo longue : une par semaine, montage le dimanche à 17h30, publication à 19h",
         "Bilan et leçons : tous les jours à 10h"
+      ]
+    },
+    {
+      "titre": "Ralentissement (choix de louis du 15/10)",
+      "points": [
+        "Petites histoires vraies marche mieux : L'extrait politique passe à 2 Shorts par jour et 1 vidéo longue par semaine, le budget économisé va à Petites histoires vraies",
+        "Shorts : la veille ne lance plus de Short quand 2 ont déjà été lancés dans la journée (heure de Paris) ; un Short abandonné ne compte pas",
+        "Vidéo longue : le dimanche seulement, avec les vidéos des 7 derniers jours (avant : chaque soir, 30 dernières heures) ; les textes disent « chaque dimanche » et « dimanche prochain, 19h »",
+        "Économie estimée : environ 45 € par mois (Claude, Deepgram, image de miniature), à confirmer sur les factures ; la veille horaire reste au même coût (environ 0,75 € par jour)",
+        "Impacteur Afrique (veille, Shorts, vidéo de 20h) n'est pas concerné",
+        "Mise en place : scripts/extrait-ralentir.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer ralentit, --remettre revient au rythme d'avant)"
       ]
     },
     {
       "titre": "Durées",
       "points": [
         "Shorts : 62 à 70 s visés (au-delà d'1 min, rémunération TikTok) ; 15 à 60 s si le moment est court ; jamais plus de 72 s",
-        "Zapping : 8 à 10 min (pubs au milieu possibles à partir de 8 min)",
-        "Extrait dans le zapping : 45 s max pour une chaîne TV, 60 s pour les autres"
+        "Vidéo longue : 8 à 15 min (pubs au milieu possibles à partir de 8 min)",
+        "Extrait dans la vidéo longue : 45 s max pour une chaîne TV, 60 s pour les autres"
       ]
     },
     {
       "titre": "Anti-strike",
       "points": [
         "TF1 : veille seulement, jamais d'extrait",
-        "Au plus 2 extraits par chaîne TV dans un zapping",
+        "Au plus 2 extraits par chaîne TV dans une vidéo longue",
         "Toujours un titre, une phrase de contexte et la source à l'écran",
         "Préférence pour les sources institutionnelles et les comptes officiels",
         "Problème détecté : la source prend une pénalité, elle est exclue à 3, et les publications continuent sans elle"
@@ -227,7 +238,7 @@
         "Extraits à risque élevé écartés (violence, rumeurs, accusations non établies, grossièretés)",
         "Pas d'insulte dans les titres et miniatures, titres non trompeurs",
         "Sujet sensible : traité sobrement, jamais en ouverture ni en miniature",
-        "Zapping de 19h : équilibre entre les camps politiques, ton neutre"
+        "Vidéo longue du dimanche : équilibre entre les camps politiques, ton neutre"
       ]
     },
     {
@@ -240,7 +251,7 @@
         "Interviews ailleurs : toutes les heures, la veille cherche aussi sur tout YouTube les vidéos longues (plus de 20 min, publiées depuis 3 h) qui citent une de ces personnalités, puis les note comme les autres (scripts/extrait-interviews.py ; clé YouTube du cerveau, 2 400 points de quota par jour sur 10 000)",
         "Une interview longue retenue est transcrite en entier par Deepgram avant le choix de l'extrait : environ 40 centimes pour 1 h 30 de vidéo",
         "Mise en place et changement de liste : scripts/extrait-personnalites.py, lancé par louis sur le VPS Nūr (sans option il montre, avec --appliquer il modifie n8n)",
-        "Confrontation : la vidéo principale vient de la veille (donc d'une personnalité de la liste), celle qui lui répond peut être de n'importe qui ; le zapping de 19h et Impacteur Afrique ne sont pas concernés"
+        "Confrontation : la vidéo principale vient de la veille (donc d'une personnalité de la liste), celle qui lui répond peut être de n'importe qui ; la vidéo longue du dimanche et Impacteur Afrique ne sont pas concernés"
       ]
     },
     {
@@ -273,7 +284,7 @@
   "alertes": [
     {
       "message": "Crédit du proxy épuisé",
-      "sens": "Le proxy IPRoyal n'a plus de crédit : l'agent ne peut plus rien télécharger depuis YouTube. Shorts et zapping s'arrêtent.",
+      "sens": "Le proxy IPRoyal n'a plus de crédit : l'agent ne peut plus rien télécharger depuis YouTube. Shorts et vidéo longue s'arrêtent.",
       "faire": "Recharger IPRoyal, puis dire à Claude de relancer les extraits en attente.",
       "niveau": "urgent"
     },
@@ -288,9 +299,9 @@
       "faire": "Rien. Le sujet peut être repris depuis une autre chaîne."
     },
     {
-      "message": "Pas assez de matière pour le zapping",
-      "sens": "Moins de 6 vidéos utilisables sur 30 h.",
-      "faire": "Rien. Pas de zapping ce jour-là."
+      "message": "Pas assez de matière pour la vidéo longue",
+      "sens": "Moins de 3 vidéos utilisables sur 7 jours.",
+      "faire": "Rien. Pas de vidéo longue ce dimanche-là."
     },
     {
       "message": "🚨 Droits d'auteur (rubrique du bilan de 10h)",
@@ -377,7 +388,7 @@
   "vigilance": [
     {
       "sujet": "Proxy IPRoyal",
-      "detail": "Environ 3 à 5 Go par mois avec le zapping quotidien. Surveiller le crédit restant."
+      "detail": "Environ 3 à 5 Go par mois avec le zapping quotidien ; beaucoup moins depuis le passage à une vidéo longue par semaine (15/10). Surveiller le crédit restant."
     },
     {
       "sujet": "Audit YouTube",
@@ -389,7 +400,7 @@
     },
     {
       "sujet": "Quota YouTube",
-      "detail": "10 000 points par jour. Une mise en ligne coûte 1 600 points, soit environ 6 vidéos par jour au total (Shorts + zapping)."
+      "detail": "10 000 points par jour. Une mise en ligne coûte 1 600 points ; avec 2 Shorts par jour et la vidéo du dimanche, on reste loin de la limite."
     },
     {
       "sujet": "Mémoire",
