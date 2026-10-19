@@ -143,8 +143,12 @@ const MODELE = __MODELE__;
 const MAX_CLAUDE = 30;
 const adresses = (s) => (String(s || '').toLowerCase().match(/[a-z0-9._%+'-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/g) || []);
 const sujet = (s) => String(s || '').toLowerCase().replace(/^\s*((re|tr|fwd?|fw|aw|réf|ref)\s*:\s*)+/g, '').replace(/\s+/g, ' ').trim();
-const AUTO_DE = /mailer-daemon|postmaster|no-?reply|do-?not-?reply|ne-?pas-?r[ée]pondre/i;
+const AUTO_DE = /mailer-daemon|postmaster|no-?reply|do-?not-?reply|ne-?pas-?r[ée]pondre|mailsuite|mailtrack/i;
 const AUTO_OBJET = /absence|absent|out of office|automatic reply|auto[- ]?reply|r[ée]ponse automatique|undeliver|non remis|delivery status|d[ée]livrance|cong[ée]s/i;
+// Pas des réponses : rappels d'un outil de suivi d'ouverture (19/10, fiche Lisnard) et accusés de réception
+// automatiques des maisons d'édition (19/10, « Nous accusons réception de votre email »).
+const AUTO_TEXTE = /n'a pas encore été ouvert|me le rappeler dans|has not been opened yet|accusons (bonne )?réception|accusé de réception|message automatique|réponse automatique|automatic reply|this is an automated/i;
+const exclus = new Set();
 
 const fiches = $('LIRE FICHES').all().map((i) => i.json).filter((f) => f.cle_unique && !String(f.cle_unique).startsWith('_'));
 const parAdresse = new Map(), parSujet = new Map();
@@ -161,7 +165,7 @@ for (const [boite, noeud] of [['Afrique', 'GMAIL AFRIQUE - mails reçus'], ['Fre
     const brut = m.From ?? m.from?.value?.[0]?.address ?? m.from?.text ?? m.from;
     const de = adresses(brut)[0] || '';
     const objet = String(m.Subject ?? m.subject ?? '');
-    if (!de || AUTO_DE.test(de) || AUTO_OBJET.test(objet)) continue;
+    if (!de || AUTO_DE.test(de) || AUTO_OBJET.test(objet)) { exclus.add(String(m.id)); continue; }
     const date = m.internalDate ? new Date(Number(m.internalDate)) : new Date(m.date || m.Date || Date.now());
     // Le texte de l'invité seul : on coupe l'historique cité (« Le … a écrit : », « De : », « > »).
     // Mail en HTML seul (Gmail, Outlook…) : on coupe à la citation, puis on retire les balises.
@@ -170,6 +174,7 @@ for (const [boite, noeud] of [['Afrique', 'GMAIL AFRIQUE - mails reçus'], ['Fre
       .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     const corps = String((String(m.text || '').trim() ? m.text : '') || html || m.snippet || '').split(/\n\s*(?:>|Le .{5,120} a [ée]crit|On .{5,120} wrote|De ?: |From: |-----)/)[0];
     const texte = corps.replace(/\s+/g, ' ').trim();
+    if (AUTO_TEXTE.test(texte.slice(0, 400))) { exclus.add(String(m.id)); continue; }
     mails.push({ id: String(m.id), boite, de, objet, texte, date: date.toISOString() });
   }
 }
@@ -186,9 +191,9 @@ for (const m of mails) {
 const mises = [], aLire = [];
 for (const [cle, { f, mails: l }] of parFiche) {
   l.sort((a, b) => (a.date < b.date ? -1 : 1));
-  const avant = String(f.reponse_ids || '').split(',').filter(Boolean);
+  const avant = String(f.reponse_ids || '').split(',').filter((id) => id && !exclus.has(id));
   const ids = [...new Set([...avant, ...l.map((m) => m.id)])].sort();
-  const nouveau = ids.join(',') !== [...avant].sort().join(',');
+  const nouveau = ids.join(',') !== String(f.reponse_ids || '').split(',').filter(Boolean).sort().join(',');
   const typeAvant = String(f.reponse_type || '').trim();
   if (!nouveau && typeAvant && typeAvant !== 'A_CLASSER') continue;
   const dernier = l[l.length - 1];
@@ -209,6 +214,13 @@ for (const [cle, { f, mails: l }] of parFiche) {
       chaine: f.chaine || '',
       reponses: l.slice(-3).map((m) => ({ objet: m.objet.slice(0, 200), texte: m.texte.slice(0, 1200) })),
     });
+}
+
+// Une fiche dont toutes les « réponses » sont maintenant écartées (mails automatiques) est remise à vide.
+for (const f of fiches) {
+  const ids = String(f.reponse_ids || '').split(',').filter(Boolean);
+  if (ids.length && !parFiche.has(String(f.cle_unique)) && ids.every((id) => exclus.has(id)))
+    mises.push({ cle_unique: String(f.cle_unique), reponse_le: '', reponse_de: '', reponse_texte: '', reponse_ids: '', reponse_type: '' });
 }
 
 const consigne =
@@ -243,6 +255,7 @@ try {
 } catch (e) { types = {}; }
 return r.mises.map((m) => {
   const t = String(types[m.cle_unique] || '').toUpperCase().replace(/\s+/g, '');
+  if (!m.reponse_ids) return { json: m }; // fiche remise à vide
   return { json: { ...m, reponse_type: TYPES.includes(t) ? t : 'A_CLASSER' } };
 });"""
 

@@ -214,7 +214,7 @@
           "texte": "Absence, réponse automatique ou mail sans rapport ?",
           "sinon": "ignoré",
           "outil": "Google Sheets",
-          "technique": "Seuls comptent les mails dont l'expéditeur est l'adresse email_contact d'une fiche, ou dont l'objet est le « Re: » de l'invitation."
+          "technique": "Seuls comptent les mails dont l'expéditeur est l'adresse email_contact d'une fiche, ou dont l'objet est le « Re: » de l'invitation. Sont écartés : absences, accusés de réception automatiques des éditeurs, rappels d'un outil de suivi d'ouverture (« n'a pas encore été ouvert »)."
         },
         {
           "type": "auto",
