@@ -240,6 +240,42 @@
           "technique": "Une étape « lire la méthode » au début de chaque matin, sur une adresse secrète du cerveau ; s'il ne répond pas, les textes d'avant partent."
         }
       ]
+    },
+    {
+      "titre": "Le grand public (loop du 19/10)",
+      "note": "Faire connaître le site aux particuliers (networking, dating) et remplir les soirées. Mesure branchée le 19/10 ; la loop qui change elle-même les formats et la page d'arrivée arrive ensuite (budget IA 60 €/mois, choix de louis).",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Chaque jour, un article de blog est mis en ligne ; à 18 h 30, son carrousel part sur Instagram @nour_meetup et sur la Page Facebook",
+          "outil": "Site Nūr Meet",
+          "technique": "Tâche du site (publication quotidienne) ; l'IA du blog utilise la clé Anthropic, une réserve d'articles prend le relais si elle est refusée."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque heure, le site envoie au cerveau ses chiffres grand public : comptes créés, candidatures, places payées, soirées à venir, posts Instagram et Facebook, origine des visiteurs",
+          "outil": "Relevé du VPS Nūr",
+          "technique": "scripts/nour-public-releve.sh (cron) lit la base du site en lecture seule et l'envoie à /api/nour-public."
+        },
+        {
+          "type": "securite",
+          "texte": "Chaque réseau a-t-il publié depuis moins de 2 jours ?",
+          "sinon": "alerte sur la carte Nūr Meet avec l'erreur exacte (clé expirée, appli Meta bridée…)",
+          "technique": "Comparaison du dernier post réussi avec la date du jour."
+        },
+        {
+          "type": "securite",
+          "texte": "Y a-t-il au moins une vraie soirée à vendre ?",
+          "sinon": "alerte sur la carte : sans soirée, un visiteur intéressé ne peut rien réserver",
+          "technique": "Soirées publiées à venir, hors démonstration."
+        },
+        {
+          "type": "auto",
+          "texte": "Une soirée qui n'atteint pas son minimum de participants à sa date limite est annulée et remboursée automatiquement",
+          "outil": "Site Nūr Meet",
+          "technique": "Réglage MIN_PARTICIPANTS_NO_RESPONSE_ACTION = CANCEL (posé par louis le 19/10)."
+        }
+      ]
     }
   ],
   "regles": [
@@ -306,6 +342,16 @@
         "Pause : plus aucun changement, la méthode en cours continue ; Annuler : retour à la version précédente",
         "Version 2 (19/10, écrite par Claude) : premier mail avec le prix, ce que le restaurant y gagne et une offre de rappel",
         "Un restaurant inscrit sur le site ne reçoit plus de relance de prospection (exclusion « inscrit ») ; la suite (date et nombre de places d'une soirée) passe par la loop grand public, qui seule lui écrit"
+      ]
+    },
+    {
+      "titre": "Grand public",
+      "points": [
+        "Succès = comptes de particuliers créés, puis candidatures et places payées aux soirées",
+        "Les restaurants créent eux-mêmes leurs soirées (date, places, prix, minimum) depuis leur espace ; tout le reste est automatique",
+        "La loop est libre de changer de format, de réseau, de message ou de page d'arrivée ; elle demande à louis seulement si un changement lui semble trop radical",
+        "Une image ou une vidéo faite par IA est toujours signalée comme telle et jamais présentée comme une vraie soirée",
+        "Donnée absente = « indisponible », jamais 0"
       ]
     }
   ],
@@ -379,6 +425,10 @@
     {
       "nom": "Claude (loop restaurateurs)",
       "role": "Haiku 5.5 trie les réponses, Opus 5.5 revoit la méthode chaque lundi ; 10 €/mois au maximum"
+    },
+    {
+      "nom": "Relevé grand public (scripts/nour-public-releve.sh)",
+      "role": "Lit chaque heure la base du site Nūr Meet (lecture seule) et envoie au cerveau comptes, candidatures, places, soirées, posts et origine des visiteurs"
     }
   ],
   "alertes": [
@@ -408,6 +458,22 @@
       "message": "Le cerveau n'arrive plus à lire tes automatisations",
       "sens": "n8n ne répond plus : impossible de savoir si la prospection tourne.",
       "faire": "Si ça dure plus d'une heure, regarder le serveur."
+    },
+    {
+      "message": "Instagram (ou Facebook) ne publie plus depuis N jours",
+      "sens": "Le réseau refuse les posts : clé expirée ou invalidée, ou appli Meta bridée. L'erreur exacte est citée.",
+      "faire": "Prévenir Claude dans le fil « Loop Nūr Meet grand public » : il donne la marche pour refaire la clé.",
+      "niveau": "important"
+    },
+    {
+      "message": "Aucune vraie soirée à vendre aux particuliers",
+      "sens": "Même un visiteur intéressé ne peut rien réserver.",
+      "faire": "Relancer un restaurant inscrit pour qu'il crée une soirée depuis son espace."
+    },
+    {
+      "message": "Le relevé grand public de Nūr Meet n'arrive plus",
+      "sens": "Le cron du VPS Nūr ne tourne plus : les chiffres grand public sont figés.",
+      "faire": "Vérifier la ligne nour-public-releve.sh dans « crontab -l » sur le VPS Nūr."
     }
   ]
 }
