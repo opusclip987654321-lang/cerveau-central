@@ -51,6 +51,7 @@ import { dossiersCode, listerCode, lireCode } from './code-source.js';
 import { etatConnexions, noterTentative } from './connexions.js';
 import { synchroniserVisites } from './visites.js';
 import { pageConnexions } from './page-connexions.js';
+import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -79,6 +80,9 @@ const plafondBilans = Number(env.PLAFOND_BILAN_DOLLARS ?? 10);
 // L'analyse du matin (refonte du 11/10) : budget à part, ~4 $/mois attendus.
 const fichierMatin = path.join(path.dirname(fichierEtat), 'matin.json');
 const plafondMatin = Number(env.PLAFOND_MATIN_DOLLARS ?? 5);
+// La loop Nūr Meet restaurateurs (19/10) : 10 €/mois choisis par louis, ~11 $.
+const fichierLoop = path.join(path.dirname(fichierEtat), 'loop-nour-meet.json');
+const plafondLoop = Number(env.PLAFOND_LOOP_NOUR_DOLLARS ?? 11);
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -175,6 +179,7 @@ const avecIdees = fileDAttente(chargerIdees, sauverIdees, fichierIdees);
 const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
 const avecBilans = fileDAttente(chargerBilans, sauverBilans, fichierBilans);
 const avecMatin = fileDAttente(chargerMatin, sauverMatin, fichierMatin);
+const avecLoop = fileDAttente(chargerLoop, sauverLoop, fichierLoop);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -399,6 +404,28 @@ async function analyseDuMatin() {
   }
 }
 
+// La loop Nūr Meet restaurateurs, toutes les 10 minutes : trie les nouvelles réponses
+// (Haiku) et prévient louis sur Telegram pour chaque restaurant intéressé ; le lundi
+// après 9 h, Opus revoit la méthode que lisent Nour Meet 1 et 3.
+let loopEnCours = null;
+function loopNourMeet() {
+  if (!clientClaude) return;
+  loopEnCours ??= (async () => {
+    const business = await chargerBusiness(fichierBusiness);
+    const tri = await avecLoop((d) => trierReponses(d, business, { client: clientClaude, plafondDollars: plafondLoop }));
+    for (const r of tri.nouvelles.filter((x) => POSITIFS.has(x.type) && x.jour >= jourParis(new Date(Date.now() - 7 * 86_400_000)))) await envoyer(alerteInteresse(r));
+    if (tri.erreur && tri.erreur !== 'plafond') console.error(`Loop Nūr Meet, tri des réponses : ${tri.erreur}`);
+    const semaine = revueAFaire(await chargerLoop(fichierLoop), { heure: Number(env.LOOP_HEURE ?? 9) });
+    if (!semaine) return;
+    const entree = await avecLoop((d) => revoirMethode(d, business, { client: clientClaude, semaine, plafondDollars: plafondLoop }));
+    if (entree.question) await envoyer(`🔁 <b>Loop Nūr Meet</b> : ${entree.question}
+→ Réponds sur la page Nūr Meet du cerveau (Appliquer ou Refuser).`);
+    console.log(`${new Date().toISOString()} loop Nūr Meet ${semaine} : ${entree.changer ? `version ${entree.version}` : 'rien changé'}${entree.erreur ? ` · ${entree.erreur}` : ''}`);
+  })()
+    .catch((err) => console.error(`Loop Nūr Meet impossible : ${err.message}`))
+    .finally(() => (loopEnCours = null));
+}
+
 // Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
 async function bilanDuLundi() {
   if (!clientClaude) return;
@@ -472,6 +499,11 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/sante') {
       res.writeHead(200, { 'content-type': 'text/plain' });
       return res.end('ok');
+    }
+    // La méthode de la loop Nūr Meet, lue chaque matin par Nour Meet 1 et 3 (adresse secrète tirée du jeton).
+    if (req.method === 'GET' && env.RELEVE_JETON && url.pathname === cheminMethode(env.RELEVE_JETON)) {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify(methodePourN8n(await chargerLoop(fichierLoop))));
     }
     // Les logos des chaînes, publics (pas de mot de passe) : ils doivent être
     // visibles dans les mails reçus par les invités, donc lisibles par n'importe qui.
@@ -870,6 +902,7 @@ const serveur = http.createServer(async (req, res) => {
           idees: await chargerIdees(fichierIdees),
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
+          loop: id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : '',
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
           verifications,
@@ -927,6 +960,13 @@ const serveur = http.createServer(async (req, res) => {
         }
       }
       res.writeHead(303, { location: `/projet?projet=impacteur&message=${encodeURIComponent(message)}` });
+      return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/loop/nour-meet') {
+      const { geste } = await lireCorps(req, 1_000);
+      const r = await avecLoop((d) => piloter(d, geste));
+      const dit = { pause: 'Loop en pause', reprendre: 'Loop relancée', annuler: 'Dernier changement annulé', accepter: 'Changement appliqué', refuser: 'Changement refusé' };
+      res.writeHead(303, { location: `/projet?projet=nour-meet&message=${encodeURIComponent(r.erreur ?? dit[geste])}` });
       return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/suivi-reponse') {
@@ -1055,3 +1095,5 @@ bilanDuLundi();
 setInterval(bilanDuLundi, 10 * 60_000);
 analyseDuMatin();
 setInterval(analyseDuMatin, 10 * 60_000);
+loopNourMeet();
+setInterval(loopNourMeet, 10 * 60_000);
