@@ -1,6 +1,6 @@
 {
-  "maj": "2026-10-19",
-  "source": "Lu dans le code de VégéBudget (dépôt v-g-budget, branche main) le 19/10/2026, après la mise en place de la loop",
+  "maj": "2026-10-20",
+  "source": "Lu dans le code de VégéBudget (dépôt v-g-budget, branche main) le 20/10/2026, après l'ajout du volet acquisition de la loop (PR v-g-budget 41)",
   "intro": "VégéBudget compose les dîners sans viande de la semaine selon ton budget et donne la liste de courses exacte (vegebudget.fr, en ligne depuis le 07/10). Depuis le 19/10, une loop pilote le projet : chaque lundi, Claude lit les chiffres et les avis des visiteurs, décide seul et modifie le site. Objectif : des inscriptions, puis 100 abonnés payants (environ 500 €/mois).",
   "journee": [
     {
@@ -41,6 +41,16 @@
     {
       "quand": "Chaque jour 5 h 48, lundi 6 h 49",
       "quoi": "Tâches programmées de Claude du projet VégéBudget : un article de blog par jour, 2 recettes chaque lundi ; carrousels Instagram à 18 h, bilan tous les 3 jours.",
+      "toi": "Rien"
+    },
+    {
+      "quand": "Chaque jour 12 h",
+      "quoi": "Le carrousel de la veille repart en vidéo verticale : Reel Instagram (montré aux non-abonnés), puis TikTok, YouTube Shorts et Facebook par Post for Me dès qu'il est configuré.",
+      "toi": "Rien"
+    },
+    {
+      "quand": "Toutes les heures",
+      "quoi": "Les pages nouvelles ou modifiées du site (articles, recettes) sont signalées à Bing par IndexNow, ce qui sert aussi ChatGPT, Copilot, Qwant et Ecosia.",
       "toi": "Rien"
     }
   ],
@@ -85,6 +95,48 @@
           "texte": "Le journal des changements s'affiche sur la page VégéBudget du cerveau, et la doc dans Notion",
           "outil": "Cerveau et Notion",
           "technique": "Bloc « Loop VégéBudget » de la page projet ; page Notion « VégéBudget : loop » sous « Loops des projets »."
+        }
+      ]
+    },
+    {
+      "titre": "Faire venir du monde sans pub",
+      "note": "Volet acquisition de la loop, demandé par louis le 20/10 : réseaux et moteurs de recherche, sans budget pub ni IA. Code : lib/diffusion.ts du dépôt v-g-budget.",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Chaque jour : un article de blog écrit sur une requête Google visée",
+          "outil": "Tâche programmée de Claude (projet VégéBudget)",
+          "technique": "content/blog/SUJETS.md liste les requêtes ; plan du site et données structurées déjà en place."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque heure : les pages nouvelles sont signalées à Bing",
+          "outil": "IndexNow",
+          "technique": "POST /api/diffusion, clé tirée de CRON_SECRET publiée à /indexnow-cle.txt."
+        },
+        {
+          "type": "auto",
+          "texte": "18 h : le carrousel « infos végé » du jour part sur Instagram",
+          "outil": "API Instagram",
+          "technique": "POST /api/instagram/publier, chaque heure par mise-a-jour-auto.sh."
+        },
+        {
+          "type": "auto",
+          "texte": "Le lendemain 12 h : le même carrousel repart en vidéo (Reel Instagram)",
+          "outil": "ffmpeg dans le conteneur, API Instagram",
+          "technique": "Vidéo 720 × 1280 gardée dans DATA_DIR/videos, servie à /api/diffusion/video/<slug>.mp4 ; heure réglable par VIDEO_HEURE."
+        },
+        {
+          "type": "auto",
+          "texte": "Même vidéo sur TikTok, YouTube Shorts et Facebook",
+          "outil": "Post for Me",
+          "technique": "Actif quand POSTFORME_API_KEY et POSTFORME_COMPTES (identifiants des comptes reliés) sont dans /opt/vegebudget/.env."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque lundi : la revue juge chaque réseau sur les visites qu'il amène et change seule sujets, formats et heures",
+          "outil": "Tâche programmée de Claude (revue de la loop)",
+          "technique": "Bilan public GET /api/diffusion et /api/instagram/bilan ; méthode dans content/loop/CONSIGNES.md, section Acquisition."
         }
       ]
     },
@@ -225,6 +277,16 @@
       ]
     },
     {
+      "titre": "Acquisition",
+      "points": [
+        "Pas de budget pub : réseaux et moteurs de recherche seulement",
+        "Un réseau se juge sur les visites qu'il amène, puis sur les vues",
+        "Moins de 7 vidéos ou portée nulle : on vérifie la diffusion avant de juger le format",
+        "Un réseau qui n'amène rien en 4 semaines peut être retiré",
+        "Rien de payant (pub, IA, service) sans l'accord de louis"
+      ]
+    },
+    {
       "titre": "Offre",
       "points": [
         "Première semaine gratuite, sans compte ni carte bancaire",
@@ -278,8 +340,8 @@
       "role": "Compte les visiteurs et chaque étape du parcours, sans cookie ni adresse IP conservée ; le cerveau la lit avec un jeton"
     },
     {
-      "nom": "Réseaux sociaux (Instagram, TikTok, Reddit, Facebook)",
-      "role": "Les publications qui font venir les premiers visiteurs ; comptes encore à créer"
+      "nom": "Réseaux sociaux (Instagram, TikTok, YouTube, Facebook, Pinterest)",
+      "role": "Instagram relié (carrousel à 18 h, Reel le lendemain à 12 h) ; TikTok, YouTube Shorts et Facebook par Post for Me dès qu'il est configuré ; Pinterest proposé à louis"
     },
     {
       "nom": "Stripe",
@@ -292,6 +354,14 @@
     {
       "nom": "Loop (content/loop/ du dépôt et src/loop-vegebudget.js du cerveau)",
       "role": "Version du site, questions aux visiteurs, journal des changements et dossier de la semaine lu par la revue du lundi"
+    },
+    {
+      "nom": "ffmpeg",
+      "role": "Fabrique la vidéo de chaque carrousel dans le conteneur"
+    },
+    {
+      "nom": "IndexNow",
+      "role": "Signale les pages nouvelles à Bing chaque heure"
     }
   ],
   "alertes": [
@@ -325,6 +395,7 @@
     ]
   },
   "aCompleter": [
-    "Les e-mails reçus sur bonjour@vegebudget.fr ne sont pas encore lus par la loop."
+    "Les e-mails reçus sur bonjour@vegebudget.fr ne sont pas encore lus par la loop.",
+    "Post for Me : compte et comptes VégéBudget (TikTok, YouTube, Facebook) à relier, puis POSTFORME_API_KEY et POSTFORME_COMPTES dans le .env du site."
   ]
 }
