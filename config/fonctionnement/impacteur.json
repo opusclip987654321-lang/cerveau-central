@@ -4,6 +4,11 @@
   "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu fournis les adresses e-mail (colonne email_contact du Sheet), tu tries sur Telegram ou sur la page Impacteur, et les envois partent tout seuls, plafonnés à 8 par jour.",
   "journee": [
     {
+      "quand": "6 h 40",
+      "quoi": "Réponses des invités : les mails reçus dans les deux boîtes Gmail d'envoi sont reliés à leur fiche ; Claude dit si c'est un oui pour l'interview, un livre que l'éditeur accepte d'envoyer, un non ou autre chose. En place dès que scripts/impacteur-reponses.py est lancé.",
+      "toi": "Rien : tu réponds toi-même aux invités dans Gmail, comme avant"
+    },
+    {
       "quand": "8 h 07",
       "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit) ; Claude cherche sur le web qui est l'auteur puis écrit l'invitation ; fiche dans le Sheet ; l'adresse e-mail vient de toi.",
       "toi": "Remplir la colonne email_contact du Sheet, puis trier : Telegram ✅/🗑 ou page Impacteur"
@@ -194,6 +199,36 @@
           "technique": "Commande à taper, suivie de la personne."
         }
       ]
+    },
+    {
+      "titre": "Les réponses des invités",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "6 h 40 : on lit les mails reçus dans les deux boîtes d'envoi (Afrique et Frexit)",
+          "outil": "Gmail (API)",
+          "technique": "Automatisation « CERVEAU - réponses Impacteur » (scripts/impacteur-reponses.py) ; 90 derniers jours, sans tes propres envois ; les mails ne sont ni marqués lus ni déplacés."
+        },
+        {
+          "type": "securite",
+          "texte": "Absence, réponse automatique ou mail sans rapport ?",
+          "sinon": "ignoré",
+          "outil": "Google Sheets",
+          "technique": "Seuls comptent les mails dont l'expéditeur est l'adresse email_contact d'une fiche, ou dont l'objet est le « Re: » de l'invitation."
+        },
+        {
+          "type": "auto",
+          "texte": "Claude lit chaque nouvelle réponse et donne son type",
+          "outil": "Claude (Haiku, API Anthropic)",
+          "technique": "Types : OUI_INTERVIEW, LIVRE_ACCEPTE (les deux : OUI_INTERVIEW+LIVRE_ACCEPTE), NON, AUTRE. Si Claude ne répond pas, la réponse reste A_CLASSER : elle est comptée et relue le lendemain."
+        },
+        {
+          "type": "auto",
+          "texte": "Le type et la date sont écrits sur la fiche, puis comptés sur la carte Impacteur",
+          "outil": "Google Sheets",
+          "technique": "Colonnes reponse_le, reponse_type, reponse_de, reponse_extrait, reponse_ids (créées au premier passage). Rien d'autre ne change sur la fiche."
+        }
+      ]
     }
   ],
   "regles": [
@@ -238,13 +273,22 @@
         "Coupés : le rapport de chaque découverte (livres 8 h 07, YouTube 12 h 07) et la liste des invitations retenues avant envoi (10 h 07 et 15 h 07)",
         "Mise en place : scripts/telegram-coupes.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer coupe, --remettre rétablit)"
       ]
+    },
+    {
+      "titre": "Mesure du succès (choix de louis du 19/10)",
+      "points": [
+        "Impacteur n'a pas d'objectif d'argent : le succès, ce sont les réponses des invités, même quand c'est toi qui leur réponds",
+        "Deux chiffres comptés à part sur la carte : « Oui interview » et « Livres acceptés » (l'éditeur fait parvenir le livre)",
+        "Tant que les réponses ne sont pas lues dans Gmail, ces chiffres affichent « indisponible », jamais 0",
+        "Mise en place : scripts/impacteur-reponses.py, lancé par louis sur le VPS Nūr (sans option il montre, --appliquer crée et lance, --verifier recompte, --eteindre arrête)"
+      ]
     }
   ],
   "role": {
     "quotidien": [
       "Remplir la colonne email_contact du Sheet quand Telegram le demande",
       "Trier les fiches : Telegram (✅ / 🗑) ou page Impacteur (Valider / Rejeter)",
-      "Répondre aux auteurs qui acceptent une interview"
+      "Répondre aux invités qui acceptent une interview ou aux éditeurs qui envoient le livre (le cerveau les compte seul)"
     ],
     "parfois": [
       "Donner un e-mail avec /email quand le Sheet n'est pas sous la main",
@@ -272,10 +316,14 @@
     {
       "sujet": "Auteurs décédés",
       "detail": "Le garde-fou qui écartait les auteurs peut-être décédés est retiré (ton choix du 11/10) : l'invitation part, un doute est seulement signalé sur la fiche. Les fiches déjà marquées « décès à vérifier » restent bloquées ; pour les relancer, passe leur statut à A_VERIFIER dans le Sheet. Depuis le 19/10, la recherche web signale un décès trouvé dans une source (⚠️ sur la fiche Telegram, « DÉCÈS SIGNALÉ » dans les informations à vérifier) : ne donne pas l'adresse de cette fiche."
+    },
+    {
+      "sujet": "Réponses des invités",
+      "detail": "Une réponse envoyée depuis une autre adresse que email_contact n'est comptée que si son objet reprend celui de l'invitation. Le tri par Claude coûte environ un centime par jour de réponses ; tant que la limite de dépense Anthropic est atteinte, les réponses restent « à classer »."
     }
   ],
   "aCompleter": [
-    "Les réponses des auteurs (acceptations d'interview) ne sont notées nulle part dans le Sheet : le cerveau ne peut pas encore les compter.",
+    "Les réponses des invités sont comptées dès que louis a lancé scripts/impacteur-reponses.py --appliquer sur le VPS Nūr ; d'ici là, « Oui interview » et « Livres acceptés » affichent « indisponible ».",
     "TikTok : les Shorts d'Impacteur Afrique partent seuls sur @impacteur_afrique via Post for Me depuis le 14/10 (voir le guide de L'extrait politique, qui publie ces Shorts) ; @impacteur_frexit n'a pas de Shorts à publier."
   ],
   "outils": [
@@ -297,11 +345,11 @@
     },
     {
       "nom": "Claude (Haiku, API Anthropic, avec recherche web)",
-      "role": "Identifie les invités des interviews ; cherche sur le web qui est la personne (depuis le 19/10) puis rédige l'invitation"
+      "role": "Identifie les invités des interviews ; cherche sur le web qui est la personne (depuis le 19/10) puis rédige l'invitation ; trie chaque matin les réponses des invités (oui interview, livre accepté, non)"
     },
     {
       "nom": "Gmail (API)",
-      "role": "Les envois et les brouillons, sur deux comptes : « Gmail account » (Afrique) et « Gmail - Impacteur Frexit »"
+      "role": "Les envois et les brouillons, sur deux comptes : « Gmail account » (Afrique) et « Gmail - Impacteur Frexit » ; les réponses reçues y sont lues chaque matin à 6 h 40"
     },
     {
       "nom": "Google Sheets",

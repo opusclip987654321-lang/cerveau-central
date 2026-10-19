@@ -131,7 +131,12 @@ export async function synchroniserImpacteur(business, { url, jeton, delaiMs = 60
       // corps et compte_envoi) : alors le compte devient une preuve, pas une déclaration.
       corps: l.corps ? String(l.corps).slice(0, 4000) : null,
       compte: l.compte_envoi ? String(l.compte_envoi).slice(0, 120) : null,
+      // Réponses des invités, écrites par « CERVEAU - réponses Impacteur » (scripts/impacteur-reponses.py).
+      reponse: jourDe(l.reponse_le),
+      reponseType: l.reponse_type ? String(l.reponse_type).trim().toUpperCase() : null,
     })),
+    // Colonne absente du Sheet = réponses pas encore mesurées : « indisponible », jamais 0.
+    reponsesMesurees: lignes.some((l) => 'reponse_type' in l),
   };
   return { fiches: lignes.length };
 }
@@ -295,7 +300,17 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     if (compte('A_VERIFIER')) aDecider.push(`${nombre(compte('A_VERIFIER'))} fiche(s) d'invités attendent ta vérification avant l'envoi${parChaineStatut('A_VERIFIER')}.`);
     if (compte('BROUILLON_CREE')) aDecider.push(`${nombre(compte('BROUILLON_CREE'))} brouillon(s) prêts dans Gmail, pas encore envoyés${parChaineStatut('BROUILLON_CREE')}.`);
     if (compte('A_VERIFIER_DECES')) aDecider.push(`${nombre(compte('A_VERIFIER_DECES'))} fiche(s) encore marquée(s) « décès à vérifier » (ancien garde-fou, retiré le 11/10) : passe leur statut à A_VERIFIER dans le Sheet pour les relancer.`);
-    carte('impacteur', {
+    // Le succès d'Impacteur (louis, 19/10) : les « oui » pour une interview et les livres
+    // que les éditeurs acceptent d'envoyer, comptés à part.
+    const repondu = im.fiches.filter((f) => f.reponseType);
+    const oui = repondu.filter((f) => f.reponseType.includes('OUI_INTERVIEW'));
+    const livres = repondu.filter((f) => f.reponseType.includes('LIVRE_ACCEPTE'));
+    const aClasser = repondu.filter((f) => f.reponseType === 'A_CLASSER').length;
+    const succes = (titre, l) =>
+      im.reponsesMesurees
+        ? { titre, valeur: l.length, detail: `depuis le début, dont ${nombre(somme(parJour(periode, l.map((f) => f.reponse))))} sur ${jours} jours${aClasser ? `, ${nombre(aClasser)} réponse(s) pas encore lue(s) par Claude` : ''}` }
+        : { titre, valeur: 'indisponible', detail: 'réponses pas encore lues dans Gmail' };
+    const c = carte('impacteur', {
       titre: 'Invités contactés',
       dates: [...envoyes.map((f) => f.envoi), ...evenements(journal, 'impacteur', ['mail'])],
       unite: 'invité contacté',
@@ -304,9 +319,13 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
         { titre: 'Mails ouverts', valeur: somme(parJour(periode, envoyes.map((f) => f.ouvert))), detail: `${pct(ouverts, envoyes.length) ?? 0} % ouverts depuis le début (${nombre(ouverts)} sur ${nombre(envoyes.length)})` },
         { titre: 'À vérifier', valeur: compte('A_VERIFIER') + compte('A_VERIFIER_DECES') },
         { titre: 'Contactés en tout', valeur: envoyes.length, detail: parChaine || undefined },
+        succes('Oui interview', oui),
+        succes('Livres acceptés', livres),
+        ...(im.reponsesMesurees ? [{ titre: 'Réponses reçues', valeur: repondu.length, detail: `${pct(repondu.length, envoyes.length) ?? 0} % des invités contactés` }] : []),
       ],
-      manque: ['réponses des invités', 'interviews acceptées'],
+      manque: im.reponsesMesurees ? [] : ['réponses des invités', 'interviews acceptées'],
     });
+    if (im.reponsesMesurees) c.secondaire = { titre: 'Réponses', serie: parJour(periode, repondu.map((f) => f.reponse)) };
   } else {
     carte('impacteur', { titre: 'Invités contactés', dates: evenements(journal, 'impacteur', ['mail']), unite: 'invité contacté', branche: false, manque: ['liste des invités contactés'] });
   }
