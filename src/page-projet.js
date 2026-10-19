@@ -14,6 +14,7 @@ import { tunnel, htmlTunnel } from './tunnel.js';
 import { STATUTS_ACTION } from './actions.js';
 import { joursJusqua } from './business.js';
 import { visitesDe, htmlVisites, CSS_VISITES } from './visites.js';
+import { htmlNourPublic } from './nour-public.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const date = (j) => (j ? new Date(`${j}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—');
@@ -536,6 +537,7 @@ export function pageProjet(configJournal, id, { business, journal, pauses, histo
     htmlTunnel(tunnel(id, business, { jours30: joursJusqua(jour, 30) })),
     htmlVisites(visitesDe(business, id)),
     loop,
+    id === 'nour-meet' ? htmlNourPublic(business.sources?.nourPublic) : '',
     blocBlocages,
     blocManque,
     surveillance,

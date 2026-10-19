@@ -9,6 +9,7 @@ import { projetDuWorkflow } from './journal.js';
 import { gainsPeriode, revenusPeriode } from './youtube.js';
 import { encaissePeriode } from './stripe.js';
 import { datesDe } from './vegebudget.js';
+import { alertesNourPublic } from './nour-public.js';
 
 export async function chargerBusiness(fichier) {
   try {
@@ -504,6 +505,11 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
   } else {
     carte('vegebudget', { titre: 'Visiteurs', dates: [], unite: 'visiteur', branche: false, manque: ['chiffres de vegebudget.fr (VEGEBUDGET_STATS_JETON)'] });
   }
+
+  // Nūr Meet grand public : un réseau muet ou aucune soirée à vendre se décide sur la carte Nūr Meet.
+  const np = business.sources?.nourPublic;
+  const carteNour = cartes.find((c) => c.id === 'nour-meet');
+  if (np && carteNour) carteNour.aDecider.push(...alertesNourPublic(np));
 
   return { periode, cartes, maj: pr?.maj ?? null };
 }

@@ -50,6 +50,7 @@ import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserI
 import { dossiersCode, listerCode, lireCode } from './code-source.js';
 import { etatConnexions, noterTentative } from './connexions.js';
 import { synchroniserVisites } from './visites.js';
+import { lireNourPublic, enregistrerNourPublic } from './nour-public.js';
 import { pageConnexions } from './page-connexions.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
 
@@ -533,6 +534,17 @@ const serveur = http.createServer(async (req, res) => {
       await avecServeurs((d) => enregistrerReleve(d, id, releve));
       res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
       return res.end(`Relevé reçu : ${releve.conteneurs.length} conteneur(s), ${releve.disques.length} disque(s)\n`);
+    }
+    // Relevé « grand public » de Nūr Meet, envoyé chaque heure par le VPS Nūr (scripts/nour-public-releve.sh).
+    if (req.method === 'POST' && url.pathname === '/api/nour-public') {
+      if (!jetonReleveValide(req.headers.authorization ?? '')) {
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Jeton invalide');
+      }
+      const donnees = lireNourPublic(await lireJson(req, 500_000));
+      await avecBusiness((b) => enregistrerNourPublic(b, donnees));
+      res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
+      return res.end(`Relevé grand public reçu : ${donnees.posts.length} post(s), ${donnees.soirees.length} soirée(s)\n`);
     }
     if (req.method === 'POST' && url.pathname === '/api/journal') {
       if (!jetonReleveValide(req.headers.authorization ?? '')) {
