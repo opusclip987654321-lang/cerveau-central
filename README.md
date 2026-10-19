@@ -202,7 +202,7 @@ npm start              # la page d'état sur http://127.0.0.1:8090
 ## Pause / Reprendre, et Discuter
 
 - **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, et retient lesquelles. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, programme de Petites histoires vraies) n'est pas touché.
-- **Discuter** : louis pose une question, Claude (Sonnet) répond à partir des données du cerveau (état, argent, journal, serveurs). Il ne modifie rien. Le coût compte dans le plafond `PLAFOND_IA_DOLLARS`.
+- **Discuter** (sur chaque fiche d'action) : louis pose une question, Claude (Sonnet) répond à partir des données du cerveau (état, argent, journal, serveurs). Il ne modifie rien. Depuis le 19/10 (choix de louis), il peut aussi chercher sur internet quand la question porte sur un fait extérieur (un outil, un prix, une entreprise) : 3 recherches au plus par réponse, les pages utilisées s'affichent en liens sous « Sources (web) ». Une recherche coûte 1 centime plus la lecture des pages ; tout compte dans le plafond `PLAFOND_IA_DOLLARS` et la dépense IA de la page Argent. Si l'API refuse la recherche, la réponse part sans internet.
 
 ## Tableau de bord business (onglet Journal)
 

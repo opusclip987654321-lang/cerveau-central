@@ -92,3 +92,49 @@ test('contexte : argent, journal, serveurs et pauses en texte', () => {
   assert.match(texte, /Leviaro \(depuis 2026-10-05\)/);
   assert.match(texte, /VPS Nūr \(14 €\/mois\) : pas de relevé/);
 });
+
+test('discussion : recherche web déclarée, sources affichées, coût des recherches compté', async () => {
+  let recu;
+  const contenu = [
+    { type: 'text', text: 'Je regarde les tarifs.' },
+    { type: 'server_tool_use', id: 's1', name: 'web_search', input: { query: 'Perplexity API prix' } },
+    { type: 'web_search_tool_result', tool_use_id: 's1', content: [{ type: 'web_search_result', url: 'https://exemple.fr/prix', title: 'Prix Perplexity' }, { type: 'web_search_result', url: 'https://autre.fr', title: 'Autre' }] },
+    { type: 'text', text: 'Perplexity coûte ' },
+    { type: 'text', text: '5 $ les 1 000 recherches', citations: [{ type: 'web_search_result_location', url: 'https://exemple.fr/prix', title: 'Prix Perplexity', cited_text: '5 $' }] },
+    { type: 'text', text: '.' },
+  ];
+  const client = { beta: { messages: { create: async (req) => ((recu = req), { content: contenu, stop_reason: 'end_turn', usage: { input_tokens: 0, output_tokens: 0, server_tool_use: { web_search_requests: 2 } } }) } } };
+  const r = await repondre([], 'Perplexity servirait ?', { client, contexte: '' });
+  assert.equal(recu.tools[0].type, 'web_search_20260209');
+  assert.equal(recu.tools[0].max_uses, 3);
+  assert.match(r.texte, /^Perplexity coûte 5 \$ les 1 000 recherches\.\n\nSources \(web\) :\n- Prix Perplexity : https:\/\/exemple\.fr\/prix$/);
+  assert.ok(Math.abs(r.cout - 0.02) < 1e-9);
+});
+
+test('discussion de fiche : sources déclarées gardées seulement si trouvées, erreur de recherche ignorée', async () => {
+  const json = JSON.stringify({ reponse: 'Oui, ça vaut le coup.', suite: 'proposition', sources: ['https://exemple.fr/a', 'https://invente.fr'] });
+  const contenu = [
+    { type: 'web_search_tool_result', tool_use_id: 's1', content: { type: 'web_search_tool_result_error', error_code: 'max_uses_exceeded' } },
+    { type: 'web_search_tool_result', tool_use_id: 's0', content: [{ type: 'web_search_result', url: 'https://exemple.fr/a', title: 'Page A' }] },
+    { type: 'text', text: json.slice(0, 20) },
+    { type: 'text', text: json.slice(20) },
+  ];
+  const client = { beta: { messages: { create: async () => ({ content: contenu, stop_reason: 'end_turn', usage: {} }) } } };
+  const r = await repondre([], 'x', { client, contexte: '', fiche: true });
+  assert.equal(r.suite, 'proposition');
+  assert.equal(r.texte, 'Oui, ça vaut le coup.\n\nSources (web) :\n- Page A : https://exemple.fr/a');
+});
+
+test('discussion : si l’API refuse la recherche web, réponse sans internet ; pause relancée', async () => {
+  const appels = [];
+  const client = { beta: { messages: { create: async (req) => {
+    appels.push(req);
+    if (appels.length === 1) throw Object.assign(new Error('400'), { status: 400 });
+    if (appels.length === 2) return { content: [{ type: 'text', text: 'Début' }], stop_reason: 'pause_turn', usage: {} };
+    return { content: [{ type: 'text', text: ' et fin.' }], stop_reason: 'end_turn', usage: {} };
+  } } } };
+  const r = await repondre([], 'x', { client, contexte: '' });
+  assert.equal(r.texte, 'Début et fin.');
+  assert.equal(appels[1].tools, undefined);
+  assert.equal(appels[2].messages.at(-1).role, 'assistant');
+});
