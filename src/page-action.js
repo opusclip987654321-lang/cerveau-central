@@ -4,6 +4,8 @@ import { gabarit } from './page.js';
 import { STATUTS_ACTION, A_TOI } from './actions.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// Liens cliquables dans un texte déjà échappé (sources web des réponses du cerveau).
+const lier = (html) => html.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
 const heure = (iso) => (iso ? new Date(iso).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' }) : '—');
 
 // À qui la main, pour colorer la pastille : doré quand louis doit agir.
@@ -19,7 +21,7 @@ export function pageAction(action, { aRepondre = 0, actif = false, depenseIa = 0
     .join('');
 
   const discussion = action.discussion.length
-    ? action.discussion.map((m) => `<div class="echange ${m.role === 'louis' ? 'louis' : 'cerveau'}"><small>${m.role === 'louis' ? 'Toi' : 'Le cerveau'} · ${heure(m.quand)}</small><p>${e(m.texte).replace(/\n/g, '<br>')}</p></div>`).join('')
+    ? action.discussion.map((m) => `<div class="echange ${m.role === 'louis' ? 'louis' : 'cerveau'}"><small>${m.role === 'louis' ? 'Toi' : 'Le cerveau'} · ${heure(m.quand)}</small><p>${lier(e(m.texte)).replace(/\n/g, '<br>')}</p></div>`).join('')
     : '<p class="vide">Pas encore d’échange sur cette fiche. Pose ta question ou donne ta décision ci-dessous.</p>';
 
   const question = action.statut === 'question_posee' || action.statut === 'proposition_a_valider';

@@ -14,8 +14,9 @@ export const TYPES = {
 };
 export const TAILLE_MAX = 10 * 1024 * 1024;
 export const MODELE = 'claude-sonnet-5-5';
-// Prix de Claude Sonnet 5.5 en dollars par million de jetons (entrée, sortie).
-const PRIX = { entree: 2, sortie: 10 };
+// Prix de Claude Sonnet 5.5 en dollars par million de jetons (entrée, sortie),
+// et prix d'une recherche web (10 $ les 1 000) ; les pages lues comptent en entrée.
+const PRIX = { entree: 2, sortie: 10, recherche: 0.01 };
 
 // Enregistre le fichier déposé et l'ajoute à la liste, encore non lu.
 export async function deposerFacture(donnees, dossier, { nom, type, base64 }) {
@@ -62,7 +63,8 @@ const SCHEMA = {
 
 export const coutDollars = (usage) =>
   ((usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0)) * (PRIX.entree / 1e6) +
-  (usage.output_tokens ?? 0) * (PRIX.sortie / 1e6);
+  (usage.output_tokens ?? 0) * (PRIX.sortie / 1e6) +
+  (usage.server_tool_use?.web_search_requests ?? 0) * PRIX.recherche;
 
 // Dépense IA du mois en cours, pour respecter le plafond mensuel.
 export const depenseIaDuMois = (donnees, jour = jourParis()) => donnees.ia?.[jour.slice(0, 7)] ?? 0;
