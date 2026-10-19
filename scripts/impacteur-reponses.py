@@ -7,7 +7,7 @@ Ajoute dans le n8n principal l'automatisation « CERVEAU - réponses Impacteur �
 chaque jour à 6 h 40, elle lit les mails reçus dans les deux boîtes d'envoi (« Gmail
 account » = Afrique, « Gmail - Impacteur Frexit »), les relie aux fiches du Sheet
 (l'expéditeur = email_contact, ou l'objet = « Re: » de l'invitation) et écrit sur la
-fiche : reponse_le, reponse_type, reponse_de, reponse_extrait, reponse_ids.
+fiche : reponse_le, reponse_type, reponse_de, reponse_texte, reponse_ids.
 Claude Haiku lit chaque nouvelle réponse et donne son type : OUI_INTERVIEW,
 LIVRE_ACCEPTE (les deux : OUI_INTERVIEW+LIVRE_ACCEPTE), NON ou AUTRE. Si Claude ne
 répond pas (limite Anthropic…), la réponse est comptée et reste A_CLASSER ; elle est
@@ -163,7 +163,9 @@ for (const [boite, noeud] of [['Afrique', 'GMAIL AFRIQUE - mails reçus'], ['Fre
     const objet = String(m.Subject ?? m.subject ?? '');
     if (!de || AUTO_DE.test(de) || AUTO_OBJET.test(objet)) continue;
     const date = m.internalDate ? new Date(Number(m.internalDate)) : new Date(m.date || m.Date || Date.now());
-    const texte = String(m.text || m.snippet || '').replace(/\s+/g, ' ').trim();
+    // Le texte de l'invité seul : on coupe l'historique cité (« Le … a écrit : », « De : », « > »).
+    const corps = String(m.text || m.snippet || '').split(/\n\s*(?:>|Le .{5,120} a [ée]crit|On .{5,120} wrote|De ?: |From: |-----)/)[0];
+    const texte = corps.replace(/\s+/g, ' ').trim();
     mails.push({ id: String(m.id), boite, de, objet, texte, date: date.toISOString() });
   }
 }
@@ -191,7 +193,8 @@ for (const [cle, { f, mails: l }] of parFiche) {
     cle_unique: cle,
     reponse_le: premier,
     reponse_de: dernier.de,
-    reponse_extrait: dernier.texte.slice(0, 500),
+    // Les réponses elles-mêmes, gardées pour qu'une loop apprenne de ce que disent les invités.
+    reponse_texte: l.map((m) => `[${m.date.slice(0, 10)}] ${m.texte}`).join('\n').slice(-3000),
     reponse_ids: ids.join(','),
     reponse_type: 'A_CLASSER',
   });
@@ -245,9 +248,9 @@ def workflow(cred_sheets, cred_afrique, cred_frexit, cred_claude, modele, doc):
         "id": id_, "name": nom, "type": "n8n-nodes-base.gmail", "typeVersion": 2.1, "position": [480, y],
         "credentials": {"gmailOAuth2": cred},
         "executeOnce": True, "alwaysOutputData": True, "onError": "continueRegularOutput",
-        # Reçus seulement (pas les envois de louis), 90 derniers jours ; sortie simplifiée.
+        # Reçus seulement (pas les envois de louis), 90 derniers jours ; texte complet du mail.
         "parameters": {"operation": "getAll", "limit": 300,
-                       "filters": {"q": "-from:me -in:sent -in:chats -category:promotions -category:social newer_than:90d"}},
+                       "simple": False, "options": {}, "filters": {"q": "-from:me -in:sent -in:chats -category:promotions -category:social newer_than:90d"}},
     }
     return {
         "name": NOM,
@@ -365,7 +368,7 @@ print("  - chaque jour à 6 h 40 : lit les mails reçus (90 derniers jours) dans
 print("    et « Gmail - Impacteur Frexit », sans toucher aux mails (ni lus, ni déplacés)")
 print("  - relie chaque mail à sa fiche du Sheet (expéditeur = email_contact, ou « Re: » de l'invitation)")
 print(f"  - Claude ({modele}, accès « {cred_claude.get('name')} ») donne le type de chaque nouvelle réponse")
-print("  - écrit sur la fiche : reponse_le, reponse_type, reponse_de, reponse_extrait, reponse_ids")
+print("  - écrit sur la fiche : reponse_le, reponse_type, reponse_de, reponse_texte, reponse_ids")
 print("  - ne touche à rien d'autre (ni statut ni envoi ; IMPACTEUR A à E inchangés)")
 print()
 bilan()

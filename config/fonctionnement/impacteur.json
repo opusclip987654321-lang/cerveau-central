@@ -226,7 +226,7 @@
           "type": "auto",
           "texte": "Le type et la date sont écrits sur la fiche, puis comptés sur la carte Impacteur",
           "outil": "Google Sheets",
-          "technique": "Colonnes reponse_le, reponse_type, reponse_de, reponse_extrait, reponse_ids (créées au premier passage). Rien d'autre ne change sur la fiche."
+          "technique": "Colonnes reponse_le, reponse_type, reponse_de, reponse_texte, reponse_ids (créées au premier passage) ; reponse_texte garde ce que l'invité a écrit (sans l'historique cité), pour que la loop apprenne de ses réponses. Rien d'autre ne change sur la fiche."
         }
       ]
     }
