@@ -31,6 +31,8 @@ export async function synchroniserVegebudget(business, { url, jeton, delaiMs = 2
     sources: (Array.isArray(rep.sources) ? rep.sources : []).slice(0, 10).map((s) => ({ source: String(s.source ?? '?').slice(0, 60), n: entier(s.n) })),
     totaux: { membres: entier(t.membres), abonnes: entier(t.abonnes), reservationsFondateur: entier(t.reservationsFondateur), reservationsPremium: entier(t.reservationsPremium) },
     parcours: lireParcours(rep.parcours),
+    loop: lireLoop(rep.loop),
+    avis: !Array.isArray(rep.avis) ? null : liste(rep.avis, 500).map((a) => ({ jour: texte(a.jour, 10), question: texte(a.question, 40), choix: a.choix ? texte(a.choix) : null, texte: a.texte ? texte(a.texte, 500) : null, membre: !!a.membre, version: entier(a.version) })),
   };
   return { jours: jours.length };
 }
@@ -52,6 +54,16 @@ function lireParcours(p) {
       pages: entier(v.pages), clics: entier(v.clics), secondes: entier(v.secondes), rebond: !!v.rebond, plusLoin: texte(v.plusLoin),
       parcours: liste(v.parcours, 60).map((x) => ({ heure: texte(x.heure, 5), type: texte(x.type, 5), page: texte(x.page), texte: texte(x.texte), secondes: entier(x.secondes), lu: entier(x.lu) })),
     })),
+  };
+}
+
+// La loop du site (content/loop/loop.ts de v-g-budget) : version en cours, questions et journal.
+function lireLoop(l) {
+  if (!l || typeof l !== 'object' || !Number.isFinite(Number(l.version))) return null;
+  return {
+    version: entier(l.version), depuis: texte(l.depuis, 10), essai: texte(l.essai, 600),
+    questions: liste(l.questions, 6).map((q) => ({ id: texte(q.id, 40), moment: texte(q.moment, 10), question: texte(q.question, 200), choix: liste(q.choix, 8).map((c) => texte(c)) })),
+    journal: liste(l.journal, 12).map((j) => ({ version: entier(j.version), date: texte(j.date, 10), changements: liste(j.changements, 10).map((c) => texte(c, 400)), pourquoi: texte(j.pourquoi, 1500), mesure: texte(j.mesure, 600) })),
   };
 }
 

@@ -76,3 +76,36 @@ test('page VégéBudget : parcours visite par visite et où ça bloque', async (
   assert.match(html, /&lt;b&gt;Composer/);
   assert.doesNotMatch(html, /<b>Composer/);
 });
+
+test('loop VégéBudget : dossier par semaine, par version, avis et bloc de la page', async () => {
+  const { dossierVege, htmlLoopVege, cheminDossierVege } = await import('../src/loop-vegebudget.js');
+  const b = { sources: {} };
+  const rep = {
+    ...stats(),
+    loop: {
+      version: 2, depuis: '2026-10-07', essai: 'Accueil « budget d’abord »',
+      questions: [{ id: 'offre-frein', moment: 'offre', question: 'Qu’est-ce qui vous retient ?', choix: ['Le prix', 'Autre chose'] }],
+      journal: [{ version: 1, date: '2026-10-06', changements: ['Départ'], pourquoi: 'Début', mesure: '' }, { version: 2, date: '2026-10-07', changements: ['Accueil réécrit'], pourquoi: '<b>test</b>', mesure: 'inscrits' }],
+    },
+    avis: [{ jour: '2026-10-07', question: 'offre-frein', choix: 'Le prix', texte: 'trop cher pour moi', membre: false, version: 2 }, { jour: '2026-10-07', question: 'offre-frein', choix: 'Le prix', texte: null, membre: true, version: 2 }],
+  };
+  await synchroniserVegebudget(b, { appel: async () => rep });
+  const d = dossierVege(b);
+  assert.deepEqual(d.parVersion.map((v) => [v.version, v.visiteurs, v.inscrits]), [[1, 10, 2], [2, 40, 4]]);
+  assert.equal(d.parSemaine[0].lundi, '2026-10-05');
+  assert.equal(d.parSemaine[0].visiteurs, 50);
+  assert.equal(d.avis['offre-frein'].choix['Le prix'], 2);
+  assert.equal(d.motsDesVisiteurs.length, 1);
+  assert.equal(d.objectif.abonnes, 0);
+  const html = htmlLoopVege(b);
+  assert.match(html, /v2/);
+  assert.match(html, /Le prix \(2\)/);
+  assert.doesNotMatch(html, /<b>test<\/b>/);
+  assert.match(cheminDossierVege('x'), /^\/loop\/vegebudget\/[0-9a-f]{32}$/);
+  // Sans chiffres : « indisponible », jamais 0.
+  assert.match(htmlLoopVege({ sources: {} }), /Indisponible/);
+  // Site pas encore à jour : pas de loop ni d'avis.
+  const ancien = { sources: {} };
+  await synchroniserVegebudget(ancien, { appel: async () => stats() });
+  assert.match(String(dossierVege(ancien).avis), /indisponible/);
+});

@@ -52,6 +52,7 @@ import { etatConnexions, noterTentative } from './connexions.js';
 import { synchroniserVisites } from './visites.js';
 import { lireNourPublic, enregistrerNourPublic } from './nour-public.js';
 import { pageConnexions } from './page-connexions.js';
+import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -506,6 +507,11 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
       return res.end(JSON.stringify(methodePourN8n(await chargerLoop(fichierLoop))));
     }
+    // Le dossier de la loop VégéBudget, lu chaque lundi par la revue (adresse secrète tirée du jeton).
+    if (req.method === 'GET' && env.RELEVE_JETON && url.pathname === cheminDossierVege(env.RELEVE_JETON)) {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify(dossierVege(await chargerBusiness(fichierBusiness))));
+    }
     // Les logos des chaînes, publics (pas de mot de passe) : ils doivent être
     // visibles dans les mails reçus par les invités, donc lisibles par n'importe qui.
     if (req.method === 'GET' && url.pathname.startsWith('/logos/')) {
@@ -914,7 +920,7 @@ const serveur = http.createServer(async (req, res) => {
           idees: await chargerIdees(fichierIdees),
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
-          loop: id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : '',
+          loop: id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : '',
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
           verifications,

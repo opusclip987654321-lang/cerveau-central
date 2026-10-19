@@ -1,8 +1,18 @@
 {
-  "maj": "2026-10-07",
-  "source": "Lu dans le code de VégéBudget (dépôt v-g-budget, branche main) et dans l'installation du serveur Nūr le 07/10/2026",
-  "intro": "VégéBudget compose les dîners sans viande de la semaine selon ton budget et donne la liste de courses exacte. Le site est en ligne sur vegebudget.fr depuis le 07/10. Tout ce qui est technique tourne seul (connexion par e-mail, rappel du dimanche, sauvegardes) ; ton travail, c'est de faire venir des gens et de les faire payer.",
+  "maj": "2026-10-19",
+  "source": "Lu dans le code de VégéBudget (dépôt v-g-budget, branche main) le 19/10/2026, après la mise en place de la loop",
+  "intro": "VégéBudget compose les dîners sans viande de la semaine selon ton budget et donne la liste de courses exacte (vegebudget.fr, en ligne depuis le 07/10). Depuis le 19/10, une loop pilote le projet : chaque lundi, Claude lit les chiffres et les avis des visiteurs, décide seul et modifie le site. Objectif : des inscriptions, puis 100 abonnés payants (environ 500 €/mois).",
   "journee": [
+    {
+      "quand": "Lundi 10 h 07",
+      "quoi": "Revue de la loop : Claude lit le dossier de la semaine (entonnoir par version du site, sources, pages où l'on décroche, avis des visiteurs), décide seul, modifie le site par une pull request fusionnée, et écrit le changement et sa raison dans le journal de la loop (page VégéBudget du cerveau) et dans Notion.",
+      "toi": "Rien, sauf si la loop te pose une question (changement de prix, de cible ou pivot complet)"
+    },
+    {
+      "quand": "Après « Créer mes menus » et sur la page Premium",
+      "quoi": "Le visiteur voit une fois une question courte (ce qu'il cherche, ce qui le retient de payer). Les réponses partent au cerveau, adresses e-mail et numéros retirés.",
+      "toi": "Rien"
+    },
     {
       "quand": "En continu",
       "quoi": "Le site répond sur vegebudget.fr. Un visiteur compose sa semaine sans compte ; pour la garder, il reçoit un lien de connexion par e-mail depuis bonjour@vegebudget.fr.",
@@ -27,17 +37,65 @@
       "quand": "Toutes les heures",
       "quoi": "Le cerveau lit les chiffres du site : visiteurs, semaines composées, inscrits, clics sur payer et d'où viennent les visites (sans cookie).",
       "toi": "Regarder la carte VégéBudget"
+    },
+    {
+      "quand": "Chaque jour 5 h 48, lundi 6 h 49",
+      "quoi": "Tâches programmées de Claude du projet VégéBudget : un article de blog par jour, 2 recettes chaque lundi ; carrousels Instagram à 18 h, bilan tous les 3 jours.",
+      "toi": "Rien"
     }
   ],
   "circuits": [
     {
+      "titre": "La loop : apprendre et repositionner",
+      "note": "Loop fermée et la plus libre possible (choix de louis du 19/10). Méthode : content/loop/CONSIGNES.md du dépôt v-g-budget.",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Le site compte chaque étape (visite, semaine composée, offre vue, clic payer, inscription) et note la version en cours",
+          "outil": "Mesure d'audience maison",
+          "technique": "/api/stats renvoie aussi la loop (version, questions, journal, dans content/loop/loop.ts) et les avis des visiteurs."
+        },
+        {
+          "type": "auto",
+          "texte": "Le visiteur répond à une question courte, une fois",
+          "outil": "Le site VégéBudget",
+          "technique": "Table avis (SQLite), une réponse par visiteur, question et jour, sans cookie ; e-mails et numéros retirés."
+        },
+        {
+          "type": "auto",
+          "texte": "Le cerveau prépare le dossier de la semaine",
+          "outil": "Cerveau",
+          "technique": "src/loop-vegebudget.js : entonnoir par semaine et par version, sources, parcours, avis ; lu à une adresse secrète tirée du jeton du cerveau."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque lundi, Claude lit le dossier, décide et modifie le site",
+          "outil": "Tâche programmée de Claude (Claude Code)",
+          "technique": "Pull request sur v-g-budget, version +1, entrée au journal, fusion une fois les vérifications vertes ; le serveur se met à jour seul dans l'heure. Pas de clé API : la revue tourne sur l'abonnement Claude."
+        },
+        {
+          "type": "securite",
+          "texte": "Le changement est-il trop radical (prix, cible, pivot complet) ?",
+          "sinon": "la loop l'applique seule",
+          "outil": "Fil de la loop dans le projet cerveau",
+          "technique": "Elle pose la question à louis en QCM et n'applique rien avant sa réponse."
+        },
+        {
+          "type": "auto",
+          "texte": "Le journal des changements s'affiche sur la page VégéBudget du cerveau, et la doc dans Notion",
+          "outil": "Cerveau et Notion",
+          "technique": "Bloc « Loop VégéBudget » de la page projet ; page Notion « VégéBudget : loop » sous « Loops des projets »."
+        }
+      ]
+    },
+    {
       "titre": "Du visiteur au membre",
       "etapes": [
         {
-          "type": "toi",
-          "texte": "Tu fais venir des visiteurs : réseaux sociaux, forums, bouche-à-oreille",
-          "outil": "Instagram, TikTok, Reddit, Facebook",
-          "technique": "Publications faites à la main ; comptes encore à créer."
+          "type": "auto",
+          "texte": "Des visiteurs arrivent par le blog (un article par jour), Google et Instagram (un carrousel par jour)",
+          "outil": "Blog, Search Console, Instagram",
+          "technique": "Tâches programmées de Claude dans le projet VégéBudget ; la loop peut changer leurs sujets."
         },
         {
           "type": "auto",
@@ -80,7 +138,6 @@
     },
     {
       "titre": "Du membre au client",
-      "note": "Le paiement en ligne n'est pas encore branché : les prix Stripe restent à créer.",
       "etapes": [
         {
           "type": "auto",
@@ -95,17 +152,10 @@
           "technique": "Chaque vue de l'offre et chaque clic « payer » sont comptés par la mesure d'audience maison, sans cookie."
         },
         {
-          "type": "securite",
-          "texte": "Le paiement en ligne est-il activé ?",
-          "sinon": "la réservation de l'offre fondateur est seulement notée, rien n'est encaissé",
+          "type": "auto",
+          "texte": "Il paie par carte : Premium 4,99 €/mois ou membre fondateur 19 €/an (100 places)",
           "outil": "Stripe",
-          "technique": "Il faut les prix créés dans Stripe et le réglage BILLING_ENABLED=true sur le serveur."
-        },
-        {
-          "type": "toi",
-          "texte": "Tu crées les prix et tu actives le paiement",
-          "outil": "Stripe",
-          "technique": "Dans le tableau de bord Stripe : 2 prix (4,99 €/mois et 19 €/an), puis les clés dans le fichier .env du serveur."
+          "technique": "Paiement branché depuis le 12/10 ; l'abonnement s'active tout seul à la notification de Stripe."
         }
       ]
     },
@@ -119,10 +169,10 @@
           "technique": "Dépôt v-g-budget : Claude ouvre une demande de modification, vérifie qu'elle passe, puis la fusionne."
         },
         {
-          "type": "toi",
-          "texte": "Tu mets le site à jour sur le serveur",
+          "type": "auto",
+          "texte": "Le serveur se met à jour seul chaque heure",
           "outil": "Docker (serveur Nūr)",
-          "technique": "cd /opt/vegebudget && git pull && docker compose up -d --build"
+          "technique": "scripts/mise-a-jour-auto.sh : git pull puis reconstruction si main a changé."
         },
         {
           "type": "securite",
@@ -164,6 +214,16 @@
     }
   ],
   "regles": [
+    {
+      "titre": "Loop",
+      "points": [
+        "Objectif : 100 abonnés payants, après des inscriptions",
+        "Libre de changer textes, page d'accueil, parcours, sujets du blog et des carrousels, questions aux visiteurs",
+        "Demande à louis avant de changer le prix, la cible ou de pivoter complètement",
+        "Un essai à la fois ; une version tourne une semaine avant d'être jugée",
+        "Aucun chiffre ni témoignage inventé ; donnée absente = « indisponible »"
+      ]
+    },
     {
       "titre": "Offre",
       "points": [
@@ -223,11 +283,15 @@
     },
     {
       "nom": "Stripe",
-      "role": "Le paiement de l'abonnement Premium et de l'offre fondateur ; prix pas encore créés"
+      "role": "Le paiement de l'abonnement Premium (4,99 €/mois) et de l'offre fondateur (19 €/an), branché depuis le 12/10"
     },
     {
       "nom": "GitHub (dépôt v-g-budget)",
       "role": "Le code du site ; Claude y prépare et fusionne les modifications"
+    },
+    {
+      "nom": "Loop (content/loop/ du dépôt et src/loop-vegebudget.js du cerveau)",
+      "role": "Version du site, questions aux visiteurs, journal des changements et dossier de la semaine lu par la revue du lundi"
     }
   ],
   "alertes": [
@@ -250,20 +314,17 @@
   ],
   "role": {
     "quotidien": [
-      "Faire connaître le site : un post, une réponse sur un forum, un message à quelqu'un qui veut dépenser moins",
-      "Répondre aux e-mails reçus sur bonjour@vegebudget.fr"
+      "Rien : la loop et les tâches programmées font le travail"
     ],
     "parfois": [
-      "Créer les prix Stripe (4,99 € par mois et 19 € par an) pour encaisser",
-      "Lancer la commande de mise à jour quand Claude a fusionné une modification",
-      "Regarder dans Search Console quelles recherches amènent des visiteurs"
+      "Répondre quand la loop te pose une question (prix, cible, pivot)",
+      "Répondre aux e-mails reçus sur bonjour@vegebudget.fr"
     ],
     "ameliorations": [
-      "Brancher le paiement Stripe et l'offre fondateur",
-      "Articles et guides pour Google et les IA (« menu de la semaine pour 20 € »)"
+      "Brancher la boîte bonjour@vegebudget.fr à la loop pour qu'elle lise aussi les e-mails des membres"
     ]
   },
   "aCompleter": [
-    "Le paiement n'est pas branché : aucun revenu à suivre pour l'instant."
+    "Les e-mails reçus sur bonjour@vegebudget.fr ne sont pas encore lus par la loop."
   ]
 }
