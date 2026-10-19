@@ -206,6 +206,35 @@ test('Impacteur : lecture du Sheet via n8n et carte', async () => {
   assert.deepEqual(await synchroniserImpacteur({ sources: {} }, {}), { ignore: true });
 });
 
+test('Impacteur : réponses des invités (oui interview, livres acceptés), « indisponible » sans la colonne', async () => {
+  const { synchroniserImpacteur } = await import('../src/business.js');
+  const carteDe = (b) => tableauDeBord({ business: b, journal: journalVide(), configJournal, jour }).cartes.find((x) => x.id === 'impacteur');
+  const chiffre = (c, titre) => c.chiffres.find((x) => x.titre === titre);
+  const sans = { sources: {}, objectifs: {} };
+  await synchroniserImpacteur(sans, { appel: async () => [{ statut: 'ENVOYE', date_envoi: `${jour}T08:00:00Z` }] });
+  const c0 = carteDe(sans);
+  assert.equal(chiffre(c0, 'Oui interview').valeur, 'indisponible');
+  assert.equal(chiffre(c0, 'Livres acceptés').valeur, 'indisponible');
+  assert.ok(c0.manque.includes('réponses des invités'));
+
+  const b = { sources: {}, objectifs: {} };
+  const lignes = [
+    { statut: 'ENVOYE', date_envoi: '2026-09-01T08:00:00Z', reponse_le: '2026-09-02T08:00:00Z', reponse_type: 'OUI_INTERVIEW' },
+    { statut: 'ENVOYE', date_envoi: `${jour}T08:00:00Z`, reponse_le: `${jour}T09:00:00Z`, reponse_type: 'OUI_INTERVIEW+LIVRE_ACCEPTE' },
+    { statut: 'BROUILLON_CREE', reponse_le: `${jour}T10:00:00Z`, reponse_type: 'livre_accepte' },
+    { statut: 'ENVOYE', date_envoi: `${jour}T08:00:00Z`, reponse_le: `${jour}T11:00:00Z`, reponse_type: 'A_CLASSER' },
+    { statut: 'ENVOYE', date_envoi: `${jour}T08:00:00Z`, reponse_le: '', reponse_type: '' },
+  ];
+  await synchroniserImpacteur(b, { appel: async () => lignes });
+  const c = carteDe(b);
+  assert.equal(chiffre(c, 'Oui interview').valeur, 2);
+  assert.match(chiffre(c, 'Oui interview').detail, /dont 1 sur 7 jours, 1 réponse\(s\) pas encore lue\(s\) par Claude/);
+  assert.equal(chiffre(c, 'Livres acceptés').valeur, 2);
+  assert.equal(chiffre(c, 'Réponses reçues').valeur, 4);
+  assert.deepEqual(c.manque, []);
+  assert.equal(c.secondaire.serie.at(-1), 3);
+});
+
 test('tableauDeBord : Petites histoires vraies compte les vidéos de sa chaîne YouTube, sans doublon le même jour', () => {
   const j = journalVide();
   j.evenements.push({ projet: 'histoires-vraies', type: 'video', jour: '2026-10-05', titre: 'Vidéo publiée (Facebook)' });
