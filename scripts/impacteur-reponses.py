@@ -164,7 +164,11 @@ for (const [boite, noeud] of [['Afrique', 'GMAIL AFRIQUE - mails reçus'], ['Fre
     if (!de || AUTO_DE.test(de) || AUTO_OBJET.test(objet)) continue;
     const date = m.internalDate ? new Date(Number(m.internalDate)) : new Date(m.date || m.Date || Date.now());
     // Le texte de l'invité seul : on coupe l'historique cité (« Le … a écrit : », « De : », « > »).
-    const corps = String(m.text || m.snippet || '').split(/\n\s*(?:>|Le .{5,120} a [ée]crit|On .{5,120} wrote|De ?: |From: |-----)/)[0];
+    // Mail en HTML seul (Gmail, Outlook…) : on coupe à la citation, puis on retire les balises.
+    const html = String(m.html || m.textAsHtml || '').split(/<blockquote|class="?gmail_quote|id="?divRplyFwdMsg|class="?yahoo_quoted|class="?moz-cite-prefix/i)[0]
+      .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, '').replace(/<[^>]*$/, '').replace(/<(br|\/p|\/div|\/li)[^>]*>/gi, '\n').replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    const corps = String((String(m.text || '').trim() ? m.text : '') || html || m.snippet || '').split(/\n\s*(?:>|Le .{5,120} a [ée]crit|On .{5,120} wrote|De ?: |From: |-----)/)[0];
     const texte = corps.replace(/\s+/g, ' ').trim();
     mails.push({ id: String(m.id), boite, de, objet, texte, date: date.toISOString() });
   }
@@ -329,6 +333,10 @@ def bilan():
     for t in TYPES:
         if comptes.get(t):
             print(f"  {t} : {comptes[t]}")
+    for l in lignes:
+        if str(l.get("reponse_type") or "").strip():
+            texte = " ".join(str(l.get("reponse_texte") or "").split())
+            print(f"  - {l.get('reponse_type')} | {l.get('auteur') or '?'} | {texte[:120] or '(texte vide)'}")
 
 
 workflows = api("GET", "/api/v1/workflows?limit=250")["data"]
