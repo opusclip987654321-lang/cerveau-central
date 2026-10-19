@@ -1,0 +1,35 @@
+{
+  "maj": "2026-10-19T22:57:39Z",
+  "objectifs": {
+    "abonnes": {
+      "actuel": 26,
+      "cible": 1000
+    },
+    "heures": {
+      "actuel": 7.7,
+      "cible": 4000
+    },
+    "revenusMois": {
+      "actuel": null,
+      "cible": 500
+    }
+  },
+  "rythme": "Vidéos longues lundi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30.",
+  "hypothese": "Plus de Shorts = plus d'abonnés : les Shorts ont apporté les 24 abonnés gagnés en 28 jours, les vidéos longues aucun.",
+  "chiffres": {
+    "shorts7j": 2588,
+    "longues7j": 90,
+    "shorts28j": 3495,
+    "longues28j": 458,
+    "meilleurShort": "Un bébé de 3 mois se souvient de ça : 1 942 vues"
+  },
+  "decisions": [
+    {
+      "date": "2026-10-19",
+      "quoi": "Cycle 1 tranché : choix B. Le mercredi, la vidéo longue est remplacée par un 2e teaser Short ; teasers mardi, mercredi et jeudi.",
+      "pourquoi": "Sur 28 jours, les Shorts font 3 495 vues et 24 abonnés, les vidéos longues 458 vues et 0 abonné ; l'objectif en cours est 1 000 abonnés. Les vidéos longues restent 2 fois par semaine pour les heures de visionnage, sans coût en plus."
+    }
+  ],
+  "question": null,
+  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage, avec un test d'accroche plus forte sur les 3 premières secondes des Shorts ; vidéo longue vendredi 23 octobre."
+}
