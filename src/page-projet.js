@@ -489,7 +489,7 @@ ${titres.map((titre) => `<tr><td>${e(titre)}${stock(titre) ? ' <small>(en tout, 
 <p class="vide">Les comparaisons ▲▼ de la page Aujourd’hui portent sur le jour contre la veille ; ici chaque colonne compte depuis le début de sa période.</p></section>`;
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifDirect = false, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue' } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifDirect = false, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue', loop = '' } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   if (!ONGLETS.some(([o]) => o === onglet)) onglet = 'vue';
@@ -535,6 +535,7 @@ export function pageProjet(configJournal, id, { business, journal, pauses, histo
     carte ? `<div class="bds une">${carteProjet({ ...carte, periode: tableau.periode }, 7)}</div>` : '',
     htmlTunnel(tunnel(id, business, { jours30: joursJusqua(jour, 30) })),
     htmlVisites(visitesDe(business, id)),
+    loop,
     blocBlocages,
     blocManque,
     surveillance,

@@ -59,6 +59,11 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
   const pasTest = (l) => l.statut !== 'test';
   // Pour retrouver quel restaurant a écrit, à partir de l'adresse de la réponse.
   const parEmail = new Map(prospects.filter((l) => l.email).map((l) => [String(l.email).toLowerCase(), l]));
+  const nomsLongs = prospects.filter((l) => String(l.nom ?? '').length >= 5).sort((a, b) => String(b.nom).length - String(a.nom).length);
+  const parObjet = (objet) => {
+    const o = String(objet ?? '').toLowerCase();
+    return o ? nomsLongs.find((l) => o.includes(String(l.nom).toLowerCase())) ?? null : null;
+  };
   business.sources.prospection = {
     maj: maintenant.toISOString(),
     prospects: prospects.filter(pasTest).map((l) => ({
@@ -70,6 +75,14 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
       premier: jourDe(l.date_premier_envoi),
       dernier: jourDe(l.date_dernier_envoi),
       reponse: jourDe(l.date_reponse),
+      // Le profil du restaurant, pour que la loop Nūr Meet compare qui répond (src/loop-nour-meet.js).
+      dep: l.code_postal ? String(l.code_postal).slice(0, 2) : null,
+      score: Number.isFinite(Number(l.score)) ? Number(l.score) : null,
+      prix: l.niveau_prix ? String(l.niveau_prix).slice(0, 4) : null,
+      halal: String(l.halal ?? '').startsWith('confirm'),
+      privatisation: String(l.privatisation ?? '').startsWith('confirm'),
+      note: Number.isFinite(Number(l.note)) && l.note !== null ? Number(l.note) : null,
+      recherche: (String(l.indices_google ?? '').match(/recherche : ([^·]+)/) ?? [])[1]?.trim().slice(0, 120) ?? null,
     })),
     // `corps` : le texte réellement envoyé, si l'automatisation le copie dans
     // np_envois (colonne corps). Absent = non récupéré, la page le dit tel quel.
@@ -88,7 +101,9 @@ export async function synchroniserProspection(business, { url, cle, delaiMs = 20
     // Le texte des réponses, gardé par « Nour Meet 4 » dans np_reponses (depuis le 05/10/2026).
     reponses: (reponses ?? [])
       .map((l) => {
-        const p = l.email ? parEmail.get(String(l.email).toLowerCase()) : null;
+        // Par l'adresse ; sinon par le nom du restaurant dans l'objet (« Re: … ») quand
+        // quelqu'un répond depuis une autre adresse que celle prospectée.
+        const p = (l.email ? parEmail.get(String(l.email).toLowerCase()) : null) ?? parObjet(l.objet);
         return {
           jour: jourDe(l.recu),
           nom: p?.nom ? String(p.nom).slice(0, 80) : null,
