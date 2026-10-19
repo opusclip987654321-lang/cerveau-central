@@ -1,11 +1,11 @@
 {
-  "maj": "2026-10-14",
+  "maj": "2026-10-19",
   "source": "Lu dans les automatisations n8n « IMPACTEUR A à E » le 05/10/2026",
   "intro": "L'agent cherche chaque jour des invités pour tes deux chaînes (Impacteur Afrique et Impacteur Frexit) : auteurs de livres récents et invités d'interviews YouTube. Il rédige les invitations, tu fournis les adresses e-mail (colonne email_contact du Sheet), tu tries sur Telegram ou sur la page Impacteur, et les envois partent tout seuls, plafonnés à 8 par jour.",
   "journee": [
     {
       "quand": "8 h 07",
-      "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit), invitation rédigée par Claude, fiche dans le Sheet ; l'adresse e-mail vient de toi.",
+      "quoi": "Découverte de livres : nouveautés du dépôt légal BnF (thèmes en alternance Afrique / Frexit) ; Claude cherche sur le web qui est l'auteur puis écrit l'invitation ; fiche dans le Sheet ; l'adresse e-mail vient de toi.",
       "toi": "Remplir la colonne email_contact du Sheet, puis trier : Telegram ✅/🗑 ou page Impacteur"
     },
     {
@@ -20,7 +20,7 @@
     },
     {
       "quand": "12 h 07",
-      "quoi": "Découverte YouTube : les 40 chaînes que tu as choisies sont surveillées, Claude repère les invités d'interviews récentes et prépare des fiches.",
+      "quoi": "Découverte YouTube : les 40 chaînes que tu as choisies sont surveillées, Claude repère les invités d'interviews récentes, cherche sur le web qui ils sont et prépare des fiches.",
       "toi": "Trier sur Telegram : ✅ / 🗑"
     },
     {
@@ -55,8 +55,8 @@
         {
           "type": "auto",
           "texte": "Une invitation est écrite au nom de Walid, avec une demande d'exemplaire presse",
-          "outil": "Claude Haiku (API Anthropic)",
-          "technique": "Le modèle le moins cher de Claude rédige à partir de la fiche du livre."
+          "outil": "Claude Haiku + recherche web (API Anthropic)",
+          "technique": "Depuis le 19/10 (ton choix), Claude fait 1 ou 2 recherches web sur l'auteur (parcours, actualité, décès éventuel) avant d'écrire ; le résumé va dans la colonne recherches_auteur et sur la fiche Telegram (🔎). Il ne cherche pas d'adresse e-mail."
         },
         {
           "type": "auto",
@@ -113,8 +113,8 @@
         {
           "type": "auto",
           "texte": "On écarte les doublons et on écrit l'invitation",
-          "outil": "Claude Haiku (API Anthropic)",
-          "technique": "Même rédaction que pour les livres ; l'adresse vient de toi (colonne email_contact)."
+          "outil": "Claude Haiku + recherche web (API Anthropic)",
+          "technique": "Même rédaction que pour les livres, avec la même recherche web sur l'invité (depuis le 19/10) ; l'adresse vient de toi (colonne email_contact)."
         },
         {
           "type": "toi",
@@ -217,7 +217,8 @@
         "Rédigées par Claude au nom de Walid, avec un exemple d'interview en bas de mail",
         "Les informations douteuses ne bloquent rien : elles sont signalées sur la fiche à la validation",
         "Contrôle du texte avant envoi (depuis le 06/10) : une invitation qui ne correspond pas au modèle de sa chaîne (exemple d'interview + signature Walid + nom de la chaîne) ne part pas et reste dans le Sheet ; plus de message Telegram pour ça depuis le 13/10 (choix de louis)",
-        "Le brouillon Gmail créé au ✅ est, depuis le 06/10, un mail mis en forme avec le logo de la chaîne en signature (logos gardés par le cerveau aux adresses publiques /logos/impacteur-afrique.png et /logos/impacteur-frexit.png), créé dans le compte Gmail de sa chaîne"
+        "Le brouillon Gmail créé au ✅ est, depuis le 06/10, un mail mis en forme avec le logo de la chaîne en signature (logos gardés par le cerveau aux adresses publiques /logos/impacteur-afrique.png et /logos/impacteur-frexit.png), créé dans le compte Gmail de sa chaîne",
+        "Recherche web avant d'écrire (ton choix du 19/10, livres et YouTube) : 2 recherches au plus par fiche ; Claude s'en sert pour une phrase juste sur le parcours ou l'actualité de la personne, signale un homonyme possible et écrit « DÉCÈS SIGNALÉ » si une source parle d'un décès (⚠️ sur la fiche Telegram, rien n'est bloqué). Mise en place : scripts/impacteur-recherche-web.py, lancé par louis sur le VPS Nūr (sans option il montre, --essai fait une invitation d'essai, --appliquer branche, --remettre revient sans recherche)"
       ]
     },
     {
@@ -258,7 +259,7 @@
     },
     {
       "sujet": "Coûts",
-      "detail": "Chaque découverte utilise Claude (Haiku) pour la rédaction ; la recherche Brave ne sert plus qu'aux fiches /inviter depuis le 11/10. La BnF et les flux YouTube sont gratuits."
+      "detail": "Chaque découverte utilise Claude (Haiku) pour la rédaction, avec 1 ou 2 recherches web par fiche depuis le 19/10 (10 $ les 1 000 recherches plus les pages lues : environ 3 à 5 centimes par fiche, ~6 € par mois estimés, à confirmer sur la facture ; le nombre de recherches est noté sur chaque fiche, « RECHERCHE_WEB »). La recherche Brave ne sert plus qu'aux fiches /inviter. La BnF et les flux YouTube sont gratuits."
     },
     {
       "sujet": "Exemple d'interview",
@@ -270,7 +271,7 @@
     },
     {
       "sujet": "Auteurs décédés",
-      "detail": "Le garde-fou qui écartait les auteurs peut-être décédés est retiré (ton choix du 11/10) : l'invitation part, un doute est seulement signalé sur la fiche. Les fiches déjà marquées « décès à vérifier » restent bloquées ; pour les relancer, passe leur statut à A_VERIFIER dans le Sheet."
+      "detail": "Le garde-fou qui écartait les auteurs peut-être décédés est retiré (ton choix du 11/10) : l'invitation part, un doute est seulement signalé sur la fiche. Les fiches déjà marquées « décès à vérifier » restent bloquées ; pour les relancer, passe leur statut à A_VERIFIER dans le Sheet. Depuis le 19/10, la recherche web signale un décès trouvé dans une source (⚠️ sur la fiche Telegram, « DÉCÈS SIGNALÉ » dans les informations à vérifier) : ne donne pas l'adresse de cette fiche."
     }
   ],
   "aCompleter": [
@@ -295,8 +296,8 @@
       "role": "Plus utilisée pour les fiches du jour (les adresses viennent de toi) ; sert encore aux fiches /inviter"
     },
     {
-      "nom": "Claude (Haiku, API Anthropic)",
-      "role": "Rédige les invitations et identifie les invités des interviews"
+      "nom": "Claude (Haiku, API Anthropic, avec recherche web)",
+      "role": "Identifie les invités des interviews ; cherche sur le web qui est la personne (depuis le 19/10) puis rédige l'invitation"
     },
     {
       "nom": "Gmail (API)",
