@@ -304,7 +304,8 @@
         "Succès mesuré : réponses positives (intéressé, question), puis inscriptions et abonnements",
         "Budget IA de la loop : 10 €/mois (~11 $), la loop s'arrête d'elle-même au plafond",
         "Pause : plus aucun changement, la méthode en cours continue ; Annuler : retour à la version précédente",
-        "Version 2 (19/10, écrite par Claude) : premier mail avec le prix, ce que le restaurant y gagne et une offre de rappel"
+        "Version 2 (19/10, écrite par Claude) : premier mail avec le prix, ce que le restaurant y gagne et une offre de rappel",
+        "Un restaurant inscrit sur le site ne reçoit plus de relance de prospection (exclusion « inscrit ») ; la suite (date et nombre de places d'une soirée) passe par la loop grand public, qui seule lui écrit"
       ]
     }
   ],

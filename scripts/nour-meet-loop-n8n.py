@@ -8,7 +8,9 @@ de premiers mails par jour. Le lien des mails est marqué (utm_campaign=v<versio
 pour relier chaque visite, réponse et inscription à la version de texte qui l'a amenée,
 et la recherche qui a trouvé chaque restaurant est gardée sur sa fiche (indices_google).
 Si le cerveau ne répond pas, les mails partent avec les textes d'avant : rien ne s'arrête.
-Rien d'autre ne change (envoi OVH, exclusions, réponses, pixel).
+Les restaurants déjà inscrits sur le site (comme Le Casanova) passent dans les exclusions
+(motif « inscrit ») : plus aucune relance de prospection ne leur part.
+Rien d'autre ne change (envoi OVH, réponses, pixel).
 
 À lancer sur le VPS Nūr (là où est le .env du cerveau) :
     python3 scripts/nour-meet-loop-n8n.py              (montre tout, ne change rien)
@@ -19,8 +21,10 @@ structure réelle, à coller dans le fil Claude.
 import hashlib
 import json
 import pathlib
+import subprocess
 import sys
 import urllib.request
+from datetime import datetime, timezone
 
 APPLIQUER = "--appliquer" in sys.argv
 NOM_NM1 = "Nour Meet 1 - Recherche et envoi automatique"
@@ -169,6 +173,36 @@ def actif(workflows, nom):
     return api("GET", f"/api/v1/workflows/{tous[0]['id']}")
 
 
+def inscrits_a_exclure():
+    """E-mails des restaurants inscrits sur le site, encore prospectés et pas encore exclus."""
+    try:
+        noms = subprocess.run(["docker", "ps", "--format", "{{.Names}}"], capture_output=True, text=True, check=True).stdout.split()
+        pg = next(n for n in noms if "nour-v2" in n and "postgres" in n)
+        r = subprocess.run(["docker", "exec", "-i", pg, "sh", "-c", 'psql -U "$POSTGRES_USER" -d "${POSTGRES_DB:-nour_meet}" -At -v ON_ERROR_STOP=1'],
+                           input='select lower(u.email) from "Organizer" o join "User" u on u.id = o."ownerId" where u.email is not null;',
+                           capture_output=True, text=True, check=True)
+    except Exception as err:  # noqa: BLE001
+        print(f"(Restaurants inscrits non lus : {err}. Les relances continuent pour eux.)")
+        return None, []
+    inscrits = {l.strip() for l in r.stdout.splitlines() if "@" in l}
+    tables = api("GET", "/api/v1/data-tables?limit=100").get("data", [])
+    t = {x["name"]: x["id"] for x in tables}
+    if "np_prospects" not in t or "np_exclusions" not in t:
+        return None, []
+    def lignes(nom):
+        out, curseur = [], None
+        for _ in range(80):
+            rep = api("GET", f"/api/v1/data-tables/{t[nom]}/rows?limit=250" + (f"&cursor={curseur}" if curseur else ""))
+            out += rep.get("data") or []
+            curseur = rep.get("nextCursor")
+            if not curseur:
+                return out
+        return out
+    prospectes = {str(p.get("email") or "").strip().lower(): p.get("nom") for p in lignes("np_prospects")}
+    exclus = {str(e.get("email") or "").strip().lower() for e in lignes("np_exclusions")}
+    return t["np_exclusions"], [(e, prospectes[e]) for e in sorted(inscrits) if e in prospectes and e not in exclus]
+
+
 def principal():
     try:
         with urllib.request.urlopen(url_methode, timeout=20) as r:
@@ -184,6 +218,9 @@ def principal():
     changements = []
     patcher_nm1(w1, changements)
     patcher_nm3(w3, changements)
+    table_exclusions, a_exclure = inscrits_a_exclure()
+    for _, nom in a_exclure:
+        changements.append(f"Exclusions : {nom} est inscrit sur le site, plus de relance de prospection")
     print("\nCe qui sera fait :" if changements else "\nRien à faire : tout est déjà en place.")
     for c in changements:
         print(f"  - {c}")
@@ -195,6 +232,10 @@ def principal():
             api("PUT", f"/api/v1/workflows/{w['id']}", {"name": w["name"], "nodes": w["nodes"], "connections": w["connections"], "settings": w.get("settings", {})})
             api("POST", f"/api/v1/workflows/{w['id']}/activate")
             print(f"Enregistré : {w['name']}")
+    if a_exclure:
+        api("POST", f"/api/v1/data-tables/{table_exclusions}/rows",
+            {"data": [{"email": e, "motif": "inscrit", "date_ajout": datetime.now(timezone.utc).isoformat()} for e, _ in a_exclure]})
+        print(f"Exclus des relances : {', '.join(n for _, n in a_exclure)}")
     print("\nDemain 9 h, les premiers mails partent avec la version de la loop ; 9 h 30, les relances.")
 
 
