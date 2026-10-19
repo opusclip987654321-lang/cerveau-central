@@ -17,7 +17,7 @@ const PROFONDEUR_MAX = 6;
 export function dossiersCode(env = process.env) {
   return {
     leviaro: env.CODE_LEVIARO || '/sources/leviaro-code',
-    'histoires-vraies': env.CODE_HISTOIRES || '/sources/histoires-code',
+    'nour-video': env.CODE_HISTOIRES || '/sources/histoires-code',
   };
 }
 

@@ -45,7 +45,7 @@ test('journal : chaque vidéo publiée une seule fois, avec le lien Facebook', a
   assert.equal(synchroniserHistoires(j, config, donnees), 2);
   assert.equal(synchroniserHistoires(j, config, donnees), 0);
   const lina = j.evenements.find((e) => e.titre.includes('Lina'));
-  assert.equal(lina.projet, 'histoires-vraies');
+  assert.equal(lina.projet, 'nour-meet');
   assert.equal(lina.lien, 'https://www.facebook.com/watch/?v=1831990074477395');
   assert.equal(lina.jour, '2026-09-29');
 });

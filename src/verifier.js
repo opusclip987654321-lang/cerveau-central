@@ -5,6 +5,7 @@ import { verifierDisque, verifierMemoire, verifierCharge } from './checks/serveu
 import { verifierN8n } from './checks/n8n.js';
 import { verifierReleve } from './checks/releve.js';
 import { verifierHistoires } from './histoires.js';
+import { verifierLoopHistoires } from './loop-histoires.js';
 import { chargerEtat, sauverEtat, changement } from './etat.js';
 import { redigerAlerte } from './alertes.js';
 import { expliquer } from './sens.js';
@@ -18,6 +19,7 @@ const VERIFICATEURS = {
   n8n: verifierN8n,
   releve: verifierReleve,
   histoires: verifierHistoires,
+  'loop-histoires': verifierLoopHistoires,
 };
 
 export const cle = (projet, verif, i) => `${projet.id}/${verif.nom ?? verif.type}#${i}`;
@@ -31,6 +33,7 @@ export async function toutVerifier({ config, fichierEtat, options = {}, enPause 
     certificat: options.certificat,
     releve: options.releve,
     histoires: options.histoires,
+    'loop-histoires': options['loop-histoires'],
   };
 
   const taches = config.projets.flatMap((projet) =>

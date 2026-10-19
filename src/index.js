@@ -53,6 +53,7 @@ import { synchroniserVisites } from './visites.js';
 import { lireNourPublic, enregistrerNourPublic } from './nour-public.js';
 import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
+import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -452,11 +453,13 @@ const instancesN8n = {
   principal: { url: env.N8N_URL, cle: env.N8N_API_KEY },
   actualite: { url: env.N8N_ACTUALITE_URL || 'https://n8n.actualitevideo.fr', cle: env.N8N_ACTUALITE_API_KEY },
 };
-// Dossier data/ de Petites histoires vraies, monté en lecture seule (docker-compose.yml).
+// Dossier data/ de l'agent vidéo Nūr Meet (/opt/nour-video-agent), monté en lecture seule (docker-compose.yml).
 const dossierHistoires = env.HISTOIRES_DOSSIER || '/sources/histoires';
 // Dossier data/ de leviaro-agent (base leviaro.db), monté en lecture seule.
 const dossierLeviaro = env.LEVIARO_DOSSIER || '/sources/leviaro';
-const options = { n8n: instancesN8n, releve: { fichier: fichierServeurs }, histoires: { dossier: dossierHistoires } };
+// Compte rendu de la loop Petites histoires vraies (projet « 3_PETITES HISTOIRES »), poussé dans le dépôt.
+const fichierLoopHistoires = path.join(racine, 'config/loops/petites-histoires.json');
+const options = { n8n: instancesN8n, releve: { fichier: fichierServeurs }, histoires: { dossier: dossierHistoires }, 'loop-histoires': { fichier: fichierLoopHistoires } };
 
 // Secret qui signe les sessions, créé au premier démarrage et gardé dans data/.
 const fichierSecret = path.join(path.dirname(fichierEtat), 'secret');
@@ -916,11 +919,10 @@ const serveur = http.createServer(async (req, res) => {
           business: await chargerBusiness(fichierBusiness),
           journal: await chargerJournal(fichierJournal),
           pauses: await chargerPauses(fichierPauses),
-          histoires: id === 'histoires-vraies' ? await lireHistoires(dossierHistoires).catch(() => null) : null,
           idees: await chargerIdees(fichierIdees),
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
-          loop: id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : '',
+          loop: id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : id === 'histoires-vraies' ? htmlLoopHistoires(await lireLoopHistoires(fichierLoopHistoires)) : '',
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
           verifications,
@@ -1012,7 +1014,7 @@ const serveur = http.createServer(async (req, res) => {
         res.writeHead(code, { 'content-type': 'application/json; charset=utf-8' });
         return res.end(JSON.stringify(corps));
       };
-      if (!dossier) return json(404, { erreur: 'Projet inconnu (leviaro ou histoires-vraies).' });
+      if (!dossier) return json(404, { erreur: 'Projet inconnu (leviaro ou nour-video).' });
       try {
         const fichier = url.searchParams.get('fichier');
         if (fichier) {

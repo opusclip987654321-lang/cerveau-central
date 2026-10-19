@@ -73,19 +73,18 @@ test('page projet Leviaro : détail, idées, surveillance', () => {
   assert.equal(pageProjet(configJournal, 'inconnu', { business, journal: journalVide(), idees }), null);
 });
 
-test('page projet Petites histoires vraies : vidéos listées avec lien', () => {
+test('page projet Petites histoires vraies : publications = chaîne YouTube, plus l’agent vidéo de Nūr Meet', () => {
   const html = pageProjet(configJournal, 'histoires-vraies', {
     business: { sources: {}, objectifs: {} },
     journal: journalVide(),
     idees: { idees: [] },
     jour: '2026-10-05',
-    histoires: { publiees: [{ story_id: '19-amira', title: 'Amira', date: '2026-09-29T18:00:00', fb_video_id: '123' }], jobs: [] },
     onglet: 'mails',
   });
-  assert.match(html, /Vidéos publiées/);
-  assert.match(html, /Amira/);
-  assert.match(html, /facebook\.com\/watch/);
-  assert.match(html, /vues par vidéo ne sont pas encore branchées/i);
+  assert.match(html, /3_PETITES HISTOIRES/);
+  assert.doesNotMatch(html, /facebook\.com\/watch/);
+  const vue = pageProjet(configJournal, 'histoires-vraies', { business: { sources: {}, objectifs: {} }, journal: journalVide(), idees: { idees: [] }, jour: '2026-10-05', loop: '<section>LOOP-HV</section>' });
+  assert.match(vue, /LOOP-HV/);
 });
 
 test('page projet Nūr Meet : réponses et mails à valider', () => {

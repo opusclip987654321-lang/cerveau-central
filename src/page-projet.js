@@ -6,7 +6,6 @@ import { carteProjet, PASTILLES, CSS_CARTE } from './page-journal.js';
 import { STATUTS_IDEE } from './idees.js';
 import { ETATS_SUIVI, ETATS_FINIS, cleReponse } from './suivi.js';
 import { jourParis } from './questions.js';
-import { lienVideo, depuisHeureParis } from './histoires.js';
 import { grouperParJour, exempleDuJour, reponseAutomatique, lienGmail } from './mails.js';
 import { DECISIONS_TRI, cleTri } from './tri-mails.js';
 import { CHOIX_VERIF, cleVerif } from './verifs-impacteur.js';
@@ -145,7 +144,7 @@ function tablesVideos(videos) {
 }
 
 // Les sections de détail, selon le projet.
-function sections(id, { business, journal, histoires, suivi, tri, verifs, verifDirect }) {
+function sections(id, { business, journal, suivi, tri, verifs, verifDirect }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
   // Les chaînes YouTube du projet, quand elles sont branchées.
   const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
@@ -437,17 +436,7 @@ ${f.corps ? `<p>Texte envoyé : ${texteCellule(f.corps)}</p>` : ''}
   }
 
   if (id === 'histoires-vraies') {
-    const pub = (histoires?.publiees ?? []).map((p) => ({ ...p, d: depuisHeureParis(p.date) })).sort((a, b) => (b.d ?? 0) - (a.d ?? 0));
-    return [
-      table('Vidéos publiées', [{ cle: 'q', titre: 'Publiée le' }, { cle: 't', titre: 'Vidéo' }, { cle: 'r', titre: 'Réseaux' }],
-        pub.map((p) => {
-          const lien = lienVideo(p);
-          const reseaux = [p.ig_media_id && 'Instagram', p.fb_video_id && 'Facebook'].filter(Boolean).join(' + ') || '—';
-          return { q: p.d ? p.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '—', t: lien ? `<a href="${e(lien)}" target="_blank" rel="noopener">${e(p.title ?? p.story_id)}</a>` : e(p.title ?? p.story_id), r: e(reseaux) };
-        }), { visibles: 12 }),
-      '<p class="vide">Les vues par vidéo ne sont pas encore branchées (il faudra l’accès Facebook/Instagram). Tes vidéos faites à la main se notent avec « Ajouter une note » du Journal.</p>',
-      fin(blocNotes),
-    ].join('');
+    return fin(`<p class="vide">Les Shorts partent aussi sur Instagram, Facebook et TikTok depuis le projet « 3_PETITES HISTOIRES » ; leurs vues arrivent dans le compte rendu de la loop (onglet Vue d’ensemble).</p>${blocNotes}`);
   }
 
   return fin(blocNotes);
@@ -490,7 +479,7 @@ ${titres.map((titre) => `<tr><td>${e(titre)}${stock(titre) ? ' <small>(en tout, 
 <p class="vide">Les comparaisons ▲▼ de la page Aujourd’hui portent sur le jour contre la veille ; ici chaque colonne compte depuis le début de sa période.</p></section>`;
 }
 
-export function pageProjet(configJournal, id, { business, journal, pauses, histoires, idees, suivi, tri, verifs, verifDirect = false, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue', loop = '' } = {}) {
+export function pageProjet(configJournal, id, { business, journal, pauses, idees, suivi, tri, verifs, verifDirect = false, verifications = [], actions = [], jour = jourParis(), message, aRepondre = 0, guide = false, onglet = 'vue', loop = '' } = {}) {
   const projet = configJournal.projets.find((p) => p.id === id);
   if (!projet) return null;
   if (!ONGLETS.some(([o]) => o === onglet)) onglet = 'vue';
@@ -569,7 +558,7 @@ ${mesIdees.length ? `<ul>${mesIdees
   const resolues = mesActions.filter((a) => a.statut === 'resolu').slice(0, 10);
   const blocActions = `<section class="bloc"><h3>Fiches d’action <small>(${ouvertes.length} ouverte(s))</small></h3>${ouvertes.length ? listeActions(ouvertes) : '<p class="vide">Aucune fiche ouverte sur ce projet.</p>'}${resolues.length ? `<details class="texte"><summary>Résolues récemment (${resolues.length})</summary>${listeActions(resolues)}</details>` : ''}</section>`;
 
-  const corps = { vue, resultats, mails: sections(id, { business, journal, histoires, suivi, tri, verifs, verifDirect }), actions: blocActions + blocIdees }[onglet];
+  const corps = { vue, resultats, mails: sections(id, { business, journal, suivi, tri, verifs, verifDirect }), actions: blocActions + blocIdees }[onglet];
 
   const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
 <p class="retour"><a href="/journal">‹ Tous les projets</a></p>
