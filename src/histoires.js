@@ -1,4 +1,6 @@
-// Petites histoires vraies : le programme /opt/nour-video-agent (VPS Nūr), hors n8n.
+// Agent vidéo de Nūr Meet : le programme /opt/nour-video-agent (VPS Nūr), hors n8n.
+// Longtemps pris pour la fabrication de Petites histoires vraies (corrigé le 19/10 : la
+// chaîne vit dans le projet Claude « 3_PETITES HISTOIRES », voir loop-histoires.js).
 // Le cerveau lit son dossier data/ (monté en lecture seule) : published.json pour
 // les vidéos publiées, jobs/ pour les histoires lancées (un dossier par lancement).
 import { readFile, readdir } from 'node:fs/promises';
@@ -50,7 +52,7 @@ export function synchroniserHistoires(journal, config, donnees) {
     const { evenement } = ajouterEvenement(
       journal,
       config,
-      { projet: 'histoires-vraies', type: 'video', titre: `Vidéo publiée : ${p.title ?? p.story_id}`, lien: lienVideo(p), date: depuisHeureParis(p.date)?.toISOString(), details: reseaux ? `Publiée sur ${reseaux}` : null },
+      { projet: 'nour-meet', type: 'video', titre: `Vidéo de l’agent Nūr Meet publiée : ${p.title ?? p.story_id}`, lien: lienVideo(p), date: depuisHeureParis(p.date)?.toISOString(), details: reseaux ? `Publiée sur ${reseaux}` : null },
       { source: 'histoires' },
     );
     if (evenement) {

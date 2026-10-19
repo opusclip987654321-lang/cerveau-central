@@ -45,6 +45,6 @@ test('lireCode lit un fichier autorisé et refuse tout le reste', async () => {
 
 test('dossiersCode pointe sur les montages du conteneur, surchargables en test', () => {
   assert.equal(dossiersCode({}).leviaro, '/sources/leviaro-code');
-  assert.equal(dossiersCode({})['histoires-vraies'], '/sources/histoires-code');
+  assert.equal(dossiersCode({})['nour-video'], '/sources/histoires-code');
   assert.equal(dossiersCode({ CODE_LEVIARO: '/tmp/x' }).leviaro, '/tmp/x');
 });

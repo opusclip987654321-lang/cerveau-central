@@ -201,7 +201,7 @@ npm start              # la page d'état sur http://127.0.0.1:8090
 
 ## Pause / Reprendre, et Discuter
 
-- **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, et retient lesquelles. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, programme de Petites histoires vraies) n'est pas touché.
+- **Pause** (onglet État, « Tes projets ») : le cerveau désactive dans n8n les automatisations actives du projet, et retient lesquelles. **Reprendre** réactive exactement celles-là. Ce qui tourne hors n8n (conteneurs Leviaro, agent vidéo Nūr Meet, chaîne Petites histoires vraies fabriquée dans le projet Claude « 3_PETITES HISTOIRES ») n'est pas touché.
 - **Discuter** (sur chaque fiche d'action) : louis pose une question, Claude (Sonnet) répond à partir des données du cerveau (état, argent, journal, serveurs). Il ne modifie rien. Depuis le 19/10 (choix de louis), il peut aussi chercher sur internet quand la question porte sur un fait extérieur (un outil, un prix, une entreprise) : 3 recherches au plus par réponse, les pages utilisées s'affichent en liens sous « Sources (web) ». Une recherche coûte 1 centime plus la lecture des pages ; tout compte dans le plafond `PLAFOND_IA_DOLLARS` et la dépense IA de la page Argent. Si l'API refuse la recherche, la réponse part sans internet.
 
 ## Tableau de bord business (onglet Journal)
@@ -215,4 +215,4 @@ En tête du Journal : une carte par projet avec sa pastille (🟢 ça avance, �
 
 ## Pages par projet et idées
 
-Chaque carte du tableau de bord mène à `/projet?projet=<id>` : la carte business du projet, puis son détail (Nūr Meet : réponses, mails à valider, derniers mails ; Leviaro : réponses avec extrait, mails, entreprises et où ça en est ; Impacteur : invités avec auteur/livre/état ; Petites histoires vraies : vidéos publiées avec lien), les notes du journal et la surveillance technique repliée. En haut, « Mes idées de modifications » : louis note ses idées, chacune suivie (proposée, en cours, faite, écartée) dans `data/idees.json`.
+Chaque carte du tableau de bord mène à `/projet?projet=<id>` : la carte business du projet, puis son détail (Nūr Meet : réponses, mails à valider, derniers mails ; Leviaro : réponses avec extrait, mails, entreprises et où ça en est ; Impacteur : invités avec auteur/livre/état ; Petites histoires vraies : vidéos de la chaîne YouTube et bloc « Loop de la chaîne », lu dans `config/loops/petites-histoires.json` que la loop du projet « 3_PETITES HISTOIRES » met à jour par PR), les notes du journal et la surveillance technique repliée. En haut, « Mes idées de modifications » : louis note ses idées, chacune suivie (proposée, en cours, faite, écartée) dans `data/idees.json`.

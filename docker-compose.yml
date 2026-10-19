@@ -13,7 +13,7 @@ services:
     volumes:
       - cerveau-data:/app/data
       - ./config:/app/config:ro
-      # Petites histoires vraies : le cerveau lit seulement (vidéos publiées, histoires lancées).
+      # Agent vidéo Nūr Meet (/opt/nour-video-agent) : le cerveau lit seulement (vidéos publiées, histoires lancées).
       - /opt/nour-video-agent/data:/sources/histoires:ro
       # Leviaro : le cerveau copie sa base (leviaro.db) pour en lire les chiffres, sans y écrire.
       - /home/ubuntu/leviaro-agent/data:/sources/leviaro:ro

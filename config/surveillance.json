@@ -7,7 +7,8 @@
         { "type": "site", "nom": "Site nourmeet.com", "url": "https://nourmeet.com" },
         { "type": "site", "nom": "API (base de données comprise)", "url": "https://api.nourmeet.com/health/ready", "json": { "status": "ok" } },
         { "type": "certificat", "nom": "Certificat nourmeet.com", "hote": "nourmeet.com" },
-        { "type": "certificat", "nom": "Certificat api.nourmeet.com", "hote": "api.nourmeet.com" }
+        { "type": "certificat", "nom": "Certificat api.nourmeet.com", "hote": "api.nourmeet.com" },
+        { "type": "histoires", "nom": "Agent vidéo Nūr Meet", "joursMax": 4, "automatique": false }
       ]
     },
     {
@@ -53,7 +54,7 @@
       "id": "histoires-vraies",
       "nom": "Petites histoires vraies",
       "verifications": [
-        { "type": "histoires", "nom": "Vidéos publiées", "joursMax": 4, "automatique": false }
+        { "type": "loop-histoires", "nom": "Compte rendu de la loop", "joursMax": 9 }
       ]
     },
     {

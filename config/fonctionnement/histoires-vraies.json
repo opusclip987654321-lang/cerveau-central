@@ -1,197 +1,168 @@
 {
-  "maj": "2026-10-11",
-  "source": "Lu dans /opt/nour-video-agent le 05/10/2026, puis dans son mode d'emploi (INSTALL_FR.md, .env.example) le 06/10/2026",
-  "intro": "Des petites histoires vraies en vidéo. L'agent fabrique chaque vidéo étape par étape avec deux validations sur Telegram, puis c'est toi qui publies. Depuis le 5 octobre, la fabrication automatique est en pause (son décalé, voix robotique) ; les vidéos continuent de sortir sur la chaîne YouTube (lundi, mercredi, vendredi à 18 h, un épisode et un short) et le suivi continue.",
+  "maj": "2026-10-19",
+  "source": "Lu le 19/10/2026 dans les tâches programmées et la session « Production automatique » du projet Claude « 3_PETITES HISTOIRES » (fil « Loop Petites histoires vraies » du cerveau)",
+  "intro": "La chaîne YouTube Petites Histoires Vraies explique en dessin animé une bizarrerie du cerveau ou du monde (« Pourquoi on n'aime pas le son de sa voix ? »). Tout est fabriqué par Claude dans le projet « 3_PETITES HISTOIRES » : texte, voix, ~120 dessins, montage, Short, miniatures, mise en ligne. Une loop mesure les chiffres chaque dimanche et décide seule de ce qu'il faut changer. Objectifs : 1 000 abonnés, puis 4 000 h de visionnage, puis 500 € par mois de revenus YouTube.",
   "journee": [
     {
-      "quand": "9 h, un jour sur deux",
-      "quoi": "Départ d'une fabrication (en pause depuis le 05/10 : la ligne du planificateur est coupée). /nouvelle sur Telegram lance une vidéo à la main à tout moment.",
-      "toi": "Rien tant que c'est en pause"
-    },
-    {
-      "quand": "En continu",
-      "quoi": "Le bot Telegram tourne en service sur le serveur : il reçoit tes ✅/❌ et tes commandes (/nouvelle, /regen, /status, /retry).",
-      "toi": "Répondre aux validations quand une vidéo se fabrique"
-    },
-    {
-      "quand": "9 h 30",
-      "quoi": "Relevé des performances des vidéos déjà publiées.",
+      "quand": "3 h 07, lundi, mercredi, vendredi (et le 1er samedi du mois)",
+      "quoi": "Fabrication d'un épisode (~6 min) et de son Short, mise en ligne programmée à 18 h.",
       "toi": "Rien"
     },
     {
-      "quand": "Lundi",
-      "quoi": "Rafraîchissement de la réserve d'histoires vraies.",
+      "quand": "12 h 30, mardi (et jeudi une semaine sur deux)",
+      "quoi": "Un 2e Short coupé dans un épisode déjà en ligne.",
       "toi": "Rien"
+    },
+    {
+      "quand": "Dimanche 18 h 52",
+      "quoi": "Analyse de la semaine (YouTube Analytics), changement de miniature si elle clique peu, boucle d'apprentissage, compte rendu envoyé au cerveau.",
+      "toi": "Rien, sauf si la loop te pose une question de pivot"
     }
   ],
   "circuits": [
     {
-      "titre": "La fabrication (en pause)",
-      "note": "Arrêtée le 05/10 : tu fais les vidéos toi-même pour le moment.",
+      "titre": "La fabrication d'un épisode",
       "etapes": [
         {
           "type": "auto",
-          "texte": "9 h un jour sur deux (ou quand tu tapes /nouvelle) : une vidéo démarre",
-          "outil": "Cron ou Telegram",
-          "technique": "Ligne du planificateur du serveur Nūr, coupée pendant la pause ; /nouvelle dans le bot lance une vidéo à la main."
+          "texte": "La loop relit ses leçons et choisit un sujet qui teste une hypothèse (sujet, voix, dessin, durée…)",
+          "outil": "Claude (abonnement)",
+          "technique": "PRODUCTION.md, BOUCLE.md, lecons.md et sujets.py dans le dossier partagé du projet 3_PETITES HISTOIRES."
         },
         {
           "type": "auto",
-          "texte": "Une histoire de la réserve devient un script et 9 images (environ 0,60 $)",
-          "outil": "Grok Imagine (xAI)",
-          "technique": "Une histoire par fichier, prise dans l'ordre ; l'API d'xAI dessine les images."
+          "texte": "Texte d'environ 1 000 mots, avec ses sources, puis la voix",
+          "outil": "Voix Gemini (Kore ou Charon)",
+          "technique": "Synthèse vocale par API ; la loop alterne les voix pour les comparer."
+        },
+        {
+          "type": "auto",
+          "texte": "Environ 120 dessins (un toutes les 3 secondes), vérifiés image par image, puis montage avec musique",
+          "outil": "Python + ffmpeg",
+          "technique": "Dessins générés par programme dans la session Claude ; planche de contrôle avant le montage."
+        },
+        {
+          "type": "auto",
+          "texte": "Le Short est coupé dans l'épisode (sans dévoiler la réponse), avec une carte de fin",
+          "technique": "production/shorts.py"
+        },
+        {
+          "type": "auto",
+          "texte": "Mise en ligne sur YouTube, programmée en public à 18 h, avec titre, description, chapitres et 3 miniatures à tester",
+          "outil": "YouTube (API)",
+          "technique": "publish/upload.py"
+        },
+        {
+          "type": "auto",
+          "texte": "Le Short part sur Instagram dès que l'épisode est public",
+          "outil": "Meta (API)",
+          "technique": "publish/meta_social.py"
         },
         {
           "type": "toi",
-          "texte": "Tu valides le script et les images avant de payer : ✅ continuer, ❌ annuler, ou refaire une image",
+          "texte": "Facebook et TikTok : le Short t'est envoyé sur Telegram pour que tu le publies, en attendant la publication automatique",
           "outil": "Telegram",
-          "technique": "Bot dédié ; /regen 3 refait l'image 3, avec une consigne si tu veux."
-        },
-        {
-          "type": "securite",
-          "texte": "Garde-fou de coût : 110 secondes d'animation au plus",
-          "sinon": "le job est refusé avant de payer",
-          "technique": "Durée vérifiée par le programme avant d'appeler le service payant."
-        },
-        {
-          "type": "auto",
-          "texte": "Les scènes sont animées (environ 8,70 $ par vidéo)",
-          "outil": "Grok Imagine (xAI)",
-          "technique": "Animation en 720p, facturée à la seconde."
-        },
-        {
-          "type": "auto",
-          "texte": "Une voix française raconte l'histoire",
-          "outil": "ElevenLabs",
-          "technique": "Synthèse vocale par API, voix choisie dans ta bibliothèque (abonnement ~5 $/mois)."
-        },
-        {
-          "type": "auto",
-          "texte": "Montage final : sous-titres, musique douce et zoom de fin",
-          "outil": "ffmpeg",
-          "technique": "Logiciel de montage gratuit qui tourne sur le serveur Nūr."
-        },
-        {
-          "type": "toi",
-          "texte": "Tu valides la vidéo finie, tu l'enregistres et tu la publies toi-même",
-          "outil": "Telegram",
-          "technique": "La vidéo arrive dans le bot ; l'agent ne publie jamais seul."
+          "technique": "Proposé le 19/10 : Facebook publié par la loop elle-même ; TikTok dès que le compte Post for Me existe."
         }
       ]
     },
     {
-      "titre": "Le suivi (actif)",
+      "titre": "La loop (apprendre et changer)",
       "etapes": [
         {
           "type": "auto",
-          "texte": "Lundi : la réserve d'histoires vraies est rafraîchie",
-          "technique": "Fait par le programme sur le serveur Nūr, un fichier par histoire."
+          "texte": "Chaque dimanche : vues, impressions, clics, abonnés, heures, par épisode et par Short",
+          "outil": "YouTube Analytics",
+          "technique": "publish/analytics.py 7 et 28 jours, bilan.py (tableau par épisode)."
         },
         {
           "type": "auto",
-          "texte": "9 h 30 : on relève les performances des vidéos déjà publiées",
-          "technique": "Fait par le programme sur le serveur Nūr."
+          "texte": "Toutes les 3 vidéos : la loop compare les hypothèses testées et change la méthode (sujets, format, rythme, longues ou Shorts…)",
+          "technique": "BOUCLE.md. Règle de louis du 19/10 : elle décide et applique seule ; elle ne demande ton avis que pour un pivot radical."
         },
         {
           "type": "auto",
-          "texte": "Les vidéos publiées s'affichent sur la page du projet, avec leurs liens",
-          "outil": "Cerveau + YouTube",
-          "technique": "Le cerveau lit chaque heure la chaîne YouTube Petites Histoires Vraies (vidéos, vues, abonnés)."
-        },
-        {
-          "type": "toi",
-          "texte": "Tes vidéos faites à la main : tu les notes pour qu'elles comptent",
-          "outil": "Journal du cerveau",
-          "technique": "Bouton « Ajouter une note » ; une vidéo sortie sur plusieurs réseaux le même jour ne compte qu'une fois."
+          "texte": "Compte rendu au cerveau : objectifs, chiffres des Shorts et des longues, décisions et pourquoi",
+          "outil": "Cerveau",
+          "technique": "Fichier config/loops/petites-histoires.json du dépôt cerveau-central, mis à jour par la loop ; affiché dans la Vue d'ensemble du projet."
         }
       ]
     }
   ],
   "regles": [
     {
-      "titre": "Publication",
+      "titre": "Liberté de la loop (19/10/2026)",
       "points": [
-        "L'agent ne publie jamais tout seul : la vidéo finale arrive sur Telegram et sur le serveur, c'est toi qui la publies (TikTok, Instagram)"
+        "La loop est la plus libre possible : elle peut changer de sujets, de format, de rythme, de voix ou de dessin sans demander",
+        "Elle te pose une question seulement pour un pivot qu'elle juge radical : changer le concept ou le nom de la chaîne, abandonner les vidéos longues, changer de public, ou une nouvelle dépense de plus de 50 € par mois",
+        "Un fichier PAUSE dans son dossier arrête la fabrication ; l'analyse du dimanche continue"
       ]
     },
     {
-      "titre": "Budget",
+      "titre": "Où ça tourne",
       "points": [
-        "Une vidéo ≈ 9 à 10 $ (images ~0,60 $ + animation 720p ~8,70 $), plus l'abonnement voix (~5 $/mois)",
-        "Le checkpoint 1 arrive AVANT l'étape payante : rien n'est animé sans ton ✅",
-        "/retry reprend une fabrication en erreur là où elle s'était arrêtée, sans repayer ce qui est déjà généré",
-        "Un mode à blanc (DRY_RUN) permet de tester toute la chaîne sans aucun appel payant"
+        "Dans le projet Claude « 3_PETITES HISTOIRES », sur ton abonnement Claude : pas sur la clé API du cerveau, donc pas touché par la limite de dépense Anthropic",
+        "Le cerveau ne peut pas modifier les tâches de ce projet : seul son fil « Production automatique » peut changer ses propres règles",
+        "Le programme /opt/nour-video-agent du VPS Nūr n'est PAS cette chaîne : c'est l'agent vidéo de Nūr Meet (corrigé le 19/10)"
       ]
     },
     {
-      "titre": "Comptage des vidéos (08/10/2026)",
+      "titre": "Comptage dans le cerveau",
       "points": [
-        "Le cerveau lit chaque heure la chaîne YouTube Petites Histoires Vraies (vidéos, vues, abonnés) : toutes les vidéos de la chaîne y sont comptées automatiquement, sans rien noter",
-        "Depuis le 11/10, une vidéo compte le jour où elle est vraiment sortie (mise en ligne programmée ou première à 18 h), pas le jour où elle a été envoyée sur YouTube : avant, une vidéo envoyée à l'avance était comptée trop tôt et la carte pouvait afficher « 0 vidéo » à tort",
-        "Il compte aussi les vidéos publiées par le programme (Facebook, Instagram) et celles notées à la main ; une même vidéo sortie le même jour sur plusieurs réseaux ne compte qu'une fois"
-      ]
-    },
-    {
-      "titre": "Shorts et vidéos longues dans le cerveau",
-      "points": [
-        "Depuis le 11/10, la page Publications du projet sépare les shorts des vidéos longues d'après la durée relue chez YouTube : 3 minutes ou moins = short (YouTube ne dit pas le format, c'est une déduction)",
-        "Le tunnel « Parcours des vidéos » compte les 30 derniers jours : vidéos publiées, shorts, longues, vues de ces vidéos, abonnés, revenus (« ? » tant que les revenus ne sont pas branchés)"
+        "Le cerveau lit chaque heure la chaîne YouTube (vidéos, vues, abonnés) : chaque vidéo compte le jour où elle est vraiment sortie",
+        "3 minutes ou moins = Short (déduction d'après la durée, YouTube ne dit pas le format)",
+        "Heures de visionnage et revenus : donnés par le compte rendu de la loop ; absents = « indisponible », jamais 0"
       ]
     }
   ],
   "role": {
     "quotidien": [
-      "Faire les vidéos à la main tant que la fabrication est en pause",
-      "Les noter dans le Journal avec leur lien"
+      "Rien : la chaîne tourne et se corrige seule"
     ],
     "parfois": [
-      "Décider quand relancer la fabrication automatique (après amélioration du son et de la voix)",
-      "Ajouter les prochaines histoires dans la réserve"
+      "Répondre à une question de pivot de la loop (elle apparaît en haut du bloc « Loop de la chaîne »)",
+      "Publier sur TikTok le Short reçu sur Telegram, tant que Post for Me n'est pas prêt"
     ]
   },
   "aCompleter": [
-    "Les vues TikTok et Instagram ne sont pas branchées (il faudra un accès Meta / TikTok)."
+    "Publication automatique sur TikTok (attend ton compte Post for Me et sa clé)."
   ],
   "outils": [
     {
-      "nom": "Grok Imagine (xAI, API)",
-      "role": "Les 9 images de chaque histoire, puis l'animation des scènes en 720p (facturée à la seconde)"
+      "nom": "Claude (projet 3_PETITES HISTOIRES)",
+      "role": "Écrit, dessine, monte, met en ligne, analyse et décide (abonnement Claude)"
     },
     {
-      "nom": "ElevenLabs (API)",
-      "role": "La voix off française (modèle multilingue, voix choisie dans ta bibliothèque)"
+      "nom": "Voix Gemini",
+      "role": "La voix off (Kore ou Charon)"
     },
     {
-      "nom": "ffmpeg",
-      "role": "Montage, sous-titres, musique de fond et zoom final, gratuit sur le serveur"
+      "nom": "YouTube (API et Analytics)",
+      "role": "Mise en ligne programmée, miniatures, chiffres de la semaine"
     },
     {
-      "nom": "Telegram (bot dédié)",
-      "role": "Les deux validations ✅/❌ et les commandes /nouvelle, /regen, /status, /retry"
+      "nom": "Meta (API)",
+      "role": "Les Shorts sur Instagram (et Facebook)"
     },
     {
-      "nom": "Journal du cerveau",
-      "role": "Tes vidéos faites à la main comptent via « Ajouter une note »"
-    },
-    {
-      "nom": "VPS Nūr (hébergement seulement)",
-      "role": "Le bot tourne en service permanent ; le départ automatique (un jour sur deux à 9 h) est une ligne du planificateur, coupée pendant la pause"
+      "nom": "Telegram",
+      "role": "Les Shorts pour TikTok, et les rares questions de la loop"
     },
     {
       "nom": "Cerveau (cerveau.nourmeet.com)",
-      "role": "Lit les publications du programme et les affiche sur la page du projet"
+      "role": "Affiche la chaîne, les objectifs et les décisions de la loop"
     }
   ],
   "alertes": [
     {
-      "message": "Fabrication automatique en pause ; dernière vidéo publiée : …",
-      "sens": "Normal depuis le 05/10 : c'est toi qui fais les vidéos.",
-      "faire": "Rien. Dis à Claude quand tu veux relancer la fabrication automatique."
+      "message": "La loop de la chaîne n'a pas encore envoyé son premier compte rendu",
+      "sens": "Normal tant que la nouvelle règle n'est pas en place dans 3_PETITES HISTOIRES.",
+      "faire": "Rien, ou vérifier que le message a bien été envoyé dans son fil."
     },
     {
-      "message": "Le programme n'a lancé aucune histoire depuis N jours",
-      "sens": "Ne peut s'afficher qu'une fois la fabrication relancée : elle calerait.",
-      "faire": "Prévenir Claude."
+      "message": "Aucun compte rendu de la loop depuis N jours",
+      "sens": "L'analyse du dimanche n'a pas tourné ou n'a pas pu écrire dans le cerveau.",
+      "faire": "Regarder le fil « Production automatique » de 3_PETITES HISTOIRES, ou prévenir Claude."
     }
   ]
 }
