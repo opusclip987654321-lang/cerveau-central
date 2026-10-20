@@ -31,6 +31,12 @@
     {
       "date": "2026-10-20",
       "type": "changé",
+      "quoi": "Test d'une vidéo longue qui explique l'actualité avec des hommes politiques connus (par exemple Mélenchon, Le Pen) : sujet choisi dimanche 25 octobre parmi les infos de la semaine, publié lundi 26 octobre, avec ses Shorts. Factuel et sourcé, même place à chaque camp, aucune citation ni voix inventée.",
+      "pourquoi": "Idée de Walid du 20/10. Les vidéos longues font en moyenne 46 vues en 28 jours (458 vues pour 10 vidéos) et 0 abonné ; on garde ce format si la vidéo dépasse 2 fois cette moyenne en 7 jours ou si ses Shorts amènent des abonnés, on arrête sinon."
+    },
+    {
+      "date": "2026-10-20",
+      "type": "changé",
       "quoi": "Test sur les 4 prochaines vidéos longues (dès le 23 octobre) : une question posée aux spectateurs juste après l'accroche, pour faire commenter.",
       "pourquoi": "0 commentaire sur les 10 premières vidéos longues ; succès si au moins 1 commentaire par vidéo en moyenne à 7 jours."
     },
@@ -54,5 +60,5 @@
     }
   ],
   "question": null,
-  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage. Vidéo longue vendredi 23 octobre : 1re du test « question au début ». Toujours à peser : accroche des 3 premières secondes des Shorts, titres en A/B, bio et couvertures pour les visiteurs du profil."
+  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage. Vidéo longue vendredi 23 octobre : 1re du test « question au début ». Lundi 26 octobre : 1re vidéo d'actualité avec des politiques connus. Toujours à peser : accroche des 3 premières secondes des Shorts, titres en A/B, bio et couvertures pour les visiteurs du profil."
 }
