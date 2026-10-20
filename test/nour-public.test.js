@@ -46,6 +46,20 @@ test('une vraie soirée efface l’alerte « rien à vendre » ; une soirée de 
   assert.match(html, /3 \/ 24/);
 });
 
+test('tunnel : chaque étape avec sa part de la précédente ; alerte si le site semble incompris', () => {
+  const np = lireNourPublic(exemple, maintenant);
+  assert.deepEqual(np.tunnel, { visiteurs: 3, explorent: 2, soirees: 1 });
+  const html = htmlNourPublic(np, maintenant);
+  assert.match(html, /1\. Visiteurs<\/span><span class="num">3<\/span>/);
+  assert.match(html, /Vont au-delà de la 1re page<\/span><span class="num">2 <small>\(67 %\)<\/small>/);
+  // Trop peu de visiteurs pour juger : pas d'alerte.
+  assert.ok(!alertesNourPublic(np, maintenant).some((x) => x.includes('le site est-il compris')));
+  const fuite = lireNourPublic({ ...exemple, tunnel: { visiteurs: 200, explorent: 20, soirees: 5 } }, maintenant);
+  assert.ok(alertesNourPublic(fuite, maintenant).some((x) => x.startsWith('Seuls 10 % des visiteurs')));
+  // Relevé ancien sans tunnel : « indisponible », jamais 0.
+  assert.match(htmlNourPublic(lireNourPublic({ ...exemple, tunnel: undefined }, maintenant), maintenant), /1\. Visiteurs<\/span><span class="num">indisponible/);
+});
+
 test('bloc grand public : chiffres absents = « indisponible », jamais 0', () => {
   const np = lireNourPublic({ ...exemple, comptesTotal: null }, maintenant);
   const html = htmlNourPublic(np, maintenant);

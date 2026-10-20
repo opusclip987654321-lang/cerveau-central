@@ -17,6 +17,7 @@ export function lireNourPublic(brut, maintenant = new Date()) {
   return {
     maj: maintenant.toISOString(),
     comptesTotal: entier(brut.comptesTotal),
+    tunnel: { visiteurs: entier(brut.tunnel?.visiteurs), explorent: entier(brut.tunnel?.explorent), soirees: entier(brut.tunnel?.soirees) },
     comptes: parJour(brut.comptes),
     candidatures: parJour(brut.candidatures),
     places: parJour(brut.places),
@@ -82,12 +83,18 @@ export function alertesNourPublic(np, maintenant = new Date()) {
     if (muet === null && np.posts.length) alertes.push(`${nom} : aucun post n'est passé${x.erreur ? ` (« ${x.erreur} »)` : ''}.`);
     else if (muet !== null && muet >= 2) alertes.push(`${nom} ne publie plus depuis ${muet} jours${x.erreur ? ` : « ${x.erreur} »` : ''}.`);
   }
+  // Étape 1 du tunnel (axes de louis du 20/10) : un visiteur qui repart après une seule page n'a sans
+  // doute pas compris à quoi sert le site. Sous 20 % d'exploration sur un échantillon sérieux, la
+  // loop doit revoir le message, voire poser à louis la question d'un pivot.
+  const t = np.tunnel;
+  if (t?.visiteurs >= 100 && t.explorent !== null && t.explorent / t.visiteurs < 0.2) alertes.push(`Seuls ${Math.round((100 * t.explorent) / t.visiteurs)} % des visiteurs vont au-delà de la première page (30 j) : le site est-il compris ?`);
   if (!np.soirees.some((s) => !s.demo)) alertes.push('Aucune vraie soirée à vendre aux particuliers : même un visiteur intéressé ne peut rien réserver.');
   return alertes;
 }
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const n = (x) => (x === null || x === undefined ? 'indisponible' : Number(x).toLocaleString('fr-FR'));
+const pct = (a, b) => (a === null || a === undefined || !b ? '' : ` <small>(${Math.round((100 * a) / b)} %)</small>`);
 const date = (j) => (j ? `${j.slice(8, 10)}/${j.slice(5, 7)}` : 'jamais');
 
 // Le bloc « Grand public » de la page projet Nūr Meet.
@@ -100,6 +107,18 @@ export function htmlNourPublic(np, maintenant = new Date()) {
   const mesures = posts30.filter((p) => p.portee !== null);
   const porteeMoy = mesures.length ? Math.round(mesures.reduce((a, p) => a + p.portee, 0) / mesures.length) : null;
   const r = etatReseaux(np);
+  // Tunnel en étapes (axes de louis du 20/10) : chaque étape avec sa part de l'étape précédente, pour
+  // voir où le grand public décroche.
+  const t = np.tunnel ?? {};
+  const etapes = [
+    ['Visiteurs', t.visiteurs],
+    ['Vont au-delà de la 1re page', t.explorent],
+    ['Ouvrent une soirée', t.soirees],
+    ['Créent un compte', depuis(np.comptes, il30)],
+    ['Candidatent', depuis(np.candidatures, il30)],
+    ['Paient leur place', depuis(np.places, il30)],
+  ];
+  const tunnel = `<ul>${etapes.map(([nom, v], i) => `<li><span>${i + 1}. ${nom}</span><span class="num">${n(v)}${i ? pct(v, etapes[i - 1][1]) : ''}</span></li>`).join('')}</ul>`;
   const ligneReseau = (nom, x) => {
     const muet = x.dernierPost ? joursEntre(x.dernierPost, aujourdhui) : null;
     const etat = muet !== null && muet < 2 ? '🟢' : '🔴';
@@ -120,6 +139,7 @@ export function htmlNourPublic(np, maintenant = new Date()) {
 <div><b>${n(porteeMoy)}</b><span>personnes touchées par post (30 j)</span></div>
 </div>
 <div class="listes-v">
+<div class="liste-v"><b>Tunnel (30 j)</b>${tunnel}</div>
 <div class="liste-v"><b>Réseaux</b><ul>${ligneReseau('Instagram', r.instagram)}${ligneReseau('Facebook', r.facebook)}</ul></div>
 <div class="liste-v"><b>Soirées à venir (inscrits / places)</b>${soirees}</div>
 <div class="liste-v"><b>D’où viennent les visiteurs (30 j, avec accord cookies)</b>${origines}</div>
