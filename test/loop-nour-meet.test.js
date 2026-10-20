@@ -152,3 +152,18 @@ test('revue : les pistes de louis du 20/10 sont données comme matière à réfl
   assert.match(consigne, /PISTES DE LOUIS/);
   assert.match(consigne, /pas des ordres/);
 });
+
+test('leçons : la revue note ce qu’elle apprend, les relit la semaine suivante et la page les montre', async () => {
+  const l = loopDeDepart(maintenant);
+  let lu = null;
+  const client = (d) => ({ beta: { messages: { create: async ({ messages }) => { lu = messages[0].content; return { usage: {}, stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(d) }] }; } } } });
+  await revoirMethode(l, business(), { client: client({ changer: false, pourquoi: 'x', lecons: ['Objet avec le prix : 0 réponse sur 120, arrêté.', ''] }), semaine: '2026-10-26' });
+  assert.deepEqual(l.lecons, [{ semaine: '2026-10-26', texte: 'Objet avec le prix : 0 réponse sur 120, arrêté.' }]);
+  await revoirMethode(l, business(), { client: client({ changer: false, pourquoi: 'x' }), semaine: '2026-11-02' });
+  assert.match(lu, /Objet avec le prix : 0 réponse sur 120/);
+  assert.equal(l.lecons.length, 1);
+  assert.match(htmlLoop(l, business(), { jour: '2026-11-02' }), /Ce que la loop a appris/);
+  delete l.lecons; // un état d'avant les leçons reste lisible
+  await revoirMethode(l, business(), { client: client({ changer: false, pourquoi: 'x', lecons: ['a'] }), semaine: '2026-11-09' });
+  assert.equal(l.lecons.length, 1);
+});
