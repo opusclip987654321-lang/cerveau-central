@@ -45,6 +45,8 @@ export function lireNourPublic(brut, maintenant = new Date()) {
       .filter((p) => p.jour)
       .sort((a, b) => a.jour.localeCompare(b.jour)),
     lecons: liste(brut.lecons, 5).map((x) => texte(x, 300)).filter(Boolean),
+    // Le journal daté des décisions de la loop (20/10) : ce qu'elle change, garde ou arrête, et pourquoi.
+    decisions: liste(brut.decisions, 30).map((x) => ({ date: jour(x?.date), type: texte(x?.type, 20), quoi: texte(x?.quoi, 600), pourquoi: texte(x?.pourquoi, 1500) })).filter((x) => x.date && x.quoi),
     origines: liste(brut.origines, 15).map((o) => ({ source: texte(o?.source, 80) ?? 'direct', n: entier(o?.n) ?? 0 })),
   };
 }

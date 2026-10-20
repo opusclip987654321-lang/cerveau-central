@@ -54,6 +54,7 @@ import { lireNourPublic, enregistrerNourPublic } from './nour-public.js';
 import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
+import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -86,6 +87,8 @@ const plafondMatin = Number(env.PLAFOND_MATIN_DOLLARS ?? 5);
 // La loop Nūr Meet restaurateurs (19/10) : 10 €/mois choisis par louis, ~11 $.
 const fichierLoop = path.join(path.dirname(fichierEtat), 'loop-nour-meet.json');
 const plafondLoop = Number(env.PLAFOND_LOOP_NOUR_DOLLARS ?? 11);
+// L'historique daté des décisions de toutes les loops (20/10), recopié dans Notion.
+const fichierDecisions = path.join(path.dirname(fichierEtat), 'decisions-loops.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -427,6 +430,28 @@ function loopNourMeet() {
   })()
     .catch((err) => console.error(`Loop Nūr Meet impossible : ${err.message}`))
     .finally(() => (loopEnCours = null));
+}
+
+// Le journal des décisions des loops, toutes les 10 minutes et sans IA : rassemble ce que
+// chaque loop a décidé (changé, gardé, appris, demandé), le garde pour toujours et le
+// recopie dans la table Notion « Décisions des loops » si NOTION_TOKEN est dans .env.
+let decisionsEnCours = null;
+function tenirDecisions() {
+  decisionsEnCours ??= (async () => {
+    const trouvees = collecterDecisions({ loopNour: await chargerLoop(fichierLoop), business: await chargerBusiness(fichierBusiness), loopHistoires: await lireLoopHistoires(fichierLoopHistoires) });
+    const archive = await chargerDecisions(fichierDecisions);
+    const neuves = fusionnerDecisions(archive, trouvees);
+    let notion = null;
+    try {
+      notion = await envoyerNotion(archive, { jeton: env.NOTION_TOKEN, source: env.NOTION_DECISIONS_SOURCE || undefined });
+    } catch (err) {
+      console.error(`Décisions des loops vers Notion : ${err.message}`);
+    }
+    await sauverDecisions(fichierDecisions, archive);
+    if (neuves.length || notion?.envoyees) console.log(`${new Date().toISOString()} décisions des loops : ${neuves.length} nouvelle(s), ${notion?.envoyees ?? 0} envoyée(s) à Notion`);
+  })()
+    .catch((err) => console.error(`Décisions des loops impossibles : ${err.message}`))
+    .finally(() => (decisionsEnCours = null));
 }
 
 // Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
@@ -922,7 +947,9 @@ const serveur = http.createServer(async (req, res) => {
           idees: await chargerIdees(fichierIdees),
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
-          loop: id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : id === 'histoires-vraies' ? htmlLoopHistoires(await lireLoopHistoires(fichierLoopHistoires)) : '',
+          loop:
+            (id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : id === 'histoires-vraies' ? htmlLoopHistoires(await lireLoopHistoires(fichierLoopHistoires)) : '') +
+            htmlDecisions(await chargerDecisions(fichierDecisions), id),
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
           verifications,
@@ -1000,6 +1027,10 @@ const serveur = http.createServer(async (req, res) => {
       const r = await avecIdees((d) => changerStatutIdee(d, id, statut));
       res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet ?? '')}&message=${encodeURIComponent(r.erreur ?? 'Suivi mis à jour')}` });
       return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/api/decisions') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(await chargerDecisions(fichierDecisions)));
     }
     if (req.method === 'GET' && url.pathname === '/api/idees') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
@@ -1117,3 +1148,5 @@ analyseDuMatin();
 setInterval(analyseDuMatin, 10 * 60_000);
 loopNourMeet();
 setInterval(loopNourMeet, 10 * 60_000);
+tenirDecisions();
+setInterval(tenirDecisions, 10 * 60_000);

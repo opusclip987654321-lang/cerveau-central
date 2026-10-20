@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-19",
+  "maj": "2026-10-20",
   "source": "Lu le 19/10/2026 dans les tâches programmées et la session « Production automatique » du projet Claude « 3_PETITES HISTOIRES » (fil « Loop Petites histoires vraies » du cerveau)",
   "intro": "La chaîne YouTube Petites Histoires Vraies explique en dessin animé une bizarrerie du cerveau ou du monde (« Pourquoi on n'aime pas le son de sa voix ? »). Tout est fabriqué par Claude dans le projet « 3_PETITES HISTOIRES » : texte, voix, ~120 dessins, montage, Short, miniatures, mise en ligne. Une loop mesure les chiffres chaque dimanche et décide seule de ce qu'il faut changer. Objectifs : 1 000 abonnés, puis 4 000 h de visionnage, puis 500 € par mois de revenus YouTube.",
   "journee": [
@@ -17,6 +17,11 @@
       "quand": "Dimanche 18 h 52",
       "quoi": "Analyse de la semaine (YouTube Analytics), changement de miniature si elle clique peu, boucle d'apprentissage, compte rendu envoyé au cerveau.",
       "toi": "Rien, sauf si la loop te pose une question de pivot"
+    },
+    {
+      "quand": "Toutes les 10 minutes",
+      "quoi": "Le cerveau rassemble les décisions datées de la loop (ce qu'elle change, ce qu'elle garde et pourquoi, ses leçons, ses questions) dans un historique jamais effacé, affiché sur cette page et recopié dans la table Notion « Décisions des loops » (sans IA).",
+      "toi": "Rien : le lire pour voir comment la loop raisonne et se remet en question"
     }
   ],
   "circuits": [

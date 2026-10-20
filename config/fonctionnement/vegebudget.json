@@ -52,6 +52,11 @@
       "quand": "Toutes les heures",
       "quoi": "Les pages nouvelles ou modifiées du site (articles, recettes) sont signalées à Bing par IndexNow, ce qui sert aussi ChatGPT, Copilot, Qwant et Ecosia.",
       "toi": "Rien"
+    },
+    {
+      "quand": "Toutes les 10 minutes",
+      "quoi": "Le cerveau rassemble les décisions datées de la loop (ce qu'elle change, ce qu'elle garde et pourquoi, ses leçons, ses questions) dans un historique jamais effacé, affiché sur cette page et recopié dans la table Notion « Décisions des loops » (sans IA).",
+      "toi": "Rien : le lire pour voir comment la loop raisonne et se remet en question"
     }
   ],
   "circuits": [

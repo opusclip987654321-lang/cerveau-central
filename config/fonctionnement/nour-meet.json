@@ -42,6 +42,11 @@
       "quand": "Lundi après 9 h",
       "quoi": "Revue de la méthode par Claude Opus : relit d'abord son carnet de leçons, garde ce qui marche, change le reste, note quoi et pourquoi sur la page Nūr Meet, et ajoute à son carnet ce que la semaine lui a appris (essai, chiffre, gardé ou arrêté). Un pivot radical (offre, prix, cible hors restaurants) attend ton accord.",
       "toi": "Lire ce qui a changé ; Appliquer ou Refuser si la loop demande"
+    },
+    {
+      "quand": "Toutes les 10 minutes",
+      "quoi": "Le cerveau rassemble les décisions datées de la loop (ce qu'elle change, ce qu'elle garde et pourquoi, ses leçons, ses questions) dans un historique jamais effacé, affiché sur cette page et recopié dans la table Notion « Décisions des loops » (sans IA).",
+      "toi": "Rien : le lire pour voir comment la loop raisonne et se remet en question"
     }
   ],
   "circuits": [
