@@ -137,7 +137,8 @@ export async function envoyerNotion(archive, { jeton, source = SOURCE_NOTION, fe
   do {
     const r = await appel(`data_sources/${source}/query`, { page_size: 100, ...(curseur ? { start_cursor: curseur } : {}) });
     for (const p of r.results ?? []) {
-      const cle = (p.properties?.['Clé']?.rich_text ?? []).map((t) => t.plain_text ?? t.text?.content ?? '').join('');
+      // Une ligne saisie à la main par le connecteur Notion peut garder des « \\: » : on les ignore.
+      const cle = (p.properties?.['Clé']?.rich_text ?? []).map((t) => t.plain_text ?? t.text?.content ?? '').join('').replace(/\\/g, '');
       if (cle) presentes.add(cle);
     }
     curseur = r.has_more ? r.next_cursor : null;
