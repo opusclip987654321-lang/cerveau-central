@@ -60,6 +60,13 @@ test('tunnel : chaque étape avec sa part de la précédente ; alerte si le site
   assert.match(htmlNourPublic(lireNourPublic({ ...exemple, tunnel: undefined }, maintenant), maintenant), /1\. Visiteurs<\/span><span class="num">indisponible/);
 });
 
+test('carnet de leçons de la loop : affiché du plus récent au plus ancien', () => {
+  const np = lireNourPublic({ ...exemple, lecons: ['2026-10-19 · carrousels · portée 2 · arrêté', '', '2026-10-26 · vidéo courte · portée 40 · gardé'] }, maintenant);
+  assert.equal(np.lecons.length, 2);
+  assert.match(htmlNourPublic(np, maintenant), /Ce que la loop a appris<\/h4><ul><li>2026-10-26/);
+  assert.doesNotMatch(htmlNourPublic(lireNourPublic(exemple, maintenant), maintenant), /Ce que la loop a appris/);
+});
+
 test('bloc grand public : chiffres absents = « indisponible », jamais 0', () => {
   const np = lireNourPublic({ ...exemple, comptesTotal: null }, maintenant);
   const html = htmlNourPublic(np, maintenant);

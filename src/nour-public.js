@@ -44,6 +44,7 @@ export function lireNourPublic(brut, maintenant = new Date()) {
       }))
       .filter((p) => p.jour)
       .sort((a, b) => a.jour.localeCompare(b.jour)),
+    lecons: liste(brut.lecons, 5).map((x) => texte(x, 300)).filter(Boolean),
     origines: liste(brut.origines, 15).map((o) => ({ source: texte(o?.source, 80) ?? 'direct', n: entier(o?.n) ?? 0 })),
   };
 }
@@ -144,5 +145,6 @@ export function htmlNourPublic(np, maintenant = new Date()) {
 <div class="liste-v"><b>Soirées à venir (inscrits / places)</b>${soirees}</div>
 <div class="liste-v"><b>D’où viennent les visiteurs (30 j, avec accord cookies)</b>${origines}</div>
 </div>
+${np.lecons?.length ? `<h4>Ce que la loop a appris</h4><ul>${np.lecons.slice().reverse().map((l) => `<li>${e(l)}</li>`).join('')}</ul>` : ''}
 <p class="vide">Lu dans la base du site Nūr Meet chaque heure (lecture seule). Dernier relevé : ${e(new Date(np.maj).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' }))}.</p></section>`;
 }
