@@ -53,5 +53,14 @@ SELECT json_build_object(
       WHERE "createdAt" > now() - interval '30 days' GROUP BY 1 ORDER BY 2 DESC LIMIT 10) t)
 );
 SQL
+# Les 5 dernières leçons du carnet de la loop (loop/LECONS.md du site), jointes au relevé.
+python3 -c '
+import json, sys, os
+d = json.load(sys.stdin)
+f = os.path.expanduser("~/nour-v2/loop/LECONS.md")
+lignes = [l[2:].strip() for l in open(f, encoding="utf-8") if l.startswith("- ")] if os.path.exists(f) else []
+d["lecons"] = lignes[-5:]
+print(json.dumps(d))
+' |
 curl -fsS -m 60 -X POST -H "Authorization: Bearer $RELEVE_JETON" -H 'content-type: application/json' \
   --data-binary @- "$CERVEAU_URL/api/nour-public"
