@@ -364,6 +364,7 @@
         "L'acquisition fait partie de la loop dès le premier jour : réseaux sociaux sur le besoin de rencontre amoureuse et de networking, SEO du site (Google, blog, balises) vérifié de bout en bout, SEO de l'application mobile sur les stores",
         "Les restaurants créent eux-mêmes leurs soirées (date, places, prix, minimum) depuis leur espace ; tout le reste est automatique",
         "Consigne courte de la loop (objectif, règles fixes, leviers, pistes) dans loop/CONSIGNES.md du dépôt du site ; carnet de leçons loop/LECONS.md relu avant chaque décision, une ligne par essai jugé, 40 dernières lignes (bonnes pratiques du 20/10) ; les 5 dernières leçons s'affichent sur la page Nūr Meet",
+        "Historique des décisions : après chaque revue, la loop ajoute une ligne datée à loop/DECISIONS.md (changé, gardé, arrêté ou question, quoi, pourquoi chiffré, y compris quand elle garde sa méthode) ; le relevé horaire envoie les 30 dernières au cerveau, qui les garde pour toujours et les recopie dans la table Notion « Décisions des loops »",
         "La loop est libre de changer de format, de réseau, de message ou de page d'arrivée ; elle demande à louis seulement si un changement lui semble trop radical",
         "Une image ou une vidéo faite par IA est toujours signalée comme telle et jamais présentée comme une vraie soirée",
         "Donnée absente = « indisponible », jamais 0"

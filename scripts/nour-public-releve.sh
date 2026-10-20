@@ -53,13 +53,21 @@ SELECT json_build_object(
       WHERE "createdAt" > now() - interval '30 days' GROUP BY 1 ORDER BY 2 DESC LIMIT 10) t)
 );
 SQL
-# Les 5 dernières leçons du carnet de la loop (loop/LECONS.md du site), jointes au relevé.
+# Les 5 dernières leçons du carnet de la loop (loop/LECONS.md du site) et ses 30 dernières décisions
+# (loop/DECISIONS.md, une ligne « - AAAA-MM-JJ · type · quoi · pourquoi »), jointes au relevé : le
+# cerveau garde les décisions pour toujours et les recopie dans Notion.
 python3 -c '
 import json, sys, os
 d = json.load(sys.stdin)
-f = os.path.expanduser("~/nour-v2/loop/LECONS.md")
-lignes = [l[2:].strip() for l in open(f, encoding="utf-8") if l.startswith("- ")] if os.path.exists(f) else []
-d["lecons"] = lignes[-5:]
+def lignes(nom):
+    f = os.path.expanduser("~/nour-v2/loop/" + nom)
+    return [l[2:].strip() for l in open(f, encoding="utf-8") if l.startswith("- ")] if os.path.exists(f) else []
+d["lecons"] = lignes("LECONS.md")[-5:]
+d["decisions"] = []
+for l in lignes("DECISIONS.md")[-30:]:
+    morceaux = [m.strip() for m in l.split(" · ", 3)]
+    if len(morceaux) == 4:
+        d["decisions"].append(dict(zip(("date", "type", "quoi", "pourquoi"), morceaux)))
 print(json.dumps(d))
 ' |
 curl -fsS -m 60 -X POST -H "Authorization: Bearer $RELEVE_JETON" -H 'content-type: application/json' \
