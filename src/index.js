@@ -451,7 +451,7 @@ function loopNourMeet() {
 let decisionsEnCours = null;
 function tenirDecisions() {
   decisionsEnCours ??= (async () => {
-    const trouvees = collecterDecisions({ loopNour: await chargerLoop(fichierLoop), business: await chargerBusiness(fichierBusiness), loopHistoires: await lireLoopHistoires(fichierLoopHistoires) });
+    const trouvees = collecterDecisions({ loopNour: await chargerLoop(fichierLoop), business: await chargerBusiness(fichierBusiness), loopHistoires: await lireLoopHistoires(fichierLoopHistoires), loopLeviaro: await lireLoopHistoires(path.join(dossierLeviaro, 'loop/decisions.json')) });
     const archive = await chargerDecisions(fichierDecisions);
     const neuves = fusionnerDecisions(archive, trouvees);
     let notion = null;

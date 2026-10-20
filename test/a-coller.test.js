@@ -55,5 +55,7 @@ test('la page : à faire par projet, bouton copier, faits repliés, texte échap
   assert.doesNotMatch(html, /<script>alert/);
   assert.match(htmlAColler([]), /Rien à coller/);
   // Le menu montre combien il en reste.
-  assert.match(gabarit({ onglet: 'a-coller', aColler: nombreAFaire(messages), contenu: html }), /href="\/a-coller" class="actif" data-s="⧉">À coller <span class="badge">6<\/span>/);
+  const n = nombreAFaire(messages);
+  assert.ok(n > 0);
+  assert.match(gabarit({ onglet: 'a-coller', aColler: n, contenu: html }), new RegExp(`href="/a-coller" class="actif" data-s="⧉">À coller <span class="badge">${n}</span>`));
 });

@@ -97,3 +97,10 @@ test('page projet : décisions du projet seulement, échappées', () => {
   assert.equal(htmlDecisions(archive, 'leviaro'), '');
   assert.equal(pageNotion({ cle: 'a', loop: 'vege', date: '2026-10-20', type: 'Bizarre', quoi: 'x' }).properties.Type.select.name, 'Changé');
 });
+
+test('Leviaro : le compte rendu de ses tâches Claude (data/loop/decisions.json) est repris comme celui de PHV', () => {
+  const loopLeviaro = { decisions: [{ date: '2026-10-22', type: 'gardé', quoi: 'Offre « devis en ligne » gardée', pourquoi: '2 réponses sur 30' }], lecons: [{ date: '2026-10-22', texte: 'Objet avec le métier : 3 ouvertures de plus, gardé.' }] };
+  const d = collecterDecisions({ loopLeviaro }).filter((x) => x.loop === 'leviaro');
+  assert.deepEqual(d.map((x) => x.type), ['Gardé', 'Leçon']);
+  assert.equal(collecterDecisions({ loopLeviaro: { erreur: 'illisible' } }).length, 0);
+});
