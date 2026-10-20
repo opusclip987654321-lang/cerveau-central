@@ -143,3 +143,12 @@ test('page : la loop dit sa version, ses changements et propose pause et annulat
   assert.match(h, /Annuler le dernier changement/);
   assert.match(h, /69 € HT/);
 });
+
+test('revue : les pistes de louis du 20/10 sont données comme matière à réflexion', async () => {
+  let consigne = '';
+  const l = loopDeDepart(maintenant);
+  const client = { beta: { messages: { create: async ({ messages }) => { consigne = messages[0].content; return { usage: {}, stop_reason: 'end_turn', content: [{ type: 'text', text: '{"changer":false,"changements":[],"pourquoi":"trop tôt"}' }] }; } } } };
+  await revoirMethode(l, business(), { client, semaine: '2026-11-02', maintenant: new Date('2026-11-02T10:00:00+01:00') });
+  assert.match(consigne, /PISTES DE LOUIS/);
+  assert.match(consigne, /pas des ordres/);
+});
