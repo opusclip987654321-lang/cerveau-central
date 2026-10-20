@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-19T22:57:39Z",
+  "maj": "2026-10-20T00:14:48Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -9,12 +9,16 @@
       "actuel": 7.7,
       "cible": 4000
     },
+    "coutsCouverts": {
+      "actuel": null,
+      "cible": 80
+    },
     "revenusMois": {
       "actuel": null,
       "cible": 500
     }
   },
-  "rythme": "Vidéos longues lundi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30.",
+  "rythme": "Vidéos longues lundi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30. Shorts publiés automatiquement sur YouTube, Instagram et Facebook ; TikTok à la main.",
   "hypothese": "Plus de Shorts = plus d'abonnés : les Shorts ont apporté les 24 abonnés gagnés en 28 jours, les vidéos longues aucun.",
   "chiffres": {
     "shorts7j": 2588,
@@ -31,5 +35,5 @@
     }
   ],
   "question": null,
-  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage, avec un test d'accroche plus forte sur les 3 premières secondes des Shorts ; vidéo longue vendredi 23 octobre."
+  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage : test d'accroche plus forte sur les 3 premières secondes des Shorts, et pistes de louis à peser (titres en A/B, bio et couvertures pour les visiteurs du profil). Vidéo longue vendredi 23 octobre."
 }
