@@ -263,6 +263,7 @@ Tu peux changer : textes (objet et corps de initial, relance1, relance2), recher
 Règles fixes : français, vouvoiement ; chaque corps contient {lien} et {pied} ; variables {nom} {lieu} {accroche} {lien} {pied} ; n'invente rien sur Nūr Meet (ni chiffres, ni clients, ni promesse) ; aucune adresse mail ni numéro.
 « radical » = changer l'offre ou le prix, viser autre chose que des restaurants, ou quitter l'Île-de-France : rien n'est appliqué, ta question va à louis.
 PISTES DE LOUIS (à peser, pas des ordres) : tunnel pour voir où l'on perd (le restaurateur comprend-il Nūr Meet ? s'inscrit-il ? paie-t-il ?) ; tester objets et corps des mails avec les ouvertures (pixel en place) et, si utile, les clics. Un outil qui manque se propose dans « changements ».
+« pourquoi » est ton journal de décisions, daté et publié dans Notion : même si tu ne changes rien, dis ce que tu as remis en question et pourquoi tu gardes, chiffres à l'appui.
 « lecons » : ce que cette semaine t'apprend, une ligne par essai jugé (essai, chiffre, gardé ou arrêté), ou une erreur à ne pas refaire ; vide si rien de neuf.
 Réponds UNIQUEMENT avec ce JSON :
 {"changer":true|false,"methode":{"textes":{…},"recherches":[…],"relanceJours":[a,b],"parJour":n},"changements":["une phrase par changement"],"pourquoi":"2 à 4 phrases chiffrées","lecons":["une ligne"],"radical":false,"question":"pour louis si radical, sinon vide"}
