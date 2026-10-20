@@ -57,7 +57,8 @@ import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
 import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
-import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
+import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop, reponsesATrier, noterTri, noterRevue, donneesRevue, CONSIGNE_TRI, CONSIGNE_REVUE, TYPES_REPONSE } from './loop-nour-meet.js';
+import { cleLoopsValide, routeDeLaCle } from './cle-loops.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = process.env;
@@ -89,6 +90,9 @@ const plafondMatin = Number(env.PLAFOND_MATIN_DOLLARS ?? 5);
 // La loop Nūr Meet restaurateurs (19/10) : 10 €/mois choisis par louis, ~11 $.
 const fichierLoop = path.join(path.dirname(fichierEtat), 'loop-nour-meet.json');
 const plafondLoop = Number(env.PLAFOND_LOOP_NOUR_DOLLARS ?? 11);
+// Depuis le 20/10 (choix de louis), l'IA de la loop tourne sur l'abonnement Claude : des tâches
+// programmées trient et revoient par /api/loop/nour-meet/*. LOOP_NOUR_IA=api remet l'API Anthropic.
+const loopNourParApi = env.LOOP_NOUR_IA === 'api';
 // L'historique daté des décisions de toutes les loops (20/10), recopié dans Notion.
 const fichierDecisions = path.join(path.dirname(fichierEtat), 'decisions-loops.json');
 // Les messages à coller dans les autres projets Claude (20/10) : coches et messages reçus par l'API.
@@ -424,7 +428,7 @@ async function analyseDuMatin() {
 // après 9 h, Opus revoit la méthode que lisent Nour Meet 1 et 3.
 let loopEnCours = null;
 function loopNourMeet() {
-  if (!clientClaude) return;
+  if (!clientClaude || !loopNourParApi) return;
   loopEnCours ??= (async () => {
     const business = await chargerBusiness(fichierBusiness);
     const tri = await avecLoop((d) => trierReponses(d, business, { client: clientClaude, plafondDollars: plafondLoop }));
@@ -648,7 +652,7 @@ const serveur = http.createServer(async (req, res) => {
       // Les pages /oauth/youtube passent sans mot de passe : le cookie (SameSite=Strict)
       // n'accompagne pas le retour depuis Google, et la page de connexion perdrait le
       // code d'autorisation. Sans code valide, ces pages ne montrent rien de sensible.
-      if (!url.pathname.startsWith('/oauth/youtube') && !acces.jetonValide(lireCookie(req, COOKIE)) && !(url.pathname.startsWith('/api/') && jetonReleveValide(req.headers.authorization ?? ''))) {
+      if (!url.pathname.startsWith('/oauth/youtube') && !acces.jetonValide(lireCookie(req, COOKIE)) && !(url.pathname.startsWith('/api/') && jetonReleveValide(req.headers.authorization ?? '')) && !(routeDeLaCle(req.method, url.pathname) && cleLoopsValide(req.headers.authorization, env.RELEVE_JETON))) {
         if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
           res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
           return res.end(pageConnexion());
@@ -983,7 +987,7 @@ const serveur = http.createServer(async (req, res) => {
           suivi: id === 'nour-meet' ? await chargerSuivi(fichierSuivi) : undefined,
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
           loop:
-            (id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : id === 'histoires-vraies' ? htmlLoopHistoires(await lireLoopHistoires(fichierLoopHistoires)) : '') +
+            (id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop, abonnement: !loopNourParApi }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : id === 'histoires-vraies' ? htmlLoopHistoires(await lireLoopHistoires(fichierLoopHistoires)) : '') +
             htmlDecisions(await chargerDecisions(fichierDecisions), id),
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
@@ -1074,6 +1078,40 @@ const serveur = http.createServer(async (req, res) => {
       const r = connu ? await avecAColler((d) => cocher(d, id, fait === '1')) : { erreur: 'Message introuvable.' };
       res.writeHead(303, { location: `/a-coller${r.erreur ? `?message=${encodeURIComponent(r.erreur)}` : ''}` });
       return res.end();
+    }
+    // La loop Nūr Meet restaurateurs sur l'abonnement Claude : la tâche programmée lit ce
+    // qu'il y a à trier ou à revoir, décide, et renvoie sa décision ; mêmes garde-fous qu'avant.
+    if (url.pathname === '/api/loop/nour-meet/tri' || url.pathname === '/api/loop/nour-meet/revue') {
+      const json = (code, corps) => {
+        res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+        return res.end(JSON.stringify(corps));
+      };
+      const business = await chargerBusiness(fichierBusiness);
+      const heure = Number(env.LOOP_HEURE ?? 9);
+      if (url.pathname.endsWith('/tri') && req.method === 'GET') {
+        const aTrier = reponsesATrier(await chargerLoop(fichierLoop), business, 60);
+        return json(200, { consigne: CONSIGNE_TRI, types: TYPES_REPONSE, reponses: aTrier.map(({ cle, objet, texte }) => ({ cle, objet, texte })) });
+      }
+      if (url.pathname.endsWith('/tri') && req.method === 'POST') {
+        const { reponses } = await lireJson(req, 200_000);
+        const nouvelles = await avecLoop((d) => noterTri(d, reponsesATrier(d, business, 500), reponses));
+        for (const r of nouvelles.filter((x) => POSITIFS.has(x.type) && x.jour >= jourParis(new Date(Date.now() - 7 * 86_400_000)))) await envoyer(alerteInteresse(r));
+        return json(200, { notees: nouvelles.length, positives: nouvelles.filter((x) => POSITIFS.has(x.type)).length });
+      }
+      if (req.method === 'GET') {
+        const loop = await chargerLoop(fichierLoop);
+        const semaine = revueAFaire(loop, { heure });
+        return json(200, { semaine, consigne: CONSIGNE_REVUE, donnees: semaine ? donneesRevue(loop, business) : null });
+      }
+      if (req.method === 'POST') {
+        const { semaine, revue } = await lireJson(req, 200_000);
+        if (!semaine || semaine !== revueAFaire(await chargerLoop(fichierLoop), { heure })) return json(409, { erreur: 'Pas de revue attendue pour cette semaine.' });
+        const entree = await avecLoop((d) => noterRevue(d, revue, { semaine }));
+        if (entree.question) await envoyer(`🔁 <b>Loop Nūr Meet</b> : ${entree.question}
+→ Réponds sur la page Nūr Meet du cerveau (Appliquer ou Refuser).`);
+        console.log(`${new Date().toISOString()} loop Nūr Meet ${semaine} (abonnement) : ${entree.changer ? `version ${entree.version}` : 'rien changé'}${entree.erreur ? ` · ${entree.erreur}` : ''}`);
+        return json(200, entree);
+      }
     }
     if (req.method === 'GET' && url.pathname === '/api/a-coller') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });

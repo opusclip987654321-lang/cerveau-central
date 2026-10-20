@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loopDeDepart, trierReponses, statsLoop, revueAFaire, revoirMethode, verifierMethode, piloter, cheminMethode, methodePourN8n, cleReponseLoop, versionDuMail, remplir, htmlLoop, alerteInteresse } from '../src/loop-nour-meet.js';
+import { loopDeDepart, trierReponses, statsLoop, revueAFaire, revoirMethode, verifierMethode, piloter, cheminMethode, methodePourN8n, cleReponseLoop, versionDuMail, remplir, htmlLoop, alerteInteresse, reponsesATrier, noterTri, noterRevue, donneesRevue } from '../src/loop-nour-meet.js';
+import { cleLoops, cleLoopsValide, routeDeLaCle } from '../src/cle-loops.js';
 
 const maintenant = new Date('2026-10-19T18:00:00+02:00');
 const business = () => ({
@@ -166,4 +167,49 @@ test('leçons : la revue note ce qu’elle apprend, les relit la semaine suivant
   delete l.lecons; // un état d'avant les leçons reste lisible
   await revoirMethode(l, business(), { client: client({ changer: false, pourquoi: 'x', lecons: ['a'] }), semaine: '2026-11-09' });
   assert.equal(l.lecons.length, 1);
+});
+
+test('abonnement Claude : la tâche lit les réponses à trier, renvoie son tri par clé, sans coût API', () => {
+  const l = loopDeDepart(maintenant);
+  const b = business();
+  const aTrier = reponsesATrier(l, b);
+  assert.equal(aTrier.length, 2);
+  const nouvelles = noterTri(l, aTrier, [{ cle: aTrier[0].cle, type: 'INTERESSE', resume: 'veut un appel' }, { cle: 'inconnue', type: 'REFUS' }, { cle: aTrier[1].cle, type: 'PAS_UN_TYPE' }]);
+  assert.equal(nouvelles.length, 1);
+  assert.equal(l.reponses[aTrier[0].cle].type, 'INTERESSE');
+  assert.deepEqual(l.ia, {});
+  // Déjà trié : ni re-noté ni re-proposé.
+  assert.equal(noterTri(l, aTrier, [{ cle: aTrier[0].cle, type: 'REFUS' }]).length, 0);
+  assert.deepEqual(reponsesATrier(l, b).map((x) => x.cle), [aTrier[1].cle]);
+});
+
+test('abonnement Claude : la revue rendue passe par les mêmes garde-fous et le carnet de leçons', () => {
+  const l = loopDeDepart(maintenant);
+  const lundi = new Date('2026-10-26T09:30:00+01:00');
+  assert.ok(donneesRevue(l, business()).chiffres);
+  const e = noterRevue(l, { changer: true, methode: { parJour: 70 }, changements: ['Plus de mails'], pourquoi: 'Paris répond.', lecons: ['v2 : 1 positif sur 50, gardé.'] }, { semaine: '2026-10-26', maintenant: lundi });
+  assert.equal(e.version, 3);
+  assert.equal(l.methode.parJour, 70);
+  assert.equal(l.lecons.at(-1).texte, 'v2 : 1 positif sur 50, gardé.');
+  assert.equal(revueAFaire(l, { maintenant: new Date('2026-10-26T15:00:00+01:00') }), null);
+  const mauvais = noterRevue(l, { changer: true, methode: { parJour: 500 } }, { semaine: '2026-11-02' });
+  assert.match(mauvais.erreur, /10 à 80/);
+  assert.equal(l.methode.parJour, 70);
+  const radical = noterRevue(l, { changer: true, radical: true, methode: { recherches: ['traiteur'] }, question: 'On vise les traiteurs ?' }, { semaine: '2026-11-09' });
+  assert.equal(radical.question, 'On vise les traiteurs ?');
+  assert.ok(l.propositionRadicale);
+  assert.match(noterRevue(l, null, { semaine: '2026-11-16' }).erreur, /illisible/);
+});
+
+test('clé des loops : tirée du jeton, n’ouvre que les routes des loops et quelques lectures', () => {
+  const jeton = 'un-jeton-de-releve-assez-long';
+  assert.equal(cleLoops(jeton).length, 40);
+  assert.ok(cleLoopsValide(`Bearer ${cleLoops(jeton)}`, jeton));
+  assert.ok(!cleLoopsValide(`Bearer ${jeton}`, jeton));
+  assert.ok(!cleLoopsValide(undefined, jeton));
+  assert.ok(!cleLoopsValide(`Bearer ${cleLoops('')}`, ''));
+  assert.ok(routeDeLaCle('POST', '/api/loop/nour-meet/tri'));
+  assert.ok(routeDeLaCle('GET', '/api/code'));
+  assert.ok(!routeDeLaCle('POST', '/api/sorties'));
+  assert.ok(!routeDeLaCle('GET', '/api/journal'));
 });

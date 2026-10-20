@@ -150,7 +150,7 @@ export const versionDuMail = (corps) => Number((String(corps ?? '').match(/utm_c
 const typeDuMail = (objet, corps) =>
   (String(corps ?? '').match(/utm_campaign=v\d+-(initial|relance1|relance2)/) ?? [])[1] ?? (/^dernier message/i.test(objet ?? '') ? 'relance2' : /\?\s*$/.test(objet ?? '') ? 'relance1' : 'initial');
 
-const CONSIGNE_TRI = `Tu tries les réponses de restaurants à un mail de prospection de Nūr Meet (soirées rencontre et networking organisées dans des restaurants, abonnement mensuel pour le restaurant).
+export const CONSIGNE_TRI = `Tu tries les réponses de restaurants à un mail de prospection de Nūr Meet (soirées rencontre et networking organisées dans des restaurants, abonnement mensuel pour le restaurant).
 Pour chaque réponse, donne son type :
 - INTERESSE : veut en parler, demande un rappel ou un rendez-vous, donne un numéro, dit être intéressé ;
 - QUESTION : pose une vraie question (prix, fonctionnement, clientèle…) sans dire non ;
@@ -159,28 +159,44 @@ Pour chaque réponse, donne son type :
 - AUTRE : le reste (transmis à l'équipe, devis…).
 Réponds UNIQUEMENT avec ce JSON : {"reponses":[{"i":0,"type":"…","resume":"une phrase en français, sans adresse ni téléphone"}]}`;
 
-// Trie les nouvelles réponses (texte gardé par Nour Meet 4). Sans Claude ou en cas
+// Les réponses pas encore triées (texte gardé par Nour Meet 4), coupées avant la citation du mail d'origine.
+export function reponsesATrier(loop, business, max = 40) {
+  return (business.sources?.prospection?.reponses ?? [])
+    .filter((r) => r.texte?.trim() || r.objet)
+    .map((r) => ({ cle: cleReponseLoop(r), r }))
+    .filter(({ cle }) => !loop.reponses[cle]?.type)
+    .slice(0, max)
+    .map(({ cle, r }) => ({ cle, r, objet: String(r.objet ?? '').slice(0, 150), texte: String(r.texte ?? '').split(/\n\s*(?:>|Le .{0,120}a écrit|De ?:|From ?:)/)[0].slice(0, 800) }));
+}
+
+// Range le tri (de Haiku par l'API, ou de la tâche Claude sur l'abonnement) : [{ cle, type, resume }].
+export function noterTri(loop, aTrier, tries, maintenant = new Date()) {
+  const parCle = new Map(aTrier.map((x) => [x.cle, x]));
+  const nouvelles = [];
+  for (const x of Array.isArray(tries) ? tries : []) {
+    const item = parCle.get(x?.cle);
+    if (!item || !TYPES_REPONSE[x.type] || loop.reponses[item.cle]?.type) continue;
+    loop.reponses[item.cle] = { type: x.type, resume: String(x.resume ?? '').slice(0, 300), jour: item.r.jour, nom: item.r.nom ?? null, trie: maintenant.toISOString() };
+    nouvelles.push({ ...loop.reponses[item.cle], cle: item.cle, objet: item.r.objet });
+  }
+  return nouvelles;
+}
+
+// Trie les nouvelles réponses par l'API Anthropic (mode « api »). Sans Claude ou en cas
 // d'erreur, elles restent à trier et seront relues au tour suivant.
 export async function trierReponses(loop, business, { client, plafondDollars = 11, maintenant = new Date(), max = 40 } = {}) {
-  const pr = business.sources?.prospection;
-  if (!pr || !client) return { nouvelles: [] };
+  if (!business.sources?.prospection || !client) return { nouvelles: [] };
   const jour = jourParis(maintenant);
-  const aTrier = (pr.reponses ?? []).filter((r) => r.texte?.trim() || r.objet).map((r) => ({ cle: cleReponseLoop(r), r })).filter(({ cle }) => !loop.reponses[cle]?.type).slice(0, max);
+  const aTrier = reponsesATrier(loop, business, max);
   if (!aTrier.length) return { nouvelles: [] };
   if (depenseLoopDuMois(loop, jour) >= plafondDollars) return { nouvelles: [], erreur: 'plafond' };
   try {
-    const liste = aTrier.map(({ r }, i) => `#${i} objet « ${String(r.objet ?? '').slice(0, 150)} » : ${String(r.texte ?? '').split(/\n\s*(?:>|Le .{0,120}a écrit|De ?:|From ?:)/)[0].slice(0, 800)}`).join('\n\n');
+    const liste = aTrier.map((x, i) => `#${i} objet « ${x.objet} » : ${x.texte}`).join('\n\n');
     const rep = await client.messages.create({ model: MODELE_TRI, max_tokens: 4000, messages: [{ role: 'user', content: `${CONSIGNE_TRI}\n\n${liste}` }] });
     ajouterCout(loop, cout(MODELE_TRI, rep.usage), jour);
     const brut = (rep.content.find((b) => b.type === 'text')?.text ?? '').replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, '');
-    const nouvelles = [];
-    for (const x of JSON.parse(brut).reponses ?? []) {
-      const item = aTrier[x.i];
-      if (!item || !TYPES_REPONSE[x.type]) continue;
-      loop.reponses[item.cle] = { type: x.type, resume: String(x.resume ?? '').slice(0, 300), jour: item.r.jour, nom: item.r.nom ?? null, trie: maintenant.toISOString() };
-      nouvelles.push({ ...loop.reponses[item.cle], cle: item.cle, objet: item.r.objet });
-    }
-    return { nouvelles };
+    const tries = (JSON.parse(brut).reponses ?? []).map((x) => ({ ...x, cle: aTrier[x.i]?.cle }));
+    return { nouvelles: noterTri(loop, aTrier, tries, maintenant) };
   } catch (err) {
     return { nouvelles: [], erreur: err.message };
   }
@@ -256,7 +272,7 @@ export function revueAFaire(loop, { heure = 9, maintenant = new Date() } = {}) {
   return faite ? null : lundiDe(jour);
 }
 
-const CONSIGNE_REVUE = `Tu pilotes seul la loop de prospection des restaurateurs de Nūr Meet (soirées speed dating et networking dans des restaurants d'Île-de-France ; le restaurant paie un abonnement, prix dans les données).
+export const CONSIGNE_REVUE = `Tu pilotes seul la loop de prospection des restaurateurs de Nūr Meet (soirées speed dating et networking dans des restaurants d'Île-de-France ; le restaurant paie un abonnement, prix dans les données).
 OBJECTIF : 20 restaurateurs abonnés payants. Étapes : réponse positive, inscription, abonnement.
 Commence par relire tes LEÇONS : ne refais pas un essai déjà raté sans raison nouvelle. Puis décide la méthode de la semaine, un essai à la fois quand c'est possible. Si les données sont trop maigres, ne change rien et dis-le.
 Tu peux changer : textes (objet et corps de initial, relance1, relance2), recherches Google Maps (1 à 10), jours de relance, premiers mails par jour (10 à 80).
@@ -315,21 +331,60 @@ function appliquer(loop, methode, { par, changements, pourquoi, maintenant = new
   return methode.version;
 }
 
-// La revue de la semaine `semaine` : Claude Opus lit les chiffres et décide.
+// Ce que lit la revue : méthode, leçons, historique, chiffres et réponses triées.
+export const donneesRevue = (loop, business, contexteSite = '') => ({
+  methode: loop.methode,
+  lecons: loop.lecons ?? [],
+  historique: loop.historique.map(({ methode, ...h }) => h).slice(-10),
+  chiffres: statsLoop(business, loop),
+  reponses: Object.values(loop.reponses).sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1)).slice(0, 60),
+  abonnements: business.sources?.stripe?.abonnements ?? 'indisponible',
+  site: contexteSite || 'indisponible',
+});
+
+// Applique la décision d'une revue (le JSON demandé par CONSIGNE_REVUE), avec les mêmes
+// garde-fous qu'elle vienne de l'API ou de la tâche Claude : méthode vérifiée, radical en attente de louis.
+export function appliquerRevue(loop, d, entree, maintenant = new Date()) {
+  entree.changements = (d.changements ?? []).map((x) => String(x).slice(0, 400)).slice(0, 10);
+  entree.pourquoi = String(d.pourquoi ?? '').slice(0, 1500);
+  noterLecons(loop, d.lecons, entree.semaine);
+  if (d.changer && d.radical) {
+    const v = verifierMethode(loop.methode, d.methode);
+    entree.question = String(d.question || 'Ce changement est important : je l’applique ?').slice(0, 600);
+    if (v.erreur) entree.erreur = `Proposition écartée : ${v.erreur}`;
+    else loop.propositionRadicale = { semaine: entree.semaine, quand: entree.quand, methode: v.methode, changements: entree.changements, pourquoi: entree.pourquoi, question: entree.question };
+  } else if (d.changer) {
+    const v = verifierMethode(loop.methode, d.methode);
+    if (v.erreur) entree.erreur = `Changement écarté : ${v.erreur}`;
+    else {
+      entree.changer = true;
+      entree.version = appliquer(loop, v.methode, { par: 'la loop (revue du lundi)', changements: entree.changements, pourquoi: entree.pourquoi, maintenant });
+    }
+  }
+  return entree;
+}
+
+const nouvelleEntree = (semaine, maintenant) => ({ semaine, quand: maintenant.toISOString(), changer: false, version: null, changements: [], pourquoi: '', question: null, erreur: null, cout: 0 });
+const garderEntree = (loop, entree) => {
+  loop.revues.unshift(entree);
+  loop.revues = loop.revues.slice(0, 30);
+  return entree;
+};
+
+// La revue rendue par la tâche Claude du lundi (abonnement Claude, pas l'API) : coût nul pour le budget API.
+export function noterRevue(loop, d, { semaine, maintenant = new Date() }) {
+  const entree = nouvelleEntree(semaine, maintenant);
+  if (!d || typeof d !== 'object') entree.erreur = 'Revue illisible.';
+  else appliquerRevue(loop, d, entree, maintenant);
+  return garderEntree(loop, entree);
+}
+
+// La revue de la semaine `semaine` par l'API (mode « api ») : Claude Opus lit les chiffres et décide.
 export async function revoirMethode(loop, business, { client, semaine, contexteSite = '', plafondDollars = 11, maintenant = new Date() }) {
-  const entree = { semaine, quand: maintenant.toISOString(), changer: false, version: null, changements: [], pourquoi: '', question: null, erreur: null, cout: 0 };
+  const entree = nouvelleEntree(semaine, maintenant);
   if (depenseLoopDuMois(loop, semaine) >= plafondDollars) entree.erreur = `Plafond du mois atteint (${plafondDollars} $) : pas de revue, retour le mois prochain.`;
   else {
     try {
-      const donnees = {
-        methode: loop.methode,
-        lecons: loop.lecons ?? [],
-        historique: loop.historique.map(({ methode, ...h }) => h).slice(-10),
-        chiffres: statsLoop(business, loop),
-        reponses: Object.values(loop.reponses).sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1)).slice(0, 60),
-        abonnements: business.sources?.stripe?.abonnements ?? 'indisponible',
-        site: contexteSite || 'indisponible',
-      };
       const rep = await client.beta.messages.create({
         model: MODELE_REVUE,
         max_tokens: 16000,
@@ -337,36 +392,18 @@ export async function revoirMethode(loop, business, { client, semaine, contexteS
         output_config: { effort: 'high' },
         betas: ['server-side-fallback-2026-07-01'],
         fallbacks: 'default',
-        messages: [{ role: 'user', content: `${CONSIGNE_REVUE}\n\nDONNÉES :\n${JSON.stringify(donnees)}` }],
+        messages: [{ role: 'user', content: `${CONSIGNE_REVUE}\n\nDONNÉES :\n${JSON.stringify(donneesRevue(loop, business, contexteSite))}` }],
       });
       entree.cout = cout(MODELE_REVUE, rep.usage);
       if (rep.stop_reason === 'refusal') throw new Error('Claude a refusé cette revue.');
       const brut = (rep.content.find((b) => b.type === 'text')?.text ?? '').replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, '');
-      const d = JSON.parse(brut);
-      entree.changements = (d.changements ?? []).map((x) => String(x).slice(0, 400)).slice(0, 10);
-      entree.pourquoi = String(d.pourquoi ?? '').slice(0, 1500);
-      noterLecons(loop, d.lecons, semaine);
-      if (d.changer && d.radical) {
-        const v = verifierMethode(loop.methode, d.methode);
-        entree.question = String(d.question || 'Ce changement est important : je l’applique ?').slice(0, 600);
-        if (v.erreur) entree.erreur = `Proposition écartée : ${v.erreur}`;
-        else loop.propositionRadicale = { semaine, quand: entree.quand, methode: v.methode, changements: entree.changements, pourquoi: entree.pourquoi, question: entree.question };
-      } else if (d.changer) {
-        const v = verifierMethode(loop.methode, d.methode);
-        if (v.erreur) entree.erreur = `Changement écarté : ${v.erreur}`;
-        else {
-          entree.changer = true;
-          entree.version = appliquer(loop, v.methode, { par: 'la loop (revue du lundi)', changements: entree.changements, pourquoi: entree.pourquoi, maintenant });
-        }
-      }
+      appliquerRevue(loop, JSON.parse(brut), entree, maintenant);
     } catch (err) {
       entree.erreur = `Revue impossible : ${err.message}`;
     }
   }
   if (entree.cout) ajouterCout(loop, entree.cout, semaine);
-  loop.revues.unshift(entree);
-  loop.revues = loop.revues.slice(0, 30);
-  return entree;
+  return garderEntree(loop, entree);
 }
 
 // Les gestes de louis depuis le cerveau.
@@ -391,7 +428,7 @@ const quand = (iso) => (iso ? new Date(iso).toLocaleDateString('fr-FR', { day: '
 const bouton = (geste, texte) => `<form method="post" action="/loop/nour-meet" style="display:inline"><input type="hidden" name="geste" value="${geste}"><button type="submit">${texte}</button></form>`;
 
 // Le bloc de la page Nūr Meet : ce que fait la loop, ce qu'elle a changé et pourquoi.
-export function htmlLoop(loop, business, { plafondDollars = 11, jour = jourParis() } = {}) {
+export function htmlLoop(loop, business, { plafondDollars = 11, jour = jourParis(), abonnement = false } = {}) {
   if (!loop) return '';
   const s = statsLoop(business, loop);
   const m = loop.methode;
@@ -404,7 +441,7 @@ export function htmlLoop(loop, business, { plafondDollars = 11, jour = jourParis
     ? `<div class="bloc"><b>La loop te demande ton avis :</b> ${e(loop.propositionRadicale.question)}<br><small>${e(loop.propositionRadicale.pourquoi)}</small><ul>${loop.propositionRadicale.changements.map((c) => `<li>${e(c)}</li>`).join('')}</ul>${bouton('accepter', 'Appliquer')} ${bouton('refuser', 'Refuser')}</div>`
     : '';
   return `<section class="bloc"><h3>🔁 Loop restaurateurs ${loop.pause ? '(en pause)' : ''}</h3>
-<p>Méthode en cours : <b>version ${m.version}</b> · ${m.parJour} premiers mails par jour · relances à J+${m.relanceJours[0]} et J+${m.relanceJours[1]} · IA ce mois-ci : ${depenseLoopDuMois(loop, jour).toFixed(2)} $ sur ${plafondDollars} $.</p>
+<p>Méthode en cours : <b>version ${m.version}</b> · ${m.parJour} premiers mails par jour · relances à J+${m.relanceJours[0]} et J+${m.relanceJours[1]} · ${abonnement ? 'IA : abonnement Claude (0 $ d’API)' : `IA ce mois-ci : ${depenseLoopDuMois(loop, jour).toFixed(2)} $ sur ${plafondDollars} $`}.</p>
 ${s ? `<p>${s.contactes} restaurants contactés · <b>${s.positifs} réponses positives</b>${types ? ` · réponses triées : ${e(types)}` : ' · réponses pas encore triées par Claude'}.</p>` : '<p class="vide">Prospection pas encore lue.</p>'}
 ${prop}
 ${lignesVersion}
@@ -413,5 +450,5 @@ ${loop.lecons?.length ? `<h4>Ce que la loop a appris</h4><ul>${loop.lecons.slice
 <ul>${derniers.map((h) => `<li><b>v${h.version}</b> · ${quand(h.quand)} · ${e(h.par)} : ${e(h.changements.join(' '))}<br><small>${e(h.pourquoi)}</small></li>`).join('')}</ul>
 <details><summary>Textes de la version ${m.version}</summary>${['initial', 'relance1', 'relance2'].map((t) => `<p><b>${t}</b> · ${e(remplir(m.textes[t].objet))}</p><pre style="white-space:pre-wrap">${e(remplir(m.textes[t].corps, { accroche: 'En découvrant Le Restaurant à Paris, nous avons pensé que votre établissement pourrait accueillir ce type de soirée.' }))}</pre>`).join('')}<p><b>Recherches</b> : ${e(m.recherches.join(' · '))}</p></details>
 <p>${loop.pause ? bouton('reprendre', 'Reprendre la loop') : bouton('pause', 'Mettre la loop en pause')} ${loop.historique.length > 1 ? bouton('annuler', 'Annuler le dernier changement') : ''}</p>
-<p class="vide petit-texte">En pause, la loop ne change plus rien (la méthode en cours continue de s’appliquer) ; elle trie toujours les réponses. Revue de la méthode chaque lundi après 9 h.</p></section>`;
+<p class="vide petit-texte">En pause, la loop ne change plus rien (la méthode en cours continue de s’appliquer) ; elle trie toujours les réponses. ${abonnement ? 'Tri des réponses à 12h37 et 18h52, revue de la méthode le lundi à 9h23, par des tâches Claude sur l’abonnement.' : 'Revue de la méthode chaque lundi après 9 h.'}</p></section>`;
 }
