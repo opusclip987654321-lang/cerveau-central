@@ -98,6 +98,7 @@ export function loopDeDepart(maintenant = new Date()) {
   return {
     pause: false,
     ia: {},
+    lecons: [],
     methode: structuredClone(METHODE_V2),
     historique: [
       { version: 1, quand: '2026-09-26T09:00:00Z', par: 'départ', changements: ['Textes, recherches et relances d’avant la loop.'], pourquoi: 'Méthode de départ.', methode: structuredClone(METHODE_DEPART) },
@@ -255,22 +256,24 @@ export function revueAFaire(loop, { heure = 9, maintenant = new Date() } = {}) {
   return faite ? null : lundiDe(jour);
 }
 
-const CONSIGNE_REVUE = `Tu pilotes la loop de prospection des restaurateurs de Nūr Meet, avec le maximum de liberté.
-Nūr Meet publie des soirées speed dating et networking organisées dans des restaurants d'Île-de-France ; le restaurant fixe le prix, Nūr Meet gère billetterie, paiement en ligne, remboursements et participants vérifiés. Le restaurant paie un abonnement (prix dans les données, sans engagement).
-OBJECTIF de louis : 20 restaurateurs abonnés payants. Étapes : réponses positives (intéressé, question), inscriptions, abonnements.
-Tu reçois la méthode en cours, son historique, les chiffres par version et par type de mail, par profil de restaurant, et les réponses triées.
-Décide la méthode de la semaine : garde ce qui marche, change ce qui ne marche pas, lance un essai à la fois quand c'est possible pour pouvoir comparer.
-Tu peux changer : les textes (objet et corps de initial, relance1, relance2), les recherches Google Maps (1 à 10, ce qui choisit le type de restaurant ; les zones d'Île-de-France tournent toutes seules), les jours de relance, le nombre de premiers mails par jour (10 à 80).
-Règles fixes : textes en français, vouvoiement, signés par le pied ; chaque corps contient {lien} et {pied} ; variables possibles {nom} {lieu} {accroche} {lien} {pied} ; n'invente rien sur Nūr Meet (pas de chiffres de membres, pas de clients cités, pas de promesse de remplissage) ; aucune adresse mail ni numéro.
-« radical » = vrai seulement si tu proposes de changer l'offre ou le prix, de viser autre chose que des restaurants, ou de quitter l'Île-de-France : dans ce cas rien n'est appliqué et ta question va à louis.
-PISTES DE LOUIS (20/10) : matière à réflexion, pas des ordres. Pèse-les avec les chiffres, choisis toi-même lesquelles tester et quand, écarte celles qui ne servent pas, et dis-le dans « pourquoi » :
-- découper l'objectif en tunnel pour voir où l'on perd : 1) le restaurateur comprend-il ce qu'est Nūr Meet (s'il ne comprend pas malgré plusieurs versions, se poser la question d'un pivot, qui est radical) ; 2) il s'inscrit et paie l'abonnement ;
-- tester l'écriture des mails (objet, corps), en suivant les ouvertures (pixel déjà en place) et, si utile, les clics sur les liens ; garder ce qui gagne.
-Si une piste demande un outil qui n'existe pas encore (suivi des clics…), propose-le dans « changements » au lieu de l'inventer.
-Si les données sont trop maigres pour conclure, ne change rien et dis-le.
+const CONSIGNE_REVUE = `Tu pilotes seul la loop de prospection des restaurateurs de Nūr Meet (soirées speed dating et networking dans des restaurants d'Île-de-France ; le restaurant paie un abonnement, prix dans les données).
+OBJECTIF : 20 restaurateurs abonnés payants. Étapes : réponse positive, inscription, abonnement.
+Commence par relire tes LEÇONS : ne refais pas un essai déjà raté sans raison nouvelle. Puis décide la méthode de la semaine, un essai à la fois quand c'est possible. Si les données sont trop maigres, ne change rien et dis-le.
+Tu peux changer : textes (objet et corps de initial, relance1, relance2), recherches Google Maps (1 à 10), jours de relance, premiers mails par jour (10 à 80).
+Règles fixes : français, vouvoiement ; chaque corps contient {lien} et {pied} ; variables {nom} {lieu} {accroche} {lien} {pied} ; n'invente rien sur Nūr Meet (ni chiffres, ni clients, ni promesse) ; aucune adresse mail ni numéro.
+« radical » = changer l'offre ou le prix, viser autre chose que des restaurants, ou quitter l'Île-de-France : rien n'est appliqué, ta question va à louis.
+PISTES DE LOUIS (à peser, pas des ordres) : tunnel pour voir où l'on perd (le restaurateur comprend-il Nūr Meet ? s'inscrit-il ? paie-t-il ?) ; tester objets et corps des mails avec les ouvertures (pixel en place) et, si utile, les clics. Un outil qui manque se propose dans « changements ».
+« lecons » : ce que cette semaine t'apprend, une ligne par essai jugé (essai, chiffre, gardé ou arrêté), ou une erreur à ne pas refaire ; vide si rien de neuf.
 Réponds UNIQUEMENT avec ce JSON :
-{"changer":true|false,"methode":{"textes":{…},"recherches":[…],"relanceJours":[a,b],"parJour":n},"changements":["une phrase par changement"],"pourquoi":"2 à 4 phrases chiffrées","radical":false,"question":"pour louis si radical, sinon vide"}
+{"changer":true|false,"methode":{"textes":{…},"recherches":[…],"relanceJours":[a,b],"parJour":n},"changements":["une phrase par changement"],"pourquoi":"2 à 4 phrases chiffrées","lecons":["une ligne"],"radical":false,"question":"pour louis si radical, sinon vide"}
 « methode » ne contient que ce qui change.`;
+
+// Le carnet de leçons (bonne pratique du 20/10) : la revue y note ses essais jugés et
+// ses erreurs, et le relit avant de décider. Les 40 dernières suffisent.
+export function noterLecons(loop, lecons, semaine) {
+  const neuves = (Array.isArray(lecons) ? lecons : []).map((x) => String(x).trim().slice(0, 300)).filter(Boolean).slice(0, 5);
+  loop.lecons = [...(loop.lecons ?? []), ...neuves.map((texte) => ({ semaine, texte }))].slice(-40);
+}
 
 // Vérifie et fusionne une méthode proposée ; renvoie une erreur lisible sinon.
 export function verifierMethode(actuelle, changement = {}) {
@@ -319,6 +322,7 @@ export async function revoirMethode(loop, business, { client, semaine, contexteS
     try {
       const donnees = {
         methode: loop.methode,
+        lecons: loop.lecons ?? [],
         historique: loop.historique.map(({ methode, ...h }) => h).slice(-10),
         chiffres: statsLoop(business, loop),
         reponses: Object.values(loop.reponses).sort((a, b) => ((b.jour ?? '') > (a.jour ?? '') ? 1 : -1)).slice(0, 60),
@@ -340,6 +344,7 @@ export async function revoirMethode(loop, business, { client, semaine, contexteS
       const d = JSON.parse(brut);
       entree.changements = (d.changements ?? []).map((x) => String(x).slice(0, 400)).slice(0, 10);
       entree.pourquoi = String(d.pourquoi ?? '').slice(0, 1500);
+      noterLecons(loop, d.lecons, semaine);
       if (d.changer && d.radical) {
         const v = verifierMethode(loop.methode, d.methode);
         entree.question = String(d.question || 'Ce changement est important : je l’applique ?').slice(0, 600);
@@ -402,6 +407,7 @@ export function htmlLoop(loop, business, { plafondDollars = 11, jour = jourParis
 ${s ? `<p>${s.contactes} restaurants contactés · <b>${s.positifs} réponses positives</b>${types ? ` · réponses triées : ${e(types)}` : ' · réponses pas encore triées par Claude'}.</p>` : '<p class="vide">Prospection pas encore lue.</p>'}
 ${prop}
 ${lignesVersion}
+${loop.lecons?.length ? `<h4>Ce que la loop a appris</h4><ul>${loop.lecons.slice(-5).reverse().map((l) => `<li>${quand(l.semaine)} · ${e(l.texte)}</li>`).join('')}</ul>` : ''}
 <h4>Ce que la loop a changé, et pourquoi</h4>
 <ul>${derniers.map((h) => `<li><b>v${h.version}</b> · ${quand(h.quand)} · ${e(h.par)} : ${e(h.changements.join(' '))}<br><small>${e(h.pourquoi)}</small></li>`).join('')}</ul>
 <details><summary>Textes de la version ${m.version}</summary>${['initial', 'relance1', 'relance2'].map((t) => `<p><b>${t}</b> · ${e(remplir(m.textes[t].objet))}</p><pre style="white-space:pre-wrap">${e(remplir(m.textes[t].corps, { accroche: 'En découvrant Le Restaurant à Paris, nous avons pensé que votre établissement pourrait accueillir ce type de soirée.' }))}</pre>`).join('')}<p><b>Recherches</b> : ${e(m.recherches.join(' · '))}</p></details>
