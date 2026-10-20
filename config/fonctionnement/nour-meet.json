@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-19",
+  "maj": "2026-10-20",
   "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py)",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Depuis le 19/10, une loop pilotée par le cerveau trie les réponses, te prévient pour chaque restaurant intéressé et réécrit elle-même la méthode (textes, cibles, relances, volume) chaque lundi. Toi, tu réponds aux intéressés et tu les transformes en abonnés.",
   "journee": [
@@ -253,7 +253,7 @@
         },
         {
           "type": "auto",
-          "texte": "Chaque heure, le site envoie au cerveau ses chiffres grand public : comptes créés, candidatures, places payées, soirées à venir, posts Instagram et Facebook, origine des visiteurs",
+          "texte": "Chaque heure, le site envoie au cerveau ses chiffres grand public : tunnel sur 30 jours (visiteurs, qui vont au-delà de la 1re page, qui ouvrent une soirée, comptes, candidatures, places payées), soirées à venir, posts Instagram et Facebook, origine des visiteurs",
           "outil": "Relevé du VPS Nūr",
           "technique": "scripts/nour-public-releve.sh (cron) lit la base du site en lecture seule et l'envoie à /api/nour-public."
         },
@@ -262,6 +262,12 @@
           "texte": "Chaque réseau a-t-il publié depuis moins de 2 jours ?",
           "sinon": "alerte sur la carte Nūr Meet avec l'erreur exacte (clé expirée, appli Meta bridée…)",
           "technique": "Comparaison du dernier post réussi avec la date du jour."
+        },
+        {
+          "type": "securite",
+          "texte": "Le site est-il compris ? Au moins 20 % des visiteurs vont-ils au-delà de la première page (dès 100 visiteurs sur 30 jours) ?",
+          "sinon": "alerte sur la carte : la loop revoit le message de la page d'accueil, et si ça ne suffit pas pose à louis la question d'un pivot (QCM)",
+          "technique": "Étape 1 du tunnel, calculée dans le relevé à partir des pages vues (hors équipe et restaurateurs)."
         },
         {
           "type": "securite",
@@ -348,6 +354,9 @@
       "titre": "Grand public",
       "points": [
         "Succès = comptes de particuliers créés, puis candidatures et places payées aux soirées",
+        "Tunnel mesuré en étapes (axes de louis du 20/10) : 1. le site est compris (visiteurs qui explorent), 2. les visiteurs ouvrent une soirée, 3. ils créent un compte, candidatent et paient leur place. Chaque étape a son chiffre sur la page Nūr Meet du cerveau",
+        "Si utilisateurs ou restaurateurs ne comprennent pas l'objectif du site, la loop pose à louis la question d'un pivot stratégique (changement radical = QCM)",
+        "L'acquisition fait partie de la loop dès le premier jour : réseaux sociaux sur le besoin de rencontre amoureuse et de networking, SEO du site (Google, blog, balises) vérifié de bout en bout, SEO de l'application mobile sur les stores",
         "Les restaurants créent eux-mêmes leurs soirées (date, places, prix, minimum) depuis leur espace ; tout le reste est automatique",
         "La loop est libre de changer de format, de réseau, de message ou de page d'arrivée ; elle demande à louis seulement si un changement lui semble trop radical",
         "Une image ou une vidéo faite par IA est toujours signalée comme telle et jamais présentée comme une vraie soirée",
