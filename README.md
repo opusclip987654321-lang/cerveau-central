@@ -75,6 +75,14 @@ Toute commande donnée par un fil Claude se lance à travers `scripts/envoyer.sh
 - `POST /api/sorties` (jeton des relevés) : lignes `script:`, `commande:`, `code:`, `debut:`, `fin:`, `serveur:`, une ligne vide, puis la sortie. Avant d'être gardée, la sortie est passée au crible : toute valeur du `.env` à l'allure de secret, les `CLE=…`, `Bearer …`, clés `sk-…`, `ghp_…`, jetons de bot Telegram, mots de passe dans les adresses sont remplacés par `[masqué]`. 100 sorties gardées (`data/sorties.json`), 400 000 caractères chacune au plus (début et fin gardés).
 - `GET /api/sorties` (jeton ou mot de passe) : `{"sorties": [...]}` de la plus récente à la plus ancienne ; filtres `?script=` (morceau du nom), `?depuis=` (date ISO), `?n=` (10 par défaut), `?id=`.
 
+## Loops sur l'abonnement Claude (20/10)
+
+L'IA des loops tourne dans des tâches programmées Claude (abonnement de louis), plus par l'API Anthropic. Elles passent par l'API du cerveau avec la **clé des loops** : `sha256("loops-abonnement:" + RELEVE_JETON)`, 40 premiers caractères (`src/cle-loops.js`, affichée sur le VPS par `scripts/cle-loops.sh`). Elle n'ouvre que `/api/loop/*` et la lecture de `/api/code`, `/api/decisions`, `/api/sorties`.
+
+- `GET /api/loop/nour-meet/tri` : `{consigne, types, reponses: [{cle, objet, texte}]}` (60 au plus). `POST` du même chemin : `{"reponses": [{cle, type, resume}]}` ; un intéressé ou une question de moins de 7 jours = message Telegram.
+- `GET /api/loop/nour-meet/revue` : `{semaine, consigne, donnees}` ; `semaine` vaut `null` s'il n'y a pas de revue due (lundi après 9 h, version de 6 jours au moins). `POST` : `{"semaine": "AAAA-MM-JJ", "revue": {…le JSON de la consigne…}}`, appliqué avec les mêmes garde-fous (méthode vérifiée, radical en attente de louis, leçons notées).
+- `LOOP_NOUR_IA=api` dans `.env` remet l'ancien fonctionnement (Haiku toutes les 10 min, Opus le lundi, plafond `PLAFOND_LOOP_NOUR_DOLLARS`).
+
 ## Argent
 
 L'onglet **Argent** liste les abonnements et recharges (pré-remplis avec le récap du 05/10/2026, dans `config/argent.json`, puis modifiables depuis la page) : total du mois, coût fixe, répartition par projet, rappel Telegram 3 jours avant un renouvellement quand sa date est connue.

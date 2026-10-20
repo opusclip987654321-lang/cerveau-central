@@ -1,6 +1,6 @@
 {
   "maj": "2026-10-20",
-  "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py)",
+  "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py) ; son IA passée sur l'abonnement Claude le 20/10/2026 (tâches programmées, /api/loop/nour-meet/*)",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Depuis le 19/10, une loop pilotée par le cerveau trie les réponses, te prévient pour chaque restaurant intéressé et réécrit elle-même la méthode (textes, cibles, relances, volume) chaque lundi. Toi, tu réponds aux intéressés et tu les transformes en abonnés.",
   "journee": [
     {
@@ -34,13 +34,13 @@
       "toi": "Lire les réponses et répondre toi-même depuis la boîte mail"
     },
     {
-      "quand": "Toutes les 10 min",
-      "quoi": "Le cerveau trie chaque nouvelle réponse avec Claude Haiku (intéressé, question, refus, automatique, autre) ; un intéressé ou une question = un message Telegram.",
+      "quand": "Chaque jour à 12h37 et 18h52",
+      "quoi": "Une tâche programmée Claude (sur ton abonnement, pas l'API) trie les nouvelles réponses (intéressé, question, refus, automatique, autre) ; un intéressé ou une question = un message Telegram, avec quelques heures de retard au plus.",
       "toi": "Répondre ou appeler le restaurant"
     },
     {
-      "quand": "Lundi après 9 h",
-      "quoi": "Revue de la méthode par Claude Opus : relit d'abord son carnet de leçons, garde ce qui marche, change le reste, note quoi et pourquoi sur la page Nūr Meet, et ajoute à son carnet ce que la semaine lui a appris (essai, chiffre, gardé ou arrêté). Un pivot radical (offre, prix, cible hors restaurants) attend ton accord.",
+      "quand": "Lundi à 9h23",
+      "quoi": "Revue de la méthode par une tâche programmée Claude (abonnement) : relit d'abord son carnet de leçons, garde ce qui marche, change le reste, note quoi et pourquoi sur la page Nūr Meet, et ajoute à son carnet ce que la semaine lui a appris (essai, chiffre, gardé ou arrêté). Un pivot radical (offre, prix, cible hors restaurants) attend ton accord.",
       "toi": "Lire ce qui a changé ; Appliquer ou Refuser si la loop demande"
     },
     {
@@ -224,14 +224,14 @@
         {
           "type": "auto",
           "texte": "Chaque réponse est triée par Claude et reliée au mail qui l'a déclenchée (version de texte et type de mail, lus dans le lien marqué)",
-          "outil": "Claude Haiku 5.5",
-          "technique": "src/loop-nour-meet.js, toutes les 10 minutes, quelques centimes par mois."
+          "outil": "Claude (tâche programmée sur l'abonnement)",
+          "technique": "À 12h37 et 18h52 : la tâche lit GET /api/loop/nour-meet/tri (clé des loops) et renvoie son tri en POST ; src/loop-nour-meet.js le range (noterTri). 0 € d'API. LOOP_NOUR_IA=api dans .env remet Claude Haiku par l'API toutes les 10 min."
         },
         {
           "type": "auto",
           "texte": "Le lundi, Claude compare versions, types de mail, zones, recherches et profils, puis décide la méthode de la semaine",
-          "outil": "Claude Opus 5.5",
-          "technique": "Une version doit avoir tourné 6 jours avant d'être jugée ; garde-fous : {lien} et {pied} obligatoires, 10 à 80 mails par jour, aucune adresse dans les textes."
+          "outil": "Claude (tâche programmée sur l'abonnement)",
+          "technique": "Lundi 9h23 : GET /api/loop/nour-meet/revue (consigne, données, semaine due), POST de la décision, appliquée par noterRevue avec les mêmes garde-fous. Une version doit avoir tourné 6 jours avant d'être jugée ; garde-fous : {lien} et {pied} obligatoires, 10 à 80 mails par jour, aucune adresse dans les textes."
         },
         {
           "type": "securite",
@@ -349,7 +349,7 @@
       "points": [
         "Objectif : 20 restaurateurs abonnés (formules 69 € et 89 € HT/mois)",
         "Succès mesuré : réponses positives (intéressé, question), puis inscriptions et abonnements",
-        "Budget IA de la loop : 10 €/mois (~11 $), la loop s'arrête d'elle-même au plafond",
+        "IA de la loop sur l'abonnement Claude depuis le 20/10 (choix de louis) : 0 € d'API ; le plafond de 10 €/mois (~11 $) ne vaut qu'en mode API (LOOP_NOUR_IA=api)",
         "Pause : plus aucun changement, la méthode en cours continue ; Annuler : retour à la version précédente",
         "Version 2 (19/10, écrite par Claude) : premier mail avec le prix, ce que le restaurant y gagne et une offre de rappel",
         "Un restaurant inscrit sur le site ne reçoit plus de relance de prospection (exclusion « inscrit ») ; la suite (date et nombre de places d'une soirée) passe par la loop grand public, qui seule lui écrit"
@@ -404,8 +404,8 @@
       "detail": "La recherche consomme l'API Google Places chaque matin ; la clé est dans n8n."
     },
     {
-      "sujet": "Limite Anthropic",
-      "detail": "Tant que la limite de dépense Anthropic est atteinte, la loop ne trie ni ne revoit rien ; la version en cours continue de s'appliquer."
+      "sujet": "Abonnement Claude",
+      "detail": "Le tri et la revue consomment l'usage de l'abonnement Claude de louis, plus l'API Anthropic : la limite de dépense API ne les bloque plus. Si l'abonnement est saturé, la tâche saute un passage et les réponses restent à trier au suivant."
     },
     {
       "sujet": "Mot de passe OVH",
@@ -450,7 +450,7 @@
     },
     {
       "nom": "Claude (loop restaurateurs)",
-      "role": "Haiku 5.5 trie les réponses, Opus 5.5 revoit la méthode chaque lundi ; 10 €/mois au maximum"
+      "role": "Tâches programmées sur l'abonnement : tri des réponses 2 fois par jour, revue de la méthode chaque lundi ; 0 € d'API"
     },
     {
       "nom": "Relevé grand public (scripts/nour-public-releve.sh)",
