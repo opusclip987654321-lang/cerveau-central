@@ -55,6 +55,7 @@ import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
+import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop } from './loop-nour-meet.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,6 +90,8 @@ const fichierLoop = path.join(path.dirname(fichierEtat), 'loop-nour-meet.json');
 const plafondLoop = Number(env.PLAFOND_LOOP_NOUR_DOLLARS ?? 11);
 // L'historique daté des décisions de toutes les loops (20/10), recopié dans Notion.
 const fichierDecisions = path.join(path.dirname(fichierEtat), 'decisions-loops.json');
+// Les sorties des commandes lancées par louis via scripts/envoyer.sh (20/10), relues par les fils Claude.
+const fichierSorties = path.join(path.dirname(fichierEtat), 'sorties.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -186,6 +189,7 @@ const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
 const avecBilans = fileDAttente(chargerBilans, sauverBilans, fichierBilans);
 const avecMatin = fileDAttente(chargerMatin, sauverMatin, fichierMatin);
 const avecLoop = fileDAttente(chargerLoop, sauverLoop, fichierLoop);
+const avecSorties = fileDAttente(chargerSorties, sauverSorties, fichierSorties);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -591,6 +595,18 @@ const serveur = http.createServer(async (req, res) => {
       const erreurs = resultats.filter((r) => r.erreur).map((r) => r.erreur);
       res.writeHead(erreurs.length === liste.length ? 400 : 200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({ ajoutes: liste.length - erreurs.length, erreurs }));
+    }
+    // La sortie d'une commande lancée sur le serveur par scripts/envoyer.sh : plus rien à coller dans le fil.
+    if (req.method === 'POST' && url.pathname === '/api/sorties') {
+      if (!jetonReleveValide(req.headers.authorization ?? '')) {
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Jeton invalide');
+      }
+      req.setEncoding('utf8');
+      const envoi = lireEnvoi(await lireTexte(req, 2_000_000));
+      const r = await avecSorties((d) => enregistrerSortie(d, envoi, { env }));
+      res.writeHead(r.erreur ? 400 : 200, { 'content-type': 'text/plain; charset=utf-8' });
+      return res.end(r.erreur ? `${r.erreur}\n` : `${r.sortie.id}\n`);
     }
     if (acces.actif) {
       if (req.method === 'POST' && url.pathname === '/connexion') {
@@ -1031,6 +1047,11 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/decisions') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify(await chargerDecisions(fichierDecisions)));
+    }
+    if (req.method === 'GET' && url.pathname === '/api/sorties') {
+      const filtres = Object.fromEntries(['script', 'depuis', 'n', 'id'].map((k) => [k, url.searchParams.get(k)]));
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify({ sorties: listerSorties(await chargerSorties(fichierSorties), filtres) }));
     }
     if (req.method === 'GET' && url.pathname === '/api/idees') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });

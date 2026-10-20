@@ -61,6 +61,20 @@ Trois sources :
   - projets : `nour-meet`, `leviaro`, `extrait-politique`, `histoires-vraies`, `impacteur`, `cambodge`, `autre` ; types : `video`, `publication`, `mail`, `rdv`, `client`, `note`, `autre`
 - **À la main** : « Ajouter une note » sur la page.
 
+## Commandes lancées sur le serveur (sorties)
+
+Toute commande donnée par un fil Claude se lance à travers `scripts/envoyer.sh` : elle s'affiche à l'écran comme d'habitude, puis sa sortie part au cerveau. Le fil la relit lui-même ; plus rien à coller.
+
+```sh
+~/cerveau-central/scripts/envoyer.sh python3 scripts/nour-meet-etat.py
+~/cerveau-central/scripts/envoyer.sh "docker ps | grep cerveau"          # une ligne de shell : entre guillemets
+~/cerveau-central/scripts/envoyer.sh -n verif-caddy "docker logs caddy --tail 50"
+```
+
+- La commande tourne depuis `~/cerveau-central` ; le code de retour est rendu tel quel. Seul `RELEVE_JETON` est lu dans `.env` (sinon dans `~/.cerveau-releve` sur un autre serveur) ; envoi à `http://127.0.0.1:8090` (`CERVEAU_URL` pour changer).
+- `POST /api/sorties` (jeton des relevés) : lignes `script:`, `commande:`, `code:`, `debut:`, `fin:`, `serveur:`, une ligne vide, puis la sortie. Avant d'être gardée, la sortie est passée au crible : toute valeur du `.env` à l'allure de secret, les `CLE=…`, `Bearer …`, clés `sk-…`, `ghp_…`, jetons de bot Telegram, mots de passe dans les adresses sont remplacés par `[masqué]`. 100 sorties gardées (`data/sorties.json`), 400 000 caractères chacune au plus (début et fin gardés).
+- `GET /api/sorties` (jeton ou mot de passe) : `{"sorties": [...]}` de la plus récente à la plus ancienne ; filtres `?script=` (morceau du nom), `?depuis=` (date ISO), `?n=` (10 par défaut), `?id=`.
+
 ## Argent
 
 L'onglet **Argent** liste les abonnements et recharges (pré-remplis avec le récap du 05/10/2026, dans `config/argent.json`, puis modifiables depuis la page) : total du mois, coût fixe, répartition par projet, rappel Telegram 3 jours avant un renouvellement quand sa date est connue.
