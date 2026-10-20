@@ -15,6 +15,7 @@ export const LOOPS = {
   'nm-public': { nom: 'Nūr Meet grand public', projet: 'nour-meet' },
   vege: { nom: 'VégéBudget', projet: 'vegebudget' },
   phv: { nom: 'Petites histoires vraies', projet: 'histoires-vraies' },
+  leviaro: { nom: 'Leviaro', projet: 'leviaro' },
 };
 export const TYPES = ['Changé', 'Gardé', 'Leçon', 'Question à louis', 'Geste de louis'];
 // La table Notion « 📜 Décisions des loops », sous la page « Loops des projets » (créée le 20/10).
@@ -37,7 +38,7 @@ export function typeDe(brut) {
 }
 
 // Toutes les décisions visibles aujourd'hui dans les loops ; `date` vide = « vue ce jour ».
-export function collecterDecisions({ loopNour, business, loopHistoires } = {}) {
+export function collecterDecisions({ loopNour, business, loopHistoires, loopLeviaro } = {}) {
   const d = [];
   const ajouter = (loop, cle, date, type, quoi, pourquoi = '') => {
     if (txt(quoi)) d.push({ cle: `${loop}:${cle}`, loop, date: jour(date), type, quoi: txt(quoi), pourquoi: txt(pourquoi) });
@@ -69,12 +70,14 @@ export function collecterDecisions({ loopNour, business, loopHistoires } = {}) {
     ajouter('vege', `${j.date}:v${j.version}:${empreinte(changements.join('|'))}`, j.date, changements.length ? 'Changé' : 'Gardé', changements.length ? `Version ${j.version} : ${changements.join(' ')}` : `Version ${j.version} gardée`, pourquoi);
   }
 
-  // Petites histoires vraies : le compte rendu poussé par le projet 3_PETITES HISTOIRES.
-  if (loopHistoires && !loopHistoires.erreur) {
-    for (const x of loopHistoires.decisions ?? []) ajouter('phv', `${x.date}:${empreinte(x.quoi)}`, x.date, typeDe(x.type), x.quoi, x.pourquoi);
-    for (const l of loopHistoires.lecons ?? []) {
+  // Petites histoires vraies (compte rendu poussé par le projet 3_PETITES HISTOIRES) et Leviaro
+  // (data/loop/decisions.json de l'agent, même forme, écrit par ses tâches Claude) : { decisions, lecons }.
+  for (const [loop, compteRendu] of [['phv', loopHistoires], ['leviaro', loopLeviaro]]) {
+    if (!compteRendu || compteRendu.erreur) continue;
+    for (const x of compteRendu.decisions ?? []) ajouter(loop, `${x.date}:${empreinte(x.quoi)}`, x.date, typeDe(x.type), x.quoi, x.pourquoi);
+    for (const l of compteRendu.lecons ?? []) {
       const texte = typeof l === 'string' ? l : l?.texte;
-      ajouter('phv', `lecon:${empreinte(texte)}`, typeof l === 'string' ? null : l?.date, 'Leçon', texte);
+      ajouter(loop, `lecon:${empreinte(texte)}`, typeof l === 'string' ? null : l?.date, 'Leçon', texte);
     }
   }
   return d;

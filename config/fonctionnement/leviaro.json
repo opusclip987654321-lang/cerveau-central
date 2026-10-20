@@ -287,6 +287,15 @@
         "Chaque proposition a un plan que tu peux réaliser seul avec l'IA (Claude, API Claude, VPS avec Docker et n8n, mail OVH, Calendly, sites nginx) ; ce qui demande une intégration lourde sans API, un engagement juridique ou une présence physique est marqué « trop risqué »",
         "Offres décidées le 07/10/2026 : coachs, « Vos appels découverte » à 890 € + 39 €/mois ; e-commerçants, « Vos relances de boutique » à 590 € + 29 €/mois. Jamais de résultat chiffré promis aux coachs"
       ]
+    },
+    {
+      "titre": "Loop Leviaro sur l'abonnement Claude (20/10)",
+      "points": [
+        "Le travail d'IA (recherche, rédaction, critique, bilan) est fait par des tâches programmées Claude du projet Leviaro, sur l'abonnement de louis, à 13h50, 16h50, 19h50 et 22h50 (src/ia.ts de l'agent, réglage IA_SOURCE) ; le serveur garde le reste sans IA (annuaire, contrôles, envois, relances, boîte)",
+        "Une seule source de tâches : le projet Leviaro. Aucun autre projet ne crée de tâche Leviaro (elles se disputeraient les mêmes entreprises)",
+        "Règles de toute loop demandées le 20/10 : carnet de leçons relu avant chaque décision, consigne courte, historique des décisions daté jamais effacé, écrit par l'agent dans data/loop/decisions.json ; le cerveau le lit toutes les 10 minutes, l'affiche sur cette page et le recopie dans Notion « Décisions des loops »",
+        "Skills marketingskills et frontend-design consultés comme méthodes ; recherche web autorisée ; la recherche des adresses mail reste à louis"
+      ]
     }
   ],
   "role": {
