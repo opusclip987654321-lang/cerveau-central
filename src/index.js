@@ -8,7 +8,7 @@ import path from 'node:path';
 import { toutVerifier } from './verifier.js';
 import { chargerEtat } from './etat.js';
 import { envoyerTelegram } from './telegram.js';
-import { pageEtat, definirCompteurActions } from './page.js';
+import { pageEtat, definirCompteurActions, definirCompteurAColler } from './page.js';
 import { pageAujourdhui } from './page-aujourdhui.js';
 import { lignesProjets, priorites, changementsDepuisHier, fraicheur } from './aujourdhui.js';
 import { resumeQuotidien } from './resume.js';
@@ -37,6 +37,7 @@ import { synchroniserCambodge } from './cambodge.js';
 import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
+import { chargerACollerConfig, chargerAColler, sauverAColler, ajouterMessage, cocher, tousLesMessages, nombreAFaire, htmlAColler } from './a-coller.js';
 import { chargerSuivi, sauverSuivi, changerSuivi } from './suivi.js';
 import { chargerTri, sauverTri, decider } from './tri-mails.js';
 import { chargerVerifs, sauverVerifs, choisirVerif, CHOIX_VERIF } from './verifs-impacteur.js';
@@ -89,6 +90,8 @@ const fichierLoop = path.join(path.dirname(fichierEtat), 'loop-nour-meet.json');
 const plafondLoop = Number(env.PLAFOND_LOOP_NOUR_DOLLARS ?? 11);
 // L'historique daté des décisions de toutes les loops (20/10), recopié dans Notion.
 const fichierDecisions = path.join(path.dirname(fichierEtat), 'decisions-loops.json');
+// Les messages à coller dans les autres projets Claude (20/10) : coches et messages reçus par l'API.
+const fichierAColler = path.join(path.dirname(fichierEtat), 'a-coller.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -98,6 +101,7 @@ const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serve
 const configJournal = JSON.parse(await readFile(path.join(racine, 'config/journal.json'), 'utf8'));
 const configYoutube = JSON.parse(await readFile(path.join(racine, 'config/youtube.json'), 'utf8'));
 const configVisites = JSON.parse(await readFile(path.join(racine, 'config/visites.json'), 'utf8'));
+const configAColler = await chargerACollerConfig(path.join(racine, 'config/a-coller.json'));
 const guidesFonctionnement = await chargerFonctionnement(path.join(racine, 'config/fonctionnement'));
 
 // Les réponses sont lues et écrites l'une après l'autre, jamais en même temps.
@@ -186,6 +190,7 @@ const avecSuivi = fileDAttente(chargerSuivi, sauverSuivi, fichierSuivi);
 const avecBilans = fileDAttente(chargerBilans, sauverBilans, fichierBilans);
 const avecMatin = fileDAttente(chargerMatin, sauverMatin, fichierMatin);
 const avecLoop = fileDAttente(chargerLoop, sauverLoop, fichierLoop);
+const avecAColler = fileDAttente(chargerAColler, sauverAColler, fichierAColler);
 
 // Journal : même principe.
 let fileJournal = Promise.resolve();
@@ -592,6 +597,19 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(erreurs.length === liste.length ? 400 : 200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({ ajoutes: liste.length - erreurs.length, erreurs }));
     }
+    // Un fil Claude (ou un script) dépose un message à coller dans un autre projet Claude.
+    if (req.method === 'POST' && url.pathname === '/api/a-coller') {
+      if (!jetonReleveValide(req.headers.authorization ?? '')) {
+        res.writeHead(401, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Jeton invalide');
+      }
+      const corps = await lireJson(req, 100_000);
+      const liste = Array.isArray(corps) ? corps.slice(0, 20) : [corps];
+      const resultats = await avecAColler((d) => liste.map((c) => ajouterMessage(d, c)));
+      const erreurs = resultats.filter((r) => r.erreur).map((r) => r.erreur);
+      res.writeHead(erreurs.length === liste.length ? 400 : 200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ ajoutes: resultats.filter((r) => r.message).map((r) => r.message.id), erreurs }));
+    }
     if (acces.actif) {
       if (req.method === 'POST' && url.pathname === '/connexion') {
         const { motDePasse } = await lireCorps(req, 4_000);
@@ -625,6 +643,7 @@ const serveur = http.createServer(async (req, res) => {
     }
     // Le compteur « Actions » du menu : les fiches où c'est à louis de jouer.
     if (req.method === 'GET') definirCompteurActions(compterAFaire((await chargerActions(fichierActions)).actions));
+    if (req.method === 'GET') definirCompteurAColler(nombreAFaire(tousLesMessages(configAColler, await chargerAColler(fichierAColler))));
     // L'accueil : la page « Aujourd'hui » (refonte du 11/10). La surveillance a déménagé sur /surveillance.
     if (req.method === 'GET' && url.pathname === '/') {
       const [business, journal, pauses, etatCourant] = await Promise.all([chargerBusiness(fichierBusiness), chargerJournal(fichierJournal), chargerPauses(fichierPauses), chargerEtat(fichierEtat)]);
@@ -1027,6 +1046,22 @@ const serveur = http.createServer(async (req, res) => {
       const r = await avecIdees((d) => changerStatutIdee(d, id, statut));
       res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet ?? '')}&message=${encodeURIComponent(r.erreur ?? 'Suivi mis à jour')}` });
       return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/a-coller') {
+      const messages = tousLesMessages(configAColler, await chargerAColler(fichierAColler));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(gabarit({ onglet: 'a-coller', contenu: htmlAColler(messages, { message: url.searchParams.get('message') ?? undefined }) }));
+    }
+    if (req.method === 'POST' && url.pathname === '/a-coller/fait') {
+      const { id, fait } = await lireCorps(req, 2_000);
+      const connu = tousLesMessages(configAColler, await chargerAColler(fichierAColler)).some((m) => m.id === id);
+      const r = connu ? await avecAColler((d) => cocher(d, id, fait === '1')) : { erreur: 'Message introuvable.' };
+      res.writeHead(303, { location: `/a-coller${r.erreur ? `?message=${encodeURIComponent(r.erreur)}` : ''}` });
+      return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/api/a-coller') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ messages: tousLesMessages(configAColler, await chargerAColler(fichierAColler)) }));
     }
     if (req.method === 'GET' && url.pathname === '/api/decisions') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });

@@ -1,0 +1,76 @@
+{
+  "maj": "2026-10-20",
+  "source": "Revue du système du 20/10/2026, proposition n°1 acceptée par louis (« tout »)",
+  "intro": "Le cerveau lui-même. Ce guide décrit pour l'instant la page « À coller » : un seul endroit pour tous les messages que tu dois coller dans tes autres projets Claude (3_PETITES HISTOIRES, Leviaro, VégéBudget, 12_Prospection sponsors), que les fils de ce projet ne peuvent pas atteindre.",
+  "journee": [
+    {
+      "quand": "Quand un fil a besoin d'un autre projet Claude",
+      "quoi": "Le fil dépose le message sur la page « À coller » (par une PR dans config/a-coller.json, ou par l'API) au lieu de le laisser dans le fil, et te le signale en une ligne.",
+      "toi": "Rien sur le moment"
+    },
+    {
+      "quand": "Quand tu as un moment",
+      "quoi": "Tu ouvres « À coller » (le menu affiche combien il en reste), tu copies chaque message, tu le colles une fois dans le projet indiqué, puis tu cliques « Fait ».",
+      "toi": "Copier, coller, cocher"
+    }
+  ],
+  "circuits": [
+    {
+      "titre": "Un message pour un autre projet Claude",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Un fil prépare un message pour un de tes autres projets Claude",
+          "outil": "Claude (fil du projet)",
+          "technique": "Les projets Claude sont fermés entre eux : aucun fil ne peut écrire dans un autre projet."
+        },
+        {
+          "type": "auto",
+          "texte": "Le message arrive sur la page « À coller », rangé par projet cible, avec sa date",
+          "outil": "Cerveau",
+          "technique": "Soit une ligne ajoutée à config/a-coller.json (PR fusionnée, site à jour en 10 min), soit POST /api/a-coller avec le jeton des relevés (gardé dans data/a-coller.json)."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu le copies, tu le colles une seule fois dans le projet indiqué, et tu cliques « Fait »",
+          "outil": "Bouton « Copier le message »",
+          "technique": "La coche est gardée sur le serveur ; « Remettre à faire » l'annule. Les messages faits restent visibles, repliés."
+        }
+      ]
+    }
+  ],
+  "regles": [
+    {
+      "titre": "Un seul endroit",
+      "points": [
+        "Tout message à coller dans un autre projet Claude va sur la page « À coller », plus seulement dans un fil.",
+        "Un message se colle une seule fois, dans l'ordre des dates."
+      ]
+    },
+    {
+      "titre": "Dépôt public",
+      "points": [
+        "Jamais de clé, de mot de passe ni de donnée de prospect dans un message à coller : config/a-coller.json est public."
+      ]
+    }
+  ],
+  "role": {
+    "quotidien": [
+      "Coller les messages en attente et cliquer « Fait »"
+    ]
+  },
+  "outils": [
+    {
+      "nom": "Page « À coller » (cerveau.nourmeet.com/a-coller)",
+      "role": "Liste les messages à coller, avec projet cible, date, bouton copier et coche « fait »"
+    },
+    {
+      "nom": "config/a-coller.json",
+      "role": "Les messages déposés par les fils (id, projet, fil, date, sujet, texte, note)"
+    },
+    {
+      "nom": "API /api/a-coller",
+      "role": "GET : la liste avec l'état fait / à faire. POST (jeton des relevés) : dépose un message ; même id = mise à jour, pas de doublon"
+    }
+  ]
+}

@@ -125,13 +125,17 @@ const frequence = (min) => (min % 60 === 0 ? `${min / 60} h` : `${min} min`);
 // le serveur à chaque requête (src/index.js), pour ne pas le passer page par page.
 let compteurActions = 0;
 export const definirCompteurActions = (n) => (compteurActions = Number(n) || 0);
+// Même principe pour « À coller » : les messages pour les autres projets Claude pas encore collés.
+let compteurAColler = 0;
+export const definirCompteurAColler = (n) => (compteurAColler = Number(n) || 0);
 
 // `aRepondre` (questions du jour) reste accepté pour les anciennes pages mais ne
 // s'affiche plus dans le menu depuis la refonte du 11/10 (choix de louis, 5A).
-export function gabarit({ onglet, aRepondre = 0, aFaire = compteurActions, contenu, titre }) {
+export function gabarit({ onglet, aRepondre = 0, aFaire = compteurActions, aColler = compteurAColler, contenu, titre }) {
   void aRepondre;
   const badge = aFaire ? ` <span class="badge">${aFaire}</span>` : '';
-  const TITRES = { aujourdhui: 'Aujourd’hui', etat: 'Surveillance', journal: 'Projets', actions: 'Actions', activite: 'Journal', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs', connexions: 'Connexions' };
+  const badgeColler = aColler ? ` <span class="badge">${aColler}</span>` : '';
+  const TITRES = { 'a-coller': 'À coller dans tes autres projets Claude', aujourdhui: 'Aujourd’hui', etat: 'Surveillance', journal: 'Projets', actions: 'Actions', activite: 'Journal', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs', connexions: 'Connexions' };
   const lien = (id, href, symbole, texte) => `<a href="${href}" class="${onglet === id ? 'actif' : ''}" data-s="${symbole}">${texte}</a>`;
   return `<!doctype html>
 <html lang="fr">
@@ -210,7 +214,7 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
   .coquille { display:block; min-height:0; }
   .menu { border-right:0; border-bottom:1px solid var(--bord); padding:14px; }
   .menu nav { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); }
-  .menu nav.secondaire { grid-template-columns:repeat(4, minmax(0,1fr)); }
+  .menu nav.secondaire { grid-template-columns:repeat(5, minmax(0,1fr)); }
   .menu nav.secondaire { padding-top:8px; }
   .menu nav a { justify-content:center; text-align:center; min-height:42px; font-size:12px; padding:8px 4px; }
   .menu nav a::before { display:none; }
@@ -225,7 +229,7 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 <aside class="menu">
 <a class="logo" href="/"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
 <nav>${lien('aujourdhui', '/', '☀', 'Aujourd’hui')}${lien('journal', '/journal', '◆', 'Projets')}${lien('actions', '/actions', '✓', 'Actions' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('connexions', '/connexions', '⚡', 'Connexions')}</nav>
-<nav class="secondaire">${lien('etat', '/surveillance', '●', 'Surveillance')}${lien('activite', '/journal?vue=activite', '☰', 'Journal')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}</nav>
+<nav class="secondaire">${lien('etat', '/surveillance', '●', 'Surveillance')}${lien('activite', '/journal?vue=activite', '☰', 'Journal')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}${lien('a-coller', '/a-coller', '⧉', 'À coller' + badgeColler)}</nav>
 <div class="menu-pied"><a href="/deconnexion">Se déconnecter</a></div>
 </aside>
 <main>
