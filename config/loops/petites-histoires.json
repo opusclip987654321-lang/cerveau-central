@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20T14:56:39Z",
+  "maj": "2026-10-20T20:53:45Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -30,11 +30,25 @@
   "decisions": [
     {
       "date": "2026-10-20",
+      "type": "changé",
+      "quoi": "Test sur les 4 prochaines vidéos longues (dès le 23 octobre) : une question posée aux spectateurs juste après l'accroche, pour faire commenter.",
+      "pourquoi": "0 commentaire sur les 10 premières vidéos longues ; succès si au moins 1 commentaire par vidéo en moyenne à 7 jours."
+    },
+    {
+      "date": "2026-10-20",
+      "type": "gardé",
+      "quoi": "Rythme choix B (2 vidéos longues + 2e teasers Shorts mardi, mercredi, jeudi) ; 1er 2e teaser publié (épisode 10, angle milieu de vidéo).",
+      "pourquoi": "Décidé hier sur 28 jours (Shorts 24 abonnés, longues 0) ; trop tôt pour le juger, bilan au dimanche 25 octobre."
+    },
+    {
+      "date": "2026-10-20",
+      "type": "changé",
       "quoi": "Test : sur les 4 prochaines vidéos longues (dès le 23 octobre), une question posée aux spectateurs juste après l'accroche pour les faire commenter. Si ça marche, plusieurs questions par vidéo.",
       "pourquoi": "Idée de louis : les commentaires aident l'algorithme. Les 10 premières longues ont 0 commentaire ; on juge d'abord sur les commentaires (au moins 1 par vidéo), puis sur les vues à 7 jours, trop faibles pour conclure seules."
     },
     {
       "date": "2026-10-19",
+      "type": "changé",
       "quoi": "Cycle 1 tranché : choix B. Le mercredi, la vidéo longue est remplacée par un 2e teaser Short ; teasers mardi, mercredi et jeudi.",
       "pourquoi": "Sur 28 jours, les Shorts font 3 495 vues et 24 abonnés, les vidéos longues 458 vues et 0 abonné ; l'objectif en cours est 1 000 abonnés. Les vidéos longues restent 2 fois par semaine pour les heures de visionnage, sans coût en plus."
     }
