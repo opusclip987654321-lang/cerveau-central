@@ -68,7 +68,7 @@ test('Notion : sans clé rien ne part ; avec clé, les clés déjà présentes n
   const appels = [];
   const faux = async (url, { body }) => {
     appels.push({ url, corps: JSON.parse(body) });
-    if (url.endsWith('/query')) return { ok: true, json: async () => ({ results: [{ properties: { Clé: { rich_text: [{ plain_text: 'phv:autre' }] } } }], has_more: false }) };
+    if (url.endsWith('/query')) return { ok: true, json: async () => ({ results: [{ properties: { Clé: { rich_text: [{ plain_text: 'phv\\:autre' }] } } }], has_more: false }) };
     return { ok: true, json: async () => ({}) };
   };
   const r = await envoyerNotion(archive, { jeton: 'x', fetch: faux });
