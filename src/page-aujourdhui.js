@@ -11,7 +11,7 @@ const ICONES = { video: '🎬', publication: '📣', mail: '✉️', rdv: '📅'
 
 const nombre = (v) => (typeof v === 'number' ? v.toLocaleString('fr-FR') : String(v));
 
-export function pageAujourdhui({ lignes, priorites, autres = 0, changements = [], fraicheur = {}, jour = jourParis(), aFaire = 0, message }) {
+export function pageAujourdhui({ lignes, priorites, autres = 0, boites = '', changements = [], fraicheur = {}, jour = jourParis(), aFaire = 0, message }) {
   const dateLongue = new Date(`${jour}T12:00:00Z`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
   const maj = fraicheur.derniere
     ? `Données relues ${fraicheur.retard ? `il y a ${fraicheur.retard} jour(s)` : `aujourd’hui à ${new Date(fraicheur.derniere).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}`}`
@@ -63,6 +63,7 @@ ${p.preuve ? `<p class="preuve">${e(p.preuve)}</p>` : ''}
   const contenu = `${message ? `<p class="message">${e(message)}</p>` : ''}
 <p class="entete"><span class="date">${dateLongue.charAt(0).toUpperCase() + dateLongue.slice(1)}</span><span class="maj">${maj} · <a href="/surveillance">surveillance</a></span></p>
 <section class="section"><h2>Priorités du jour</h2>${blocPriorites}</section>
+${boites ? `<section class="section"><h2>Mails à traiter</h2>${boites}</section>` : ''}
 <section class="section"><h2>Tes projets</h2><div class="lignes">${lignes.map(ligne).join('')}</div>
 <p class="legende">Chiffres du jour comparés à hier (▲ ▼) ; « 7 jours » quand le jour n’a rien ; « indisponible » quand la donnée n’est pas branchée, jamais 0.</p></section>
 <section class="section"><details class="hier-bloc"><summary>Ce qui a changé depuis hier</summary>${blocChangements}</details></section>

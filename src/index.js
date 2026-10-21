@@ -34,6 +34,7 @@ import { synchroniserYoutube, synchroniserRevenus, urlAutorisation, echangerCode
 import { gabarit } from './page.js';
 import { synchroniserStripe } from './stripe.js';
 import { synchroniserCambodge } from './cambodge.js';
+import { synchroniserBoites, alerteBoites, htmlBoites } from './boites.js';
 import { chargerFonctionnement } from './fonctionnement.js';
 import { pageFonctionnement } from './page-fonctionnement.js';
 import { chargerIdees, sauverIdees, ajouterIdee, changerStatutIdee } from './idees.js';
@@ -247,6 +248,11 @@ async function synchroniserJournal() {
     await lireSource('youtube-revenus', () => avecBusiness((b) => synchroniserRevenus(b, { clientId: env.YT_OAUTH_CLIENT_ID, clientSecret: env.YT_OAUTH_CLIENT_SECRET, refresh: env.YT_OAUTH_REFRESH })));
     await lireSource('stripe', () => avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE })));
     await lireSource('cambodge', () => avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })));
+    // Les boîtes Gmail de louis : un Telegram seulement pour un mail urgent jamais signalé.
+    if (await lireSource('boites', () => avecBusiness((b) => synchroniserBoites(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })))) {
+      const alerte = await avecBusiness((b) => alerteBoites(b));
+      if (alerte) await envoyer(alerte).catch((err) => console.error(`Telegram boîtes impossible : ${err.message}`));
+    }
     await lireSource('vegebudget', () => avecBusiness((b) => synchroniserVegebudget(b, { url: env.VEGEBUDGET_URL || 'https://vegebudget.fr', jeton: env.VEGEBUDGET_STATS_JETON })));
     // Les visites des sites, lues chez Umami (compteur sur le VPS Nūr).
     await lireSource('visites', () => avecBusiness((b) => synchroniserVisites(b, { url: env.UMAMI_URL, cleApi: env.UMAMI_CLE_API, utilisateur: env.UMAMI_UTILISATEUR, motDePasse: env.UMAMI_MOT_DE_PASSE, sites: configVisites.sites })));
@@ -693,6 +699,7 @@ const serveur = http.createServer(async (req, res) => {
           autres: prio.autres,
           changements: changementsDepuisHier({ business, journal, configJournal, pauses }),
           fraicheur: fraicheur(business),
+          boites: htmlBoites(business.sources?.boites),
           message: url.searchParams.get('message') ?? undefined,
         }),
       );

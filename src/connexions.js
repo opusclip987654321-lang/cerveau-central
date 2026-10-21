@@ -17,6 +17,7 @@ export const CONNEXIONS = [
   { id: 'youtube-revenus', nom: 'Revenus YouTube', projets: ['extrait-politique', 'histoires-vraies'], lit: 'Les revenus estimés par chaîne (YouTube Analytics), avec 2 à 3 jours de retard.', besoin: 'L’autorisation Google donnée une fois (page /oauth/youtube) : YT_OAUTH_* dans le .env.' },
   { id: 'stripe', nom: 'Stripe', projets: ['nour-meet'], lit: 'Les encaissements et abonnements payants de Nūr Meet.', besoin: 'STRIPE_CLE dans le .env (clé de lecture seule).' },
   { id: 'cambodge', nom: 'Gmail Cambodge', projets: ['cambodge'], lit: 'Les mails étiquetés « Cambodge » (candidatures, réponses), via le workflow n8n « CERVEAU - lecture Cambodge ».', besoin: 'Le n8n Nūr Meet branché et le jeton RELEVE_JETON.' },
+  { id: 'boites', nom: 'Boîtes Gmail de louis', projets: ['impacteur', 'cambodge'], lit: 'Les mails des 3 derniers jours de 6 boîtes (opusclip, walidvideos12, impacteurmedia, gougamwalid, Impacteur Frexit et Afrique), triés par règles pour repérer les urgents, via le workflow n8n « CERVEAU - lecture des boîtes ».', besoin: 'Le workflow créé par scripts/boites-n8n.py, un compte Google choisi sur chacun de ses 6 nœuds Gmail, puis allumé.' },
   { id: 'vegebudget', nom: 'VégéBudget', projets: ['vegebudget'], lit: 'Les statistiques du site (visiteurs, semaines composées, inscrits, abonnés) et le parcours des visites.', besoin: 'VEGEBUDGET_STATS_JETON dans le .env, le même que sur le site.' },
   { id: 'histoires', nom: 'Petites histoires vraies (fabrication)', projets: ['histoires-vraies'], lit: 'Le dossier data/ du programme de fabrication (vidéos publiées sur Instagram et Facebook), monté en lecture seule.', besoin: 'Le dossier monté dans le conteneur (HISTOIRES_DOSSIER). La fabrication est en pause depuis le 05/10.' },
   { id: 'visites', nom: 'Visites des sites (Umami)', projets: ['nour-meet', 'leviaro', 'vegebudget'], lit: 'Visiteurs, visites, pages vues, rebonds, pages les plus vues et provenance, sur 30 jours, pour chaque site déclaré dans config/visites.json.', besoin: 'Umami installé sur le VPS Nūr (docs/visites-umami.md), UMAMI_URL et UMAMI_UTILISATEUR + UMAMI_MOT_DE_PASSE (ou UMAMI_CLE_API) dans le .env, et la ligne de suivi posée sur chaque site.' },
@@ -25,7 +26,6 @@ export const CONNEXIONS = [
 
 // Ce qui reste à brancher, et par qui (plan de la refonte, choix de louis du 11/10).
 export const A_BRANCHER = [
-  { nom: 'Boîtes Gmail Impacteur Afrique et Frexit', pourquoi: 'Lire les réponses des invités, en lecture seule.', comment: 'Un workflow n8n de lecture, comme pour le Cambodge ; branché par le fil Cahier des charges.' },
   { nom: 'TikTok, Instagram, Facebook', pourquoi: 'Abonnés et vues des comptes, gains Facebook si une page est monétisée.', comment: 'Via n8n (fil Cahier des charges) ; attend la liste des comptes.' },
   { nom: 'OVH (factures des serveurs)', pourquoi: 'Avoir les vraies factures des VPS dans Argent sans les déposer à la main.', comment: 'API OVH, à brancher plus tard.' },
   { nom: 'Dépenses d’API (Anthropic, ElevenLabs…)', pourquoi: 'Voir ce que chaque automatisation coûte vraiment.', comment: 'Relevé des consoles, à brancher plus tard.' },
@@ -61,6 +61,8 @@ function derniereLecture(id, { business, journal, serveurs }) {
       return s.cambodge?.maj ?? null;
     case 'vegebudget':
       return s.vegebudget?.maj ?? null;
+    case 'boites':
+      return s.boites?.maj ?? null;
     case 'visites':
       return s.visites?.maj ?? null;
     case 'histoires':
