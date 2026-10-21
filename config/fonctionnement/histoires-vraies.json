@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20",
+  "maj": "2026-10-21",
   "source": "Lu le 19/10/2026 dans les tâches programmées et la session « Production automatique » du projet Claude « 3_PETITES HISTOIRES » (fil « Loop Petites histoires vraies » du cerveau)",
   "intro": "La chaîne YouTube Petites Histoires Vraies explique en dessin animé une bizarrerie du cerveau ou du monde (« Pourquoi on n'aime pas le son de sa voix ? »). Tout est fabriqué par Claude dans le projet « 3_PETITES HISTOIRES » : texte, voix, ~120 dessins, montage, Short, miniatures, mise en ligne. Une loop mesure les chiffres chaque dimanche et décide seule de ce qu'il faut changer. Objectifs : 1 000 abonnés, puis 4 000 h de visionnage, puis 500 € par mois de revenus YouTube.",
   "journee": [
@@ -115,6 +115,7 @@
       "titre": "Comptage dans le cerveau",
       "points": [
         "Le cerveau lit chaque heure la chaîne YouTube (vidéos, vues, abonnés) : chaque vidéo compte le jour où elle est vraiment sortie",
+        "Les vidéos publiées viennent de deux lectures : l'API YouTube (clé du cerveau) et le flux public de la chaîne (sans clé ni quota, 15 dernières vidéos, gardées 120 jours). Si l'API refuse, le compteur reste juste ; seuls les abonnés passent à « indisponible » pour une chaîne jamais lue par l'API (corrigé le 21/10 : la carte affichait 0 vidéo alors que la chaîne publiait).",
         "3 minutes ou moins = Short (déduction d'après la durée, YouTube ne dit pas le format)",
         "Heures de visionnage et revenus : donnés par le compte rendu de la loop ; absents = « indisponible », jamais 0"
       ]
@@ -163,6 +164,11 @@
       "message": "La loop de la chaîne n'a pas encore envoyé son premier compte rendu",
       "sens": "Normal tant que la nouvelle règle n'est pas en place dans 3_PETITES HISTOIRES.",
       "faire": "Rien, ou vérifier que le message a bien été envoyé dans son fil."
+    },
+    {
+      "message": "Petites histoires vraies : plus aucune vidéo depuis N jours",
+      "sens": "Ni l'API YouTube ni le flux public de la chaîne ne voient de vidéo récente. Si la page Connexions met « YouTube (flux public des chaînes) » en erreur, c'est la lecture qui casse, pas la chaîne.",
+      "faire": "Regarder la page Connexions ; si la lecture va bien, la fabrication est arrêtée : regarder le fil « Production automatique » de 3_PETITES HISTOIRES (fichier pipeline/PAUSE)."
     },
     {
       "message": "Aucun compte rendu de la loop depuis N jours",

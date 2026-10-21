@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { referenceChaine, synchroniserYoutube, gainsPeriode, synchroniserRevenus, revenusPeriode, urlAutorisation, echangerCode } from '../src/youtube.js';
+import { referenceChaine, synchroniserYoutube, gainsPeriode, synchroniserRevenus, revenusPeriode, urlAutorisation, echangerCode, lireFlux, synchroniserFluxYoutube, chainesYoutube } from '../src/youtube.js';
 import { tableauDeBord, joursJusqua } from '../src/business.js';
 import { jourPublication } from '../src/youtube.js';
 
@@ -149,4 +149,78 @@ test('connexion OAuth : adresse Google correcte et échange du code', async () =
     },
   });
   assert.equal(refresh, 'jeton-durable');
+});
+
+const FLUX = `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <title>Petites Histoires Vraies</title>
+ <entry>
+  <yt:videoId>court1</yt:videoId>
+  <title>L&#39;homme qui &amp; le chien</title>
+  <link rel="alternate" href="https://www.youtube.com/shorts/court1"/>
+  <published>2026-10-21T10:30:00+00:00</published>
+  <media:group><media:community><media:statistics views="1942"/></media:community></media:group>
+ </entry>
+ <entry>
+  <yt:videoId>long1</yt:videoId>
+  <title>Épisode 12</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=long1"/>
+  <published>2026-10-20T16:00:00+00:00</published>
+  <media:group><media:community><media:statistics views="31"/></media:community></media:group>
+ </entry>
+</feed>`;
+
+test('lireFlux : vidéos, jour de sortie (Paris), vues et format du flux RSS', () => {
+  const v = lireFlux(FLUX);
+  assert.deepEqual(v, [
+    { id: 'court1', titre: "L'homme qui & le chien", jour: '2026-10-21', vues: 1942, format: 'short' },
+    { id: 'long1', titre: 'Épisode 12', jour: '2026-10-20', vues: 31, format: 'longue' },
+  ]);
+  assert.deepEqual(lireFlux('pas du xml'), []);
+});
+
+test('synchroniserFluxYoutube : les vidéos publiées restent justes quand l’API ne répond plus', async () => {
+  // L'API a lu la chaîne une dernière fois le 12/10 : ses vidéos s'arrêtent là.
+  const b = { sources: { youtube: { chaines: [{ projet: 'histoires-vraies', id: 'UCoTR63ZFhLWw11ZMUYGTR3w', abonnes: 26, vues: 4000, nbVideos: 30, videos: [{ id: 'ancien', jour: '2026-10-12', vues: 10 }, { id: 'long1', jour: '2026-10-20', vues: 5 }] }], historique: {} } }, objectifs: {} };
+  const lues = [];
+  const lire = async (url) => {
+    lues.push(url);
+    if (url.includes('@Impacteur')) return '<meta itemprop="identifier"><script>{"externalId":"UCimpacteurAfrique012345"}</script>';
+    if (url.includes('UCimpacteurAfrique')) return '<feed></feed>';
+    return FLUX;
+  };
+  const r = await synchroniserFluxYoutube(b, { lire, chaines: { 'histoires-vraies': ['UCoTR63ZFhLWw11ZMUYGTR3w'], impacteur: ['https://www.youtube.com/@ImpacteurAfrique'] }, maintenant: new Date('2026-10-21T20:00:00Z') });
+  assert.deepEqual(r, { chaines: 2, erreurs: 0 });
+  assert.ok(lues.includes('https://www.youtube.com/feeds/videos.xml?channel_id=UCoTR63ZFhLWw11ZMUYGTR3w'));
+  assert.equal(b.sources.youtube.flux.ids['@ImpacteurAfrique'], 'UCimpacteurAfrique012345');
+  // Une 2e lecture ne relit pas la page de la chaîne : l'identifiant est gardé.
+  lues.length = 0;
+  await synchroniserFluxYoutube(b, { lire, chaines: { impacteur: ['@ImpacteurAfrique'] }, maintenant: new Date('2026-10-21T21:00:00Z') });
+  assert.ok(!lues.some((u) => u.endsWith('/@ImpacteurAfrique')));
+
+  const [phv] = chainesYoutube(b, 'histoires-vraies');
+  assert.deepEqual(phv.videos.map((v) => v.id), ['court1', 'long1', 'ancien']);
+  assert.equal(phv.videos.find((v) => v.id === 'long1').vues, 31);
+  assert.equal(phv.abonnes, 26);
+
+  const h = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour: '2026-10-21' }).cartes.find((c) => c.id === 'histoires-vraies');
+  // Les deux vidéos de la semaine (le 12/10 est hors des 7 jours).
+  assert.equal(h.principal.total, 2);
+  assert.notEqual(h.couleur, 'rouge');
+});
+
+test('chainesYoutube : une chaîne connue seulement par le flux a des abonnés « indisponible », jamais 0', () => {
+  const b = { sources: { youtube: { chaines: [], historique: {}, flux: { chaines: { UCoTR63ZFhLWw11ZMUYGTR3w: { projet: 'histoires-vraies', titre: 'PHV', videos: lireFlux(FLUX) } } } } }, objectifs: {} };
+  const [c] = chainesYoutube(b, 'histoires-vraies');
+  assert.equal(c.abonnes, null);
+  assert.equal(chainesYoutube(b, 'impacteur').length, 0);
+  const h = tableauDeBord({ business: b, journal: journalVide(), configJournal, jour: '2026-10-21' }).cartes.find((x) => x.id === 'histoires-vraies');
+  assert.equal(h.principal.total, 2);
+  assert.equal(h.chiffres.find((x) => x.titre === 'Abonnés YouTube').valeur, 'indisponible');
+});
+
+test('synchroniserFluxYoutube : erreur claire si aucune chaîne ne se lit', async () => {
+  const b = { sources: {}, objectifs: {} };
+  await assert.rejects(synchroniserFluxYoutube(b, { lire: async () => { throw new Error('YouTube répond 404'); }, chaines: { 'histoires-vraies': ['UCoTR63ZFhLWw11ZMUYGTR3w'] } }), /UCoTR63ZFhLWw11ZMUYGTR3w : YouTube répond 404/);
+  assert.deepEqual(await synchroniserFluxYoutube(b, { chaines: {} }), { ignore: true });
 });
