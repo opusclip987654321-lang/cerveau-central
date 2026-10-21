@@ -58,11 +58,14 @@ export async function synchroniserVisites(business, { url, cleApi, utilisateur, 
       continue;
     }
     const periode = { startAt: debut, endAt: fin };
+    // Les listes (pages, provenance) sont un plus : un refus d'Umami sur l'une d'elles ne doit
+    // pas faire perdre les chiffres du site. Umami 3 appelle « path » ce que la v2 appelait « url ».
+    const liste = (type) => appel(`/websites/${site.id}/metrics`, { ...periode, type, limit: 10 });
     const [stats, courbe, pages, provenance] = await Promise.all([
       appel(`/websites/${site.id}/stats`, periode),
       appel(`/websites/${site.id}/pageviews`, { ...periode, unit: 'day', timezone: 'Europe/Paris' }),
-      appel(`/websites/${site.id}/metrics`, { ...periode, type: 'url', limit: 10 }),
-      appel(`/websites/${site.id}/metrics`, { ...periode, type: 'referrer', limit: 10 }),
+      liste('path').catch(() => liste('url')).catch(() => []),
+      liste('referrer').catch(() => []),
     ]);
     const val = (x) => entier(typeof x === 'object' && x !== null ? x.value : x);
     const prec = (x) => (typeof x === 'object' && x !== null && x.prev !== undefined ? entier(x.prev) : null);

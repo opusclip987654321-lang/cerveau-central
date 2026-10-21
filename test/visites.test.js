@@ -47,3 +47,26 @@ test('synchroniserVisites : sites retrouvés par domaine, 30 jours, site absent 
   assert.match(page, /Visites du site/);
   assert.match(page, /google\.com/);
 });
+
+test('synchroniserVisites : Umami 3 (pages = « path ») et une liste refusée ne font pas perdre les chiffres', async () => {
+  const base = fauxUmami();
+  const umami3 = async (chemin, params = {}) => {
+    if (chemin.endsWith('/metrics') && params.type === 'url') throw new Error('Umami répond 400 sur /metrics');
+    if (chemin.endsWith('/metrics') && params.type === 'path') return [{ x: '/', y: 7 }];
+    return base(chemin, params);
+  };
+  const b = { sources: {}, objectifs: {} };
+  await synchroniserVisites(b, { appel: umami3, sites: { 'nour-meet': 'nourmeet.com' }, maintenant: new Date('2026-10-11T12:00:00Z') });
+  assert.deepEqual(visitesDe(b, 'nour-meet').pages, [{ page: '/', n: 7 }]);
+
+  const refus = async (chemin, params = {}) => {
+    if (chemin.endsWith('/metrics')) throw new Error('Umami répond 400 sur /metrics');
+    return base(chemin, params);
+  };
+  const b2 = { sources: {}, objectifs: {} };
+  await synchroniserVisites(b2, { appel: refus, sites: { 'nour-meet': 'nourmeet.com' }, maintenant: new Date('2026-10-11T12:00:00Z') });
+  const v = visitesDe(b2, 'nour-meet');
+  assert.equal(v.visiteurs, 140);
+  assert.deepEqual(v.pages, []);
+  assert.deepEqual(v.parJour.map((j) => j.visites), [12, 19]);
+});
