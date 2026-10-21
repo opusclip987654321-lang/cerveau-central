@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20",
+  "maj": "2026-10-21",
   "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py) ; son IA passée sur l'abonnement Claude le 20/10/2026 (tâches programmées, /api/loop/nour-meet/*)",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Depuis le 19/10, une loop pilotée par le cerveau trie les réponses, te prévient pour chaque restaurant intéressé et réécrit elle-même la méthode (textes, cibles, relances, volume) chaque lundi. Toi, tu réponds aux intéressés et tu les transformes en abonnés.",
   "journee": [
@@ -265,8 +265,8 @@
         {
           "type": "securite",
           "texte": "Chaque réseau a-t-il publié depuis moins de 2 jours ?",
-          "sinon": "alerte sur la carte Nūr Meet avec l'erreur exacte (clé expirée, appli Meta bridée…)",
-          "technique": "Comparaison du dernier post réussi avec la date du jour."
+          "sinon": "alerte sur la carte Nūr Meet avec la cause en clair (clé expirée, limite d'appels, compte bridé, image refusée…) et qui agit : la loop, personne (attendre), ou toi. Telegram seulement quand c'est à toi d'agir, une fois par cause ; aucun e-mail (choix de louis du 21/10)",
+          "technique": "Le site garde le message de Meta avec son code et sous-code sur chaque article ; le cerveau le traduit (src/nour-public.js, causeMeta). Une limite d'appels qui dure 10 jours = compte bloqué, support Meta."
         },
         {
           "type": "securite",
@@ -487,8 +487,8 @@
     },
     {
       "message": "Instagram (ou Facebook) ne publie plus depuis N jours",
-      "sens": "Le réseau refuse les posts : clé expirée ou invalidée, ou appli Meta bridée. L'erreur exacte est citée.",
-      "faire": "Prévenir Claude dans le fil « Loop Nūr Meet grand public » : il donne la marche pour refaire la clé.",
+      "sens": "Le réseau refuse les posts. La cause est dite en clair (code Meta) avec qui agit : la loop (image, légende), attendre (limite, panne), ou toi (clé, permission, compte bridé).",
+      "faire": "Rien si « attendre » ou « la loop corrige ». Si « à toi d'agir » (tu reçois aussi un Telegram) : faire ce qui est écrit, la marche est dans le fil « Loop Nūr Meet grand public ».",
       "niveau": "important"
     },
     {
