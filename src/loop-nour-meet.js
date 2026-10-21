@@ -282,6 +282,7 @@ PISTES DE LOUIS (à peser, pas des ordres) : tunnel pour voir où l'on perd (le 
 ORGANIQUE IA (louis, 21/10, à peser) : une page « remplir son restaurant en semaine » avec le cas du Casanova après sa soirée, citée dans les mails ; 2 posts LinkedIn par semaine écrits pour louis, qu'il publie ; fiche Google Business et pages par ville, pour être cité par Google et les IA ; louis peut tourner 2 vidéos de 30 s par semaine pour les restaurateurs. Ce qui demande un outil ou louis se propose dans « changements ».
 RECHERCHE WEB : autorisée sans demander à louis (règle du 21/10), chaque fois qu'elle aide l'objectif : concurrents, idées, être cité par les IA (ChatGPT, Perplexity, Google).
 « pourquoi » est ton journal de décisions, daté et publié dans Notion : même si tu ne changes rien, dis ce que tu as remis en question et pourquoi tu gardes, chiffres à l'appui.
+FILET (louis, 21/10) : si ton changement casse les envois (échecs en masse, plus aucun mail), le cerveau revient seul à la version d'avant et te le note dans tes leçons. Une version qui envoie mais rapporte moins n'est PAS annulée : c'est à toi d'en juger, sans seuil d'arrêt (louis veut une loop libre).
 « lecons » : ce que cette semaine t'apprend, une ligne par essai jugé (essai, chiffre, gardé ou arrêté), ou une erreur à ne pas refaire ; vide si rien de neuf.
 Réponds UNIQUEMENT avec ce JSON :
 {"changer":true|false,"methode":{"textes":{…},"recherches":[…],"relanceJours":[a,b],"parJour":n},"changements":["une phrase par changement"],"pourquoi":"2 à 4 phrases chiffrées","lecons":["une ligne"],"radical":false,"question":"pour louis si radical, sinon vide"}
@@ -406,6 +407,34 @@ export async function revoirMethode(loop, business, { client, semaine, contexteS
   }
   if (entree.cout) ajouterCout(loop, entree.cout, semaine);
   return garderEntree(loop, entree);
+}
+
+// Le filet (louis, 21/10) : la loop est libre, mais un changement qui CASSE les envois est
+// annulé seul. Cassé = plus de la moitié des envois en échec depuis la nouvelle version (alors
+// qu'avant c'était moins d'un quart), ou plus aucun envoi pendant 3 jours alors qu'il en partait
+// avant. Ce n'est pas un jugement des résultats : une version qui envoie mais convainc moins
+// reste en place, la revue du lundi la juge.
+export function filetLoop(loop, business, maintenant = new Date()) {
+  const dernier = loop.historique.at(-1);
+  const avant = loop.historique.at(-2);
+  if (!avant || !String(dernier?.par ?? '').startsWith('la loop')) return null;
+  const pr = business.sources?.prospection;
+  if (!pr) return null;
+  const debut = jourParis(new Date(dernier.quand));
+  const aujourdhui = jourParis(maintenant);
+  const semaineAvant = jourParis(new Date(new Date(dernier.quand) - 7 * 86_400_000));
+  const tentes = (l) => l.filter((x) => x.statut === 'envoye' || x.statut === 'echec');
+  const apres = tentes(pr.envois.filter((x) => x.jour && x.jour > debut && x.jour <= aujourdhui));
+  const precedents = tentes(pr.envois.filter((x) => x.jour && x.jour >= semaineAvant && x.jour <= debut));
+  const taux = (l) => (l.length ? l.filter((x) => x.statut === 'echec').length / l.length : 0);
+  const jours = Math.floor((maintenant - new Date(dernier.quand)) / 86_400_000);
+  let cause = null;
+  if (apres.length >= 10 && taux(apres) > 0.5 && taux(precedents) < 0.25) cause = `${Math.round(taux(apres) * 100)} % des envois en échec depuis la version ${dernier.version} (${Math.round(taux(precedents) * 100)} % la semaine d'avant)`;
+  else if (jours >= 3 && apres.length === 0 && precedents.length >= 7) cause = `aucun mail parti en ${jours} jours depuis la version ${dernier.version} (${precedents.length} la semaine d'avant)`;
+  if (!cause) return null;
+  const version = appliquer(loop, structuredClone(avant.methode), { par: 'le filet (annulation automatique)', changements: [`Retour à la méthode de la version ${avant.version} : la version ${dernier.version} cassait les envois.`], pourquoi: `Filet de sécurité : ${cause}.`, maintenant });
+  noterLecons(loop, [`Version ${dernier.version} annulée par le filet : ${cause}. Ne pas la reprendre telle quelle.`], lundiDe(aujourdhui));
+  return { version, cause };
 }
 
 // Les gestes de louis depuis le cerveau.

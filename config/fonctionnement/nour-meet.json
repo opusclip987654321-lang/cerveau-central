@@ -1,6 +1,6 @@
 {
   "maj": "2026-10-21",
-  "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py) ; son IA passée sur l'abonnement Claude le 20/10/2026 (tâches programmées, /api/loop/nour-meet/*)",
+  "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py) ; son IA passée sur l'abonnement Claude le 20/10/2026 (tâches programmées, /api/loop/nour-meet/*) ; filet anti-casse ajouté le 21/10/2026",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Depuis le 19/10, une loop pilotée par le cerveau trie les réponses, te prévient pour chaque restaurant intéressé et réécrit elle-même la méthode (textes, cibles, relances, volume) chaque lundi. Toi, tu réponds aux intéressés et tu les transformes en abonnés.",
   "journee": [
     {
@@ -42,6 +42,11 @@
       "quand": "Lundi à 9h23",
       "quoi": "Revue de la méthode par une tâche programmée Claude (abonnement) : relit d'abord son carnet de leçons, garde ce qui marche, change le reste, note quoi et pourquoi sur la page Nūr Meet, et ajoute à son carnet ce que la semaine lui a appris (essai, chiffre, gardé ou arrêté). Un pivot radical (offre, prix, cible hors restaurants) attend ton accord.",
       "toi": "Lire ce qui a changé ; Appliquer ou Refuser si la loop demande"
+    },
+    {
+      "quand": "Toutes les 10 minutes",
+      "quoi": "Le filet (21/10) : si un changement de la loop casse les envois (plus de la moitié en échec, ou plus aucun mail pendant 3 jours), le cerveau revient seul à la version d'avant et le note dans les décisions et les leçons. Une version qui envoie mais rapporte moins n'est pas annulée : la loop en juge seule, sans seuil d'arrêt (ton choix du 21/10).",
+      "toi": "Rien"
     },
     {
       "quand": "Toutes les 10 minutes",
@@ -232,6 +237,12 @@
           "texte": "Le lundi, Claude compare versions, types de mail, zones, recherches et profils, puis décide la méthode de la semaine",
           "outil": "Claude (tâche programmée sur l'abonnement)",
           "technique": "Lundi 9h23 : GET /api/loop/nour-meet/revue (consigne, données, semaine due), POST de la décision, appliquée par noterRevue avec les mêmes garde-fous. Une version doit avoir tourné 6 jours avant d'être jugée ; garde-fous : {lien} et {pied} obligatoires, 10 à 80 mails par jour, aucune adresse dans les textes."
+        },
+        {
+          "type": "securite",
+          "texte": "Le changement casse-t-il les envois (plus de la moitié en échec, ou aucun mail en 3 jours) ?",
+          "sinon": "la version reste ; seule la revue du lundi la juge",
+          "technique": "filetLoop (src/loop-nour-meet.js), toutes les 10 min sans IA : retour à la version précédente, noté « le filet (annulation automatique) » dans l'historique et une leçon. Pas de Telegram."
         },
         {
           "type": "securite",

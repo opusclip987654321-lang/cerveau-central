@@ -130,6 +130,28 @@
       "date": "2026-10-21",
       "sujet": "20 analyses par jour",
       "texte": "Je veux 20 analyses par jour pour l'agent, au lieu de 5 ou 10. L'IA passe par mon abonnement depuis le 20/10, donc le plafond de 70 €/mois ne doit plus les bloquer. Règle l'agent et les tâches programmées en conséquence."
+    },
+    {
+      "id": "phv-filet-2110",
+      "projet": "3_PETITES HISTOIRES",
+      "fil": "Production automatique",
+      "date": "2026-10-21",
+      "sujet": "Filet : annuler seule ce qui casse",
+      "texte": "Nouvelle règle pour toutes mes loops (21/10) : tu restes libre. Pas de seuil d'arrêt, pas de retour arrière sur les résultats : une version qui rapporte moins reste, c'est toi qui en juges.\n\nSeul filet : après chaque changement que tu fais (code, réglage, texte, tâche programmée), vérifie aussitôt que tout marche encore : l'épisode est bien produit et programmé sur YouTube, les Shorts partent sur Facebook et Instagram, le compte rendu du dimanche arrive au cerveau. Si c'est cassé, annule TON changement tout de suite, sans m'attendre, puis note-le dans ton historique des décisions (type « arrêté »), avec la cause, et ajoute une ligne à ton carnet de leçons.\n\nÉcris cette règle dans ta consigne pour que tes tâches programmées l'appliquent. Ne me préviens pas pour une annulation : je n'ai rien à faire."
+    },
+    {
+      "id": "leviaro-filet-2110",
+      "projet": "Leviaro",
+      "date": "2026-10-21",
+      "sujet": "Filet : annuler seule ce qui casse",
+      "texte": "Nouvelle règle pour toutes mes loops (21/10) : tu restes libre. Pas de seuil d'arrêt, pas de retour arrière sur les résultats : une version qui rapporte moins reste, c'est toi qui en juges.\n\nSeul filet : après chaque changement que tu fais (code, réglage, texte, tâche programmée), vérifie aussitôt que tout marche encore : leviaro.fr répond, les mails de prospection partent sans échec en masse, les tours /ia/* répondent. Si c'est cassé, annule TON changement tout de suite, sans m'attendre, puis note-le dans data/loop/decisions.json (type « arrêté »), avec la cause, et ajoute une ligne à ton carnet de leçons.\n\nÉcris cette règle dans ta consigne pour que tes tâches programmées l'appliquent. Ne me préviens pas pour une annulation : je n'ai rien à faire."
+    },
+    {
+      "id": "sponsors-filet-2110",
+      "projet": "12_Prospection sponsors",
+      "date": "2026-10-21",
+      "sujet": "Filet : annuler seule ce qui casse",
+      "texte": "Nouvelle règle pour toutes mes loops (21/10) : tu restes libre. Pas de seuil d'arrêt, pas de retour arrière sur les résultats : une version qui rapporte moins reste, c'est toi qui en juges.\n\nSeul filet : après chaque changement que tu fais (code, réglage, texte, tâche programmée), vérifie aussitôt que tout marche encore : les mails partent sans échec en masse et les réponses sont toujours lues. Si c'est cassé, annule TON changement tout de suite, sans m'attendre, puis note-le dans la table Notion « Décisions des loops » (type « Changé », en disant que c'est une annulation), avec la cause, et ajoute une ligne à ton carnet de leçons.\n\nÉcris cette règle dans ta consigne pour que tes tâches programmées l'appliquent. Ne me préviens pas pour une annulation : je n'ai rien à faire."
     }
   ]
 }
