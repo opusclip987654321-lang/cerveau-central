@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20T20:53:45Z",
+  "maj": "2026-10-21T23:55:00Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -28,6 +28,42 @@
     "meilleurShort": "Un bébé de 3 mois se souvient de ça : 1 942 vues"
   },
   "decisions": [
+    {
+      "date": "2026-10-21",
+      "type": "changé",
+      "quoi": "Chaque Short renvoie vers son épisode (piste de Walid) : dès le 23 octobre, la carte de fin de chaque Short écrit « Vidéo complète sur la chaîne : » suivi du titre de la vidéo longue ; le lien de la longue reste dans la description du Short. Jugé après 4 Shorts.",
+      "pourquoi": "28 jours : Shorts 3 495 vues et 24 abonnés, longues 458 vues et 0 abonné ; il faut faire passer une partie du public des Shorts vers les longues (4 000 h). Critère : vues des longues venant des Shorts, contre les 4 longues d'avant."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "arrêté",
+      "quoi": "Commentaire épinglé, écran de fin et phrase de fin dite dans les Shorts (piste de Walid) : pas retenus pour l'instant.",
+      "pourquoi": "L'API YouTube ne permet pas d'épingler un commentaire ; écrans de fin et lien « vidéo associée » des Shorts se font seulement à la main dans YouTube Studio ; une phrase dite demande une nouvelle voix synthétisée, donc un coût (règle : aucune dépense en plus). Remplacés par la carte de fin écrite (0 €)."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "changé",
+      "quoi": "Titres et miniatures, une variable à la fois (piste de Walid) : pendant le test de titres question / affirmation (4 longues dès le 23 octobre), la miniature de ces vidéos ne change pas (rotation automatique gelée jusqu'au 15 novembre) ; un test de miniature seul viendra après.",
+      "pourquoi": "Si titre et miniature changent ensemble, on ne sait pas lequel a fait varier le taux de clic (actuellement 1,1 à 3,6 %, sur quelques centaines d'impressions)."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "gardé",
+      "quoi": "TikTok publié à la main par Walid (piste : TikTok automatique via Post for Me). Dès que la clé Post for Me arrive, TikTok passe en automatique comme Instagram et Facebook.",
+      "pourquoi": "Pas de clé Post for Me pour l'instant ; Post for Me est la seule dépense autorisée."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "gardé",
+      "quoi": "Voix de Walid sur un Short (proposée par Walid) : test prévu juste après le jugement du test « Short renvoie vers l'épisode » ; texte de 60 à 90 secondes préparé et envoyé à Walid à ce moment-là, comparé au 2e teaser en voix IA du même épisode.",
+      "pourquoi": "Une seule variable à la fois sur les Shorts : la carte de fin est testée sur les 4 prochains Shorts ; mélanger les deux tests rendrait les chiffres illisibles. Coût 0 €."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "changé",
+      "quoi": "Recherche web libre (sujets, tendances, titres qui marchent) et aucune nouvelle dépense : abonnement Claude et outils gratuits, Post for Me seule exception (règles de Walid ajoutées à la consigne de la loop).",
+      "pourquoi": "Règle de Walid du 21 octobre ; remplace le seuil « dépense de plus de 50 €/mois » : plus aucune dépense nouvelle n'est envisagée."
+    },
     {
       "date": "2026-10-21",
       "type": "gardé",
@@ -78,5 +114,5 @@
     }
   ],
   "question": null,
-  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage. Vidéo longue vendredi 23 octobre : 1re du test « question au début ». Lundi 26 octobre : 1re vidéo d'actualité avec des politiques connus. Toujours à peser : accroche des 3 premières secondes des Shorts, titres en A/B, bio et couvertures pour les visiteurs du profil."
+  "prochaine": "Vidéo longue vendredi 23 octobre : 1re du test « question au début », du test de titres (question / affirmation) et 1er Short avec le titre de l'épisode sur sa carte de fin. Lundi 26 octobre : 1re vidéo d'actualité avec des politiques connus. Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage. Ensuite : voix de Walid sur un Short, puis test de miniature seul."
 }
