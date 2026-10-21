@@ -62,15 +62,70 @@ const jourParis = (d) => d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris
 const somme = (l) => l.reduce((a, x) => a + x.n, 0);
 const depuis = (l, debut) => somme(l.filter((x) => x.jour >= debut));
 
-// État de chaque réseau : dernier post réussi, et l'erreur du dernier essai s'il a échoué.
-export function etatReseaux(np) {
+// Pourquoi une publication a échoué (louis, 21/10 : plus d'e-mail, c'est au cerveau de le savoir et de
+// le comprendre). Le site garde le message de Meta, précédé depuis le 21/10 de son code et sous-code
+// (« Instagram (403, code 4, sous-code 2207051) : … ») ; les anciens messages, sans code, se lisent au
+// texte. `qui` dit qui agit : la loop (image, format, légende), personne (attendre que Meta lève une
+// limite ou se remette d'une panne), ou louis (clé, permission, compte bridé : lui seul peut le faire).
+// Une limite d'appels qui dure 10 jours ou plus n'est plus passagère : c'est le compte qui est bloqué,
+// seul le support Meta peut le débloquer (Instagram, octobre 2026).
+const CAUSES = [
+  { id: 'publie-non-note', test: (m) => /^Publié \(/.test(m), cause: 'Publié chez Meta mais pas noté sur le site', qui: 'loop', faire: 'Vérifier le post sur le réseau et le noter sur l’article avant tout nouvel essai.' },
+  { id: 'cle', codes: [190], test: (m) => /access token|session has expired|token.{0,20}(expired|invalid)|jeton/i.test(m), cause: 'Clé Meta expirée ou invalidée', qui: 'louis', faire: 'Refaire la clé : demander la marche à Claude dans le fil « Loop Nūr Meet grand public ».' },
+  { id: 'permission', codes: [10, 200, 270], test: (m) => /permission/i.test(m), cause: 'Permission retirée à l’appli Meta', qui: 'louis', faire: 'Redonner la permission à l’appli Meta : demander la marche à Claude dans le fil « Loop Nūr Meet grand public ».' },
+  { id: 'compte-bride', codes: [368], test: (m) => /temporarily blocked|blocked from|restricted|spam/i.test(m), cause: 'Compte bridé par Meta (abus présumé)', qui: 'louis', faire: 'Écrire au support Meta Business pour faire lever la restriction.' },
+  { id: 'limite-appels', codes: [4, 17, 32, 613], test: (m) => /request limit|rate limit|too many calls/i.test(m), cause: 'Limite d’appels Meta', qui: 'attendre', faire: 'Ne pas multiplier les essais : Meta lève la limite seul.' },
+  { id: 'plafond-posts', codes: [9], sousCodes: [2207042], test: (m) => /maximum number of posts|publishing limit/i.test(m), cause: 'Plafond de publications sur 24 h atteint', qui: 'attendre', faire: 'Rien : le post du lendemain repartira.' },
+  { id: 'image', codes: [36000, 36001, 36003, 36004], sousCodes: [2207003, 2207004, 2207005, 2207009, 2207020, 2207026, 2207052, 2207053], test: (m) => /Traitement du média refusé|aspect ratio|Image refusée|Image introuvable|Photo de photothèque|media type|image/i.test(m), cause: 'Image refusée par Meta', qui: 'loop', faire: 'Revoir le format des visuels (taille, ratio, poids).' },
+  { id: 'article-court', test: (m) => /trop court/i.test(m), cause: 'Article trop court pour un carrousel', qui: 'loop', faire: 'Choisir des articles assez longs pour 4 slides au moins.' },
+  { id: 'legende', sousCodes: [2207008, 2207010], test: (m) => /caption|hashtag/i.test(m), cause: 'Légende refusée', qui: 'loop', faire: 'Raccourcir la légende ou réduire les hashtags (30 au plus).' },
+  { id: 'panne', codes: [1, 2], test: (m) => /pas fini de traiter|timeout|aborted|fetch failed|ECONN|unexpected error|temporar|unavailable|\(5\d\d\b/i.test(m), cause: 'Panne passagère chez Meta ou du réseau', qui: 'attendre', faire: 'Rien si le post suivant passe.' },
+];
+const QUI = { loop: 'la loop corrige', attendre: 'attendre', louis: 'à toi d’agir' };
+
+export function causeMeta(erreur, joursMuet = null) {
+  if (!erreur) return null;
+  const m = String(erreur);
+  const code = Number(m.match(/\bcode (\d+)/)?.[1] ?? NaN);
+  const sousCode = Number(m.match(/sous-code (\d+)/)?.[1] ?? NaN);
+  const c = CAUSES.find((x) => x.sousCodes?.includes(sousCode)) ?? CAUSES.find((x) => x.codes?.includes(code)) ?? CAUSES.find((x) => x.test(m));
+  const codes = [Number.isFinite(code) ? `code ${code}` : '', Number.isFinite(sousCode) ? `sous-code ${sousCode}` : ''].filter(Boolean).join(', ') || null;
+  if (!c) return { id: 'inconnue', cause: 'Cause non reconnue', qui: 'loop', faire: 'Lire le message de Meta et corriger, ou demander à Claude.', codes };
+  if (c.id === 'limite-appels' && joursMuet !== null && joursMuet >= 10) {
+    return { ...c, id: 'compte-bloque', cause: `Limite d’appels Meta depuis ${joursMuet} jours : compte bloqué`, qui: 'louis', faire: 'Écrire au support Meta Business : la limite ne se lève pas seule.', codes };
+  }
+  return { id: c.id, cause: c.cause, qui: c.qui, faire: c.faire, codes };
+}
+
+// État de chaque réseau : dernier post réussi, l'erreur du dernier essai s'il a échoué et sa cause.
+export function etatReseaux(np, maintenant = new Date()) {
   const posts = np?.posts ?? [];
   const reseau = (ok, erreur) => {
     const reussis = posts.filter((p) => p[ok]);
     const dernier = posts.at(-1);
-    return { dernierPost: reussis.at(-1)?.jour ?? null, erreur: dernier && !dernier[ok] ? dernier[erreur] : null };
+    const dernierPost = reussis.at(-1)?.jour ?? null;
+    const err = dernier && !dernier[ok] ? dernier[erreur] : null;
+    const muet = dernierPost ? joursEntre(dernierPost, jourParis(maintenant)) : null;
+    return { dernierPost, erreur: err, cause: err ? causeMeta(err, muet) : null };
   };
   return { instagram: reseau('insta', 'instaErreur'), facebook: reseau('fb', 'fbErreur') };
+}
+
+// Telegram « Cerveau central » : seulement quand c'est à louis d'agir, une fois par réseau et par cause
+// (`deja` garde ce qui a été envoyé ; un post réussi l'efface, la même panne plus tard re-prévient).
+export function alertesTelegramReseaux(np, deja = {}, maintenant = new Date()) {
+  const r = etatReseaux(np, maintenant);
+  const messages = [];
+  for (const [nom, x] of [['Instagram', r.instagram], ['Facebook', r.facebook]]) {
+    if (!x.cause) {
+      delete deja[nom];
+      continue;
+    }
+    if (x.cause.qui !== 'louis' || deja[nom] === x.cause.id) continue;
+    deja[nom] = x.cause.id;
+    messages.push(`📵 <b>Nūr Meet · ${nom}</b> : ${x.cause.cause}${x.cause.codes ? ` (${x.cause.codes})` : ''}.\n👉 ${x.cause.faire}`);
+  }
+  return messages;
 }
 
 // Ce qui demande une action de louis, à afficher sur la carte Nūr Meet.
@@ -80,11 +135,12 @@ export function alertesNourPublic(np, maintenant = new Date()) {
   const alertes = [];
   const heures = (maintenant - new Date(np.maj)) / 3_600_000;
   if (heures > 26) alertes.push(`Le relevé grand public de Nūr Meet n'arrive plus depuis ${Math.floor(heures / 24)} jour(s) : vérifier le cron du VPS Nūr (scripts/nour-public-releve.sh).`);
-  const r = etatReseaux(np);
+  const r = etatReseaux(np, maintenant);
   for (const [nom, x] of [['Instagram', r.instagram], ['Facebook', r.facebook]]) {
     const muet = x.dernierPost ? joursEntre(x.dernierPost, aujourdhui) : null;
-    if (muet === null && np.posts.length) alertes.push(`${nom} : aucun post n'est passé${x.erreur ? ` (« ${x.erreur} »)` : ''}.`);
-    else if (muet !== null && muet >= 2) alertes.push(`${nom} ne publie plus depuis ${muet} jours${x.erreur ? ` : « ${x.erreur} »` : ''}.`);
+    const pourquoi = x.cause ? `${x.cause.cause}${x.cause.codes ? ` (${x.cause.codes})` : ''}, ${QUI[x.cause.qui]} : ${x.cause.faire}` : '';
+    if (muet === null && np.posts.length) alertes.push(`${nom} : aucun post n'est passé.${pourquoi ? ` ${pourquoi}` : ''}`);
+    else if (muet !== null && muet >= 2) alertes.push(`${nom} ne publie plus depuis ${muet} jours.${pourquoi ? ` ${pourquoi}` : ''}`);
   }
   // Étape 1 du tunnel (axes de louis du 20/10) : un visiteur qui repart après une seule page n'a sans
   // doute pas compris à quoi sert le site. Sous 20 % d'exploration sur un échantillon sérieux, la
@@ -109,7 +165,7 @@ export function htmlNourPublic(np, maintenant = new Date()) {
   const posts30 = np.posts.filter((p) => p.jour >= il30);
   const mesures = posts30.filter((p) => p.portee !== null);
   const porteeMoy = mesures.length ? Math.round(mesures.reduce((a, p) => a + p.portee, 0) / mesures.length) : null;
-  const r = etatReseaux(np);
+  const r = etatReseaux(np, maintenant);
   // Tunnel en étapes (axes de louis du 20/10) : chaque étape avec sa part de l'étape précédente, pour
   // voir où le grand public décroche.
   const t = np.tunnel ?? {};
@@ -125,8 +181,11 @@ export function htmlNourPublic(np, maintenant = new Date()) {
   const ligneReseau = (nom, x) => {
     const muet = x.dernierPost ? joursEntre(x.dernierPost, aujourdhui) : null;
     const etat = muet !== null && muet < 2 ? '🟢' : '🔴';
-    return `<li><span>${etat} ${nom} : dernier post ${date(x.dernierPost)}${x.erreur ? ` <small>(« ${e(x.erreur)} »)</small>` : ''}</span></li>`;
+    const cause = x.cause ? `<br><small>Dernier essai refusé : <b>${e(x.cause.cause)}</b>${x.cause.codes ? ` (${e(x.cause.codes)})` : ''}, ${QUI[x.cause.qui]}. ${e(x.cause.faire)}<br>Meta : « ${e(x.erreur)} »</small>` : '';
+    return `<li><span>${etat} ${nom} : dernier post ${date(x.dernierPost)}${cause}</span></li>`;
   };
+  // Les derniers essais, réseau par réseau (✅ passé, ❌ refusé), pour voir d'un coup d'œil si ça dure.
+  const essais = (ok) => np.posts.slice(-7).map((p) => `<span title="${e(p.jour)}">${p[ok] ? '✅' : '❌'}</span>`).join('');
   const vraies = np.soirees.filter((s) => !s.demo);
   const soirees = vraies.length
     ? `<ul>${vraies.map((s) => `<li><span>${e(s.titre)}${s.lieu ? `, ${e(s.lieu)}` : ''} <small>${e(s.quand ?? '')}</small></span><span class="num">${n(s.inscrits)} / ${n(s.places)}${s.minimum ? ` <small>(min. ${n(s.minimum)})</small>` : ''}</span></li>`).join('')}</ul>`
@@ -143,7 +202,7 @@ export function htmlNourPublic(np, maintenant = new Date()) {
 </div>
 <div class="listes-v">
 <div class="liste-v"><b>Tunnel (30 j)</b>${tunnel}</div>
-<div class="liste-v"><b>Réseaux</b><ul>${ligneReseau('Instagram', r.instagram)}${ligneReseau('Facebook', r.facebook)}</ul></div>
+<div class="liste-v"><b>Réseaux</b><ul>${ligneReseau('Instagram', r.instagram)}${ligneReseau('Facebook', r.facebook)}</ul>${np.posts.length ? `<p class="vide">7 derniers jours : Instagram ${essais('insta')} · Facebook ${essais('fb')}</p>` : ''}</div>
 <div class="liste-v"><b>Soirées à venir (inscrits / places)</b>${soirees}</div>
 <div class="liste-v"><b>D’où viennent les visiteurs (30 j, avec accord cookies)</b>${origines}</div>
 </div>

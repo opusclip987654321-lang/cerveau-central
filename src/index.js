@@ -51,7 +51,7 @@ import { chargerBusiness, sauverBusiness, synchroniserProspection, synchroniserI
 import { dossiersCode, listerCode, lireCode } from './code-source.js';
 import { etatConnexions, noterTentative } from './connexions.js';
 import { synchroniserVisites } from './visites.js';
-import { lireNourPublic, enregistrerNourPublic } from './nour-public.js';
+import { lireNourPublic, enregistrerNourPublic, alertesTelegramReseaux } from './nour-public.js';
 import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
@@ -597,7 +597,13 @@ const serveur = http.createServer(async (req, res) => {
         return res.end('Jeton invalide');
       }
       const donnees = lireNourPublic(await lireJson(req, 500_000));
-      await avecBusiness((b) => enregistrerNourPublic(b, donnees));
+      // Une publication refusée pour une raison que seul louis peut régler (clé, permission, compte
+      // bridé) : un Telegram, une fois par cause. Le reste se lit sur la page Nūr Meet, sans e-mail.
+      const messages = await avecBusiness((b) => {
+        enregistrerNourPublic(b, donnees);
+        return alertesTelegramReseaux(donnees, (b.alertesReseaux ??= {}));
+      });
+      for (const m of messages) await envoyer(m).catch((err) => console.error(`Telegram réseaux impossible : ${err.message}`));
       res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
       return res.end(`Relevé grand public reçu : ${donnees.posts.length} post(s), ${donnees.soirees.length} soirée(s)\n`);
     }
