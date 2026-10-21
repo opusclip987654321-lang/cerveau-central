@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20",
+  "maj": "2026-10-21",
   "source": "Revue du système du 20/10/2026, proposition n°1 acceptée par louis (« tout »)",
   "intro": "Le cerveau lui-même. Ce guide décrit pour l'instant la page « À coller » : un seul endroit pour tous les messages que tu dois coller dans tes autres projets Claude (3_PETITES HISTOIRES, Leviaro, VégéBudget, 12_Prospection sponsors), que les fils de ce projet ne peuvent pas atteindre.",
   "journee": [
@@ -52,6 +52,13 @@
       "points": [
         "Jamais de clé, de mot de passe ni de donnée de prospect dans un message à coller : config/a-coller.json est public."
       ]
+    },
+    {
+      "titre": "Notion",
+      "points": [
+        "La page « Loops des projets » est un tableau de bord : une ligne par loop, tenue à jour par le cerveau toutes les 10 min (chiffres, état, dernière décision), un clic ouvre la page complète du projet.",
+        "Chaque page projet suit le même modèle : Objectif, Où on en est, Pistes, Leçons, Décisions ; l'ancien texte est gardé replié en bas, rien n'est effacé."
+      ]
     }
   ],
   "role": {
@@ -71,6 +78,10 @@
     {
       "nom": "API /api/a-coller",
       "role": "GET : la liste avec l'état fait / à faire. POST (jeton des relevés) : dépose un message ; même id = mise à jour, pas de doublon"
+    },
+    {
+      "nom": "Notion « 🧠 Mes projets » (src/tableau-notion.js)",
+      "role": "Tableau de bord des loops sur la page « Loops des projets », écrit toutes les 10 min avec NOTION_TOKEN"
     }
   ]
 }

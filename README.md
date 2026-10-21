@@ -83,6 +83,16 @@ L'IA des loops tourne dans des tâches programmées Claude (abonnement de louis)
 - `GET /api/loop/nour-meet/revue` : `{semaine, consigne, donnees}` ; `semaine` vaut `null` s'il n'y a pas de revue due (lundi après 9 h, version de 6 jours au moins). `POST` : `{"semaine": "AAAA-MM-JJ", "revue": {…le JSON de la consigne…}}`, appliqué avec les mêmes garde-fous (méthode vérifiée, radical en attente de louis, leçons notées).
 - `LOOP_NOUR_IA=api` dans `.env` remet l'ancien fonctionnement (Haiku toutes les 10 min, Opus le lundi, plafond `PLAFOND_LOOP_NOUR_DOLLARS`).
 
+## Notion : tableau de bord des loops (21/10)
+
+La page Notion « Loops des projets » est un tableau de bord : la table « 🧠 Mes projets » (une ligne par loop, `src/tableau-notion.js`) ouvre la page complète de chaque projet (objectif, où on en est, pistes, leçons, décisions filtrées, ancien contenu replié). Les règles communes sont sur la page « Règles des loops ».
+
+- Toutes les 10 min, juste après la recopie des décisions, le cerveau réécrit dans chaque ligne (repérée par sa colonne `Clé` : `nour-restos`, `nour-grand-public`, `vegebudget`, `petites-histoires`, `impacteur`, `impacteur-sponsors`, `leviaro`) le chiffre principal, le chiffre secondaire, l'état, la dernière décision et l'heure. L'objectif et la page restent écrits à la main.
+- Chiffres : restos payants (Stripe) et intéressés/contactés ; comptes particuliers et visites Umami sur 7 j ; abonnés payants VégéBudget, inscrits et visiteurs sur 30 j ; abonnés YouTube et heures (compte rendu de la loop PHV) ; oui interview, livres acceptés et invitations sur 7 j ; réponses et mails Leviaro. Impacteur Sponsors vit sur son serveur : chiffres « indisponible ». Donnée absente = « indisponible », jamais 0.
+- Dernière décision : la plus récente de la table « Décisions des loops » pour cette loop (y compris ce qu'y écrivent les autres projets Claude).
+- État : « Bloqué » si une alerte est levée (grand public, compte rendu PHV de plus de 9 jours) ; « Pas démarré » sans chiffre ni décision ; « En attente » pour une loop sans chiffre qui n'a rien décidé depuis 7 jours ; sinon « Tourne ».
+- Même `NOTION_TOKEN` que les décisions (l'intégration est reliée à « Loops des projets ») ; `NOTION_PROJETS_SOURCE` pour changer de table.
+
 ## Argent
 
 L'onglet **Argent** liste les abonnements et recharges (pré-remplis avec le récap du 05/10/2026, dans `config/argent.json`, puis modifiables depuis la page) : total du mois, coût fixe, répartition par projet, rappel Telegram 3 jours avant un renouvellement quand sa date est connue.

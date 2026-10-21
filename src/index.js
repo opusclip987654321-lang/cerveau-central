@@ -56,6 +56,7 @@ import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
+import { chiffresProjets, tenirTableauNotion } from './tableau-notion.js';
 import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop, reponsesATrier, noterTri, noterRevue, donneesRevue, CONSIGNE_TRI, CONSIGNE_REVUE, TYPES_REPONSE } from './loop-nour-meet.js';
 import { cleLoopsValide, routeDeLaCle } from './cle-loops.js';
@@ -451,7 +452,8 @@ function loopNourMeet() {
 let decisionsEnCours = null;
 function tenirDecisions() {
   decisionsEnCours ??= (async () => {
-    const trouvees = collecterDecisions({ loopNour: await chargerLoop(fichierLoop), business: await chargerBusiness(fichierBusiness), loopHistoires: await lireLoopHistoires(fichierLoopHistoires), loopLeviaro: await lireLoopHistoires(path.join(dossierLeviaro, 'loop/decisions.json')) });
+    const [loopNour, business, loopHistoires] = [await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), await lireLoopHistoires(fichierLoopHistoires)];
+    const trouvees = collecterDecisions({ loopNour, business, loopHistoires, loopLeviaro: await lireLoopHistoires(path.join(dossierLeviaro, 'loop/decisions.json')) });
     const archive = await chargerDecisions(fichierDecisions);
     const neuves = fusionnerDecisions(archive, trouvees);
     let notion = null;
@@ -462,6 +464,12 @@ function tenirDecisions() {
     }
     await sauverDecisions(fichierDecisions, archive);
     if (neuves.length || notion?.envoyees) console.log(`${new Date().toISOString()} décisions des loops : ${neuves.length} nouvelle(s), ${notion?.envoyees ?? 0} envoyée(s) à Notion`);
+    // Puis le tableau de bord Notion « Mes projets » (choix de louis du 21/10), après les décisions.
+    try {
+      await tenirTableauNotion(chiffresProjets({ business, loopNour, loopHistoires }), { jeton: env.NOTION_TOKEN, sourceProjets: env.NOTION_PROJETS_SOURCE || undefined, sourceDecisions: env.NOTION_DECISIONS_SOURCE || undefined });
+    } catch (err) {
+      console.error(`Tableau de bord Notion : ${err.message}`);
+    }
   })()
     .catch((err) => console.error(`Décisions des loops impossibles : ${err.message}`))
     .finally(() => (decisionsEnCours = null));
