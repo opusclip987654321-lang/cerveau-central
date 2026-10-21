@@ -29,6 +29,24 @@
   },
   "decisions": [
     {
+      "date": "2026-10-21",
+      "type": "gardé",
+      "quoi": "Objectifs par paliers (piste de Walid) : 80 €/mois pour couvrir les coûts, puis 500 €/mois, avec 1 000 abonnés et 4 000 h comme étapes YouTube. Revenus TikTok et Facebook comptés à part dès qu'ils existent.",
+      "pourquoi": "Déjà dans les objectifs du compte rendu (coutsCouverts cible 80). Revenus actuels à null : chaîne YouTube à 26 abonnés sur 1 000, et TikTok ne paie qu'à partir de 10 000 abonnés ; Facebook pas encore éligible."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "changé",
+      "quoi": "Titres en A/B, franchement opposés (piste de Walid) : à partir de la longue du vendredi 23 octobre, une vidéo sur deux a un titre en question (« Pourquoi… ? ») et l'autre un titre affirmation choc. Jugé après 4 vidéos.",
+      "pourquoi": "Les 11 longues ont toutes un titre en question ou en « je » et font en moyenne 46 vues en 28 jours ; on garde le style qui a le meilleur taux de clic et le plus de vues à 7 jours. La rotation des couvertures par taux de clic ne se déclenche jamais (il faut 1 000 impressions)."
+    },
+    {
+      "date": "2026-10-21",
+      "type": "gardé",
+      "quoi": "Bio du profil en A/B (piste de Walid) : pas maintenant. Les Shorts disent déjà « La vidéo complète sur YouTube ».",
+      "pourquoi": "Les API Instagram et Facebook ne permettent pas de changer la bio, et aucune ne donne les visites du profil par bio : un A/B ne serait pas mesurable. On le reprend quand ces chiffres seront disponibles."
+    },
+    {
       "date": "2026-10-20",
       "type": "changé",
       "quoi": "Test d'une vidéo longue qui explique l'actualité avec des hommes politiques connus (par exemple Mélenchon, Le Pen) : sujet choisi dimanche 25 octobre parmi les infos de la semaine, publié lundi 26 octobre, avec ses Shorts. Factuel et sourcé, même place à chaque camp, aucune citation ni voix inventée.",
