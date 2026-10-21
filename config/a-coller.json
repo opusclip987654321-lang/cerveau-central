@@ -102,6 +102,27 @@
       "date": "2026-10-21",
       "sujet": "Recherche web autorisée sans accord",
       "texte": "Nouvelle règle valable pour tous mes projets : la recherche web est autorisée SANS me demander. Allume-la chaque fois qu'elle aide à faire avancer le projet (concurrents, idées, tendances, sujets, SEO, et vérifier si les IA comme ChatGPT, Perplexity ou Google citent le projet). Pas de veille en continu qui tourne pour rien : seulement quand elle sert une décision ou un contenu. Note-le dans ta consigne et dans ton historique des décisions. Réponds-moi en une ligne avec ce que tu as changé."
+    },
+    {
+      "id": "leviaro-organique-ia-2110",
+      "projet": "Leviaro",
+      "date": "2026-10-21",
+      "sujet": "Pistes organique IA (acquisition + être cité par les IA)",
+      "texte": "Nouvelles pistes pour la loop Leviaro (21/10) : faire venir des clients sans pub, et être cité quand quelqu'un demande à ChatGPT, Perplexity ou Google qui peut l'aider dans son métier.\n- Une page par secteur avec un cas chiffré et une FAQ (réponse dans la 1re phrase) : c'est ce que les IA recopient.\n- Robots des IA (GPTBot, PerplexityBot, ClaudeBot, Google-Extended) autorisés dans robots.txt ; données structurées Organization et FAQPage.\n- Fiches Google Business et Bing Places, annuaires du métier.\n- 2 posts LinkedIn par semaine écrits pour moi, que je publie sous mon nom (je donne 1 à 2 h par semaine et je peux me filmer).\n- Vidéos Remotion par secteur (piste déjà donnée).\n- Mesure : visites venues de chatgpt.com, perplexity.ai, gemini, copilot, et 5 questions types par semaine avec la recherche web (autorisée sans me demander).\n\nCe sont des pistes à peser, pas des ordres : tu décides seule quoi tester et quand, et tu notes chaque choix (gardé ou changé, et pourquoi) dans ton historique des décisions. Rien ne doit coûter plus : abonnement Claude et outils gratuits, Post for Me seule exception. Réponds-moi en une ligne avec ce que tu as ajouté à ta consigne."
+    },
+    {
+      "id": "phv-organique-ia-2110",
+      "projet": "3_PETITES HISTOIRES",
+      "date": "2026-10-21",
+      "sujet": "Pistes organique IA : TikTok et Short vers la longue",
+      "texte": "Nouvelles pistes pour la loop de la chaîne (21/10). Tes chiffres le montrent : les Shorts font 3 495 vues sur 28 jours contre 458 pour les longues.\n- TikTok automatique via Post for Me dès que la clé est là (aujourd'hui à la main).\n- Chaque Short renvoie vers son épisode (lien en commentaire épinglé, écran de fin, phrase de fin) pour faire passer les gens vers les longues et les abonnés.\n- Titres et miniatures testés, une variable à la fois.\n- Si tu veux comparer avec la voix IA, je peux enregistrer ma voix sur un Short de temps en temps : prépare-moi le texte.\n- La recherche web est autorisée sans me demander (sujets, tendances, titres qui marchent).\n\nCe sont des pistes à peser, pas des ordres : tu décides seule quoi tester et quand, et tu notes chaque choix (gardé ou changé, et pourquoi) dans ton historique des décisions. Rien ne doit coûter plus : abonnement Claude et outils gratuits, Post for Me seule exception. Réponds-moi en une ligne avec ce que tu as ajouté à ta consigne."
+    },
+    {
+      "id": "sponsors-organique-ia-2110",
+      "projet": "12_Prospection sponsors",
+      "date": "2026-10-21",
+      "sujet": "Pistes organique IA pour les sponsors",
+      "texte": "Nouvelles pistes (21/10) : pousser l'organique avec l'IA sur tous mes projets.\n- Cite dans chaque proposition aux sponsors les vrais chiffres des chaînes et un lien vers le meilleur extrait (jamais de chiffre inventé).\n- Si une page présente l'offre sponsor, rends-la lisible par les IA : une question par bloc, réponse dans la 1re phrase, FAQ.\n- La recherche web est autorisée sans me demander pour trouver et préparer les sponsors.\n\nCe sont des pistes à peser, pas des ordres : tu décides seule quoi tester et quand, et tu notes chaque choix (gardé ou changé, et pourquoi) dans ton historique des décisions. Rien ne doit coûter plus : abonnement Claude et outils gratuits, Post for Me seule exception. Réponds-moi en une ligne avec ce que tu as ajouté à ta consigne."
     }
   ]
 }
