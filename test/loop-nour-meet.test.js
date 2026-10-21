@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loopDeDepart, trierReponses, statsLoop, revueAFaire, revoirMethode, verifierMethode, piloter, cheminMethode, methodePourN8n, cleReponseLoop, versionDuMail, remplir, htmlLoop, alerteInteresse, reponsesATrier, noterTri, noterRevue, donneesRevue } from '../src/loop-nour-meet.js';
+import { loopDeDepart, trierReponses, statsLoop, revueAFaire, revoirMethode, verifierMethode, piloter, cheminMethode, methodePourN8n, cleReponseLoop, versionDuMail, remplir, htmlLoop, alerteInteresse, reponsesATrier, noterTri, noterRevue, donneesRevue, filetLoop } from '../src/loop-nour-meet.js';
 import { cleLoops, cleLoopsValide, routeDeLaCle } from '../src/cle-loops.js';
 
 const maintenant = new Date('2026-10-19T18:00:00+02:00');
@@ -212,4 +212,32 @@ test('clé des loops : tirée du jeton, n’ouvre que les routes des loops et qu
   assert.ok(routeDeLaCle('GET', '/api/code'));
   assert.ok(!routeDeLaCle('POST', '/api/sorties'));
   assert.ok(!routeDeLaCle('GET', '/api/journal'));
+});
+
+test('le filet annule seul une version de la loop qui casse les envois, jamais une version qui envoie', () => {
+  const l = loopDeDepart(maintenant);
+  const v = l.methode.version;
+  piloter(l, 'annuler', maintenant); // garde une version précédente dans l'historique
+  l.historique.at(-1).par = 'la loop (revue du lundi)';
+  const quand = new Date('2026-10-20T09:30:00+02:00');
+  l.historique.at(-1).quand = quand.toISOString();
+  const envois = (jour, statut, n) => Array.from({ length: n }, (_, i) => ({ nom: `R${jour}${i}`, objet: 'x', statut, jour, corps: 'x' }));
+  const b = (apres) => ({ sources: { prospection: { prospects: [], envois: [...envois('2026-10-15', 'envoye', 10), ...apres] } } });
+  const dans = (jours) => new Date(quand.getTime() + jours * 86_400_000);
+
+  // Une version qui envoie normalement reste, même si elle rapporte moins (louis veut une loop libre).
+  assert.equal(filetLoop(l, b(envois('2026-10-21', 'envoye', 12)), dans(2)), null);
+  // Trop tôt pour conclure à « plus aucun envoi ».
+  assert.equal(filetLoop(l, b([]), dans(2)), null);
+
+  const echecs = filetLoop(structuredClone(l), b([...envois('2026-10-21', 'echec', 9), ...envois('2026-10-21', 'envoye', 3)]), dans(2));
+  assert.match(echecs.cause, /75 % des envois en échec/);
+
+  const r = filetLoop(l, b([]), dans(3));
+  assert.match(r.cause, /aucun mail parti en 3 jours/);
+  assert.equal(l.historique.at(-1).par, 'le filet (annulation automatique)');
+  assert.match(l.lecons.at(-1).texte, /annulée par le filet/);
+  // Une fois revenue en arrière, le filet ne rejoue pas.
+  assert.equal(filetLoop(l, b([]), dans(5)), null);
+  assert.ok(v);
 });

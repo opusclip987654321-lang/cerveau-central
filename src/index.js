@@ -59,7 +59,7 @@ import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
 import { chiffresProjets, tenirTableauNotion } from './tableau-notion.js';
 import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
-import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop, reponsesATrier, noterTri, noterRevue, donneesRevue, CONSIGNE_TRI, CONSIGNE_REVUE, TYPES_REPONSE } from './loop-nour-meet.js';
+import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop, reponsesATrier, noterTri, noterRevue, donneesRevue, filetLoop, CONSIGNE_TRI, CONSIGNE_REVUE, TYPES_REPONSE } from './loop-nour-meet.js';
 import { cleLoopsValide, routeDeLaCle } from './cle-loops.js';
 
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -452,6 +452,18 @@ function loopNourMeet() {
   })()
     .catch((err) => console.error(`Loop Nūr Meet impossible : ${err.message}`))
     .finally(() => (loopEnCours = null));
+}
+
+// Le filet de la loop Nūr Meet (louis, 21/10) : toutes les 10 minutes, sans IA, annule seul un
+// changement de méthode qui casse les envois. Pas de Telegram : louis n'a rien à faire.
+async function filetNourMeet() {
+  try {
+    const business = await chargerBusiness(fichierBusiness);
+    const r = await avecLoop((d) => filetLoop(d, business));
+    if (r) console.log(`${new Date().toISOString()} loop Nūr Meet : filet, retour en version ${r.version} (${r.cause})`);
+  } catch (err) {
+    console.error(`Filet de la loop Nūr Meet impossible : ${err.message}`);
+  }
 }
 
 // Le journal des décisions des loops, toutes les 10 minutes et sans IA : rassemble ce que
@@ -1266,5 +1278,7 @@ analyseDuMatin();
 setInterval(analyseDuMatin, 10 * 60_000);
 loopNourMeet();
 setInterval(loopNourMeet, 10 * 60_000);
+filetNourMeet();
+setInterval(filetNourMeet, 10 * 60_000);
 tenirDecisions();
 setInterval(tenirDecisions, 10 * 60_000);
