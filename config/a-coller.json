@@ -123,6 +123,13 @@
       "date": "2026-10-21",
       "sujet": "Pistes organique IA pour les sponsors",
       "texte": "Nouvelles pistes (21/10) : pousser l'organique avec l'IA sur tous mes projets.\n- Cite dans chaque proposition aux sponsors les vrais chiffres des chaînes et un lien vers le meilleur extrait (jamais de chiffre inventé).\n- Si une page présente l'offre sponsor, rends-la lisible par les IA : une question par bloc, réponse dans la 1re phrase, FAQ.\n- La recherche web est autorisée sans me demander pour trouver et préparer les sponsors.\n\nCe sont des pistes à peser, pas des ordres : tu décides seule quoi tester et quand, et tu notes chaque choix (gardé ou changé, et pourquoi) dans ton historique des décisions. Rien ne doit coûter plus : abonnement Claude et outils gratuits, Post for Me seule exception. Réponds-moi en une ligne avec ce que tu as ajouté à ta consigne."
+    },
+    {
+      "id": "leviaro-20-analyses-2110",
+      "projet": "Leviaro",
+      "date": "2026-10-21",
+      "sujet": "20 analyses par jour",
+      "texte": "Je veux 20 analyses par jour pour l'agent, au lieu de 5 ou 10. L'IA passe par mon abonnement depuis le 20/10, donc le plafond de 70 €/mois ne doit plus les bloquer. Règle l'agent et les tâches programmées en conséquence."
     }
   ]
 }
