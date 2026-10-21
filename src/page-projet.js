@@ -10,6 +10,7 @@ import { grouperParJour, exempleDuJour, reponseAutomatique, lienGmail } from './
 import { DECISIONS_TRI, cleTri } from './tri-mails.js';
 import { CHOIX_VERIF, cleVerif } from './verifs-impacteur.js';
 import { tunnel, htmlTunnel } from './tunnel.js';
+import { chainesYoutube } from './youtube.js';
 import { STATUTS_ACTION } from './actions.js';
 import { joursJusqua } from './business.js';
 import { visitesDe, htmlVisites, CSS_VISITES } from './visites.js';
@@ -147,11 +148,12 @@ function tablesVideos(videos) {
 function sections(id, { business, journal, suivi, tri, verifs, verifDirect }) {
   const notes = journal.evenements.filter((ev) => ev.projet === id).slice(0, 60);
   // Les chaînes YouTube du projet, quand elles sont branchées.
-  const chaines = (business.sources?.youtube?.chaines ?? []).filter((c) => c.projet === id);
+  const chaines = chainesYoutube(business, id);
   const n = (x) => Number(x ?? 0).toLocaleString('fr-FR');
+  const ou = (x, quoi) => (x == null ? `${quoi} indisponibles` : `${n(x)} ${quoi}`);
   const blocYoutube = chaines.length
     ? `<section class="bloc"><h3>Chaînes YouTube</h3><ul class="chaines">${chaines
-        .map((c) => `<li><b>${e(c.titre)}</b> · ${n(c.abonnes)} abonnés · ${n(c.vues)} vues · ${n(c.nbVideos)} vidéos</li>`)
+        .map((c) => `<li><b>${e(c.titre)}</b> · ${ou(c.abonnes, 'abonnés')} · ${ou(c.vues, 'vues')} · ${ou(c.nbVideos, 'vidéos')}</li>`)
         .join('')}</ul></section>` +
       tablesVideos(chaines.flatMap((c) => c.videos))
     : '';

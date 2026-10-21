@@ -1,6 +1,8 @@
 // Le tunnel de chaque projet : d'où l'on part (trouvés, visiteurs, vidéos) jusqu'à
 // ce qui compte (client, abonné, revenu), en comptant ce que les données disent.
 // Une étape dont la donnée n'est pas branchée affiche « ? », jamais 0.
+import { chainesYoutube } from './youtube.js';
+
 const somme = (t) => t.reduce((a, b) => a + b, 0);
 
 export function tunnel(id, business, { jours30 = null } = {}) {
@@ -83,7 +85,7 @@ export function tunnel(id, business, { jours30 = null } = {}) {
     }
     case 'extrait-politique':
     case 'histoires-vraies': {
-      const chaines = (s.youtube?.chaines ?? []).filter((c) => c.projet === id);
+      const chaines = chainesYoutube(business, id);
       if (!chaines.length || !jours30) return null;
       const videos = chaines.flatMap((c) => c.videos).filter((v) => v.jour && jours30.includes(v.jour));
       const rev = s.youtube?.revenus?.parChaine;
@@ -96,7 +98,7 @@ export function tunnel(id, business, { jours30 = null } = {}) {
           { n: videos.filter((v) => v.format === 'short').length, t: 'shorts', petit: true },
           { n: videos.filter((v) => v.format === 'longue').length, t: 'longues', petit: true },
           { n: somme(videos.map((v) => v.vues)), t: 'vues de ces vidéos' },
-          { n: chaines.reduce((t, c) => t + c.abonnes, 0), t: 'abonnés' },
+          { n: chaines.some((c) => c.abonnes == null) ? '?' : chaines.reduce((t, c) => t + c.abonnes, 0), t: 'abonnés' },
           { n: revenus === null ? '?' : `${Math.round(revenus * 100) / 100} €`, t: 'revenus', manque: revenus === null ? 'revenus YouTube' : null },
         ],
       };

@@ -30,7 +30,7 @@ import { chargerActions, sauverActions, synchroniserActions, changerStatutAction
 import { chargerMatin, sauverMatin, matinAFaire, analyserMatin, analysesDuJour, contexteProjets, messageMatin, depenseMatinDuMois } from './matin.js';
 import { pageAction } from './page-action.js';
 import { contexteCerveau } from './contexte.js';
-import { synchroniserYoutube, synchroniserRevenus, urlAutorisation, echangerCode } from './youtube.js';
+import { synchroniserYoutube, synchroniserFluxYoutube, chainesYoutube, synchroniserRevenus, urlAutorisation, echangerCode } from './youtube.js';
 import { gabarit } from './page.js';
 import { synchroniserStripe } from './stripe.js';
 import { synchroniserCambodge } from './cambodge.js';
@@ -245,6 +245,8 @@ async function synchroniserJournal() {
     await lireSource('leviaro', () => avecBusiness((b) => synchroniserLeviaro(b, dossierLeviaro)));
     await lireSource('impacteur', () => avecBusiness((b) => synchroniserImpacteur(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })));
     await lireSource('youtube', () => avecBusiness((b) => synchroniserYoutube(b, { cle: env.YOUTUBE_API_KEY, chaines: configYoutube.chaines })));
+    // Le flux public des chaînes, sans clé : les vidéos publiées restent justes si l'API refuse.
+    await lireSource('youtube-flux', () => avecBusiness((b) => synchroniserFluxYoutube(b, { chaines: configYoutube.chaines })));
     await lireSource('youtube-revenus', () => avecBusiness((b) => synchroniserRevenus(b, { clientId: env.YT_OAUTH_CLIENT_ID, clientSecret: env.YT_OAUTH_CLIENT_SECRET, refresh: env.YT_OAUTH_REFRESH })));
     await lireSource('stripe', () => avecBusiness((b) => synchroniserStripe(b, { cle: env.STRIPE_CLE })));
     await lireSource('cambodge', () => avecBusiness((b) => synchroniserCambodge(b, { url: instancesN8n.principal?.url, jeton: env.RELEVE_JETON })));
@@ -1214,10 +1216,11 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/pilotage') {
       const business = await chargerBusiness(fichierBusiness);
       const t = tableauDeBord({ business, journal: await chargerJournal(fichierJournal), configJournal, pauses: await chargerPauses(fichierPauses) });
-      const youtube = (business.sources?.youtube?.chaines ?? []).map((c) => ({ projet: c.projet, id: c.id, titre: c.titre, abonnes: c.abonnes, videos: c.videos.slice(0, 10).map((v) => ({ jour: v.jour, titre: v.titre })) }));
+      const youtube = chainesYoutube(business).map((c) => ({ projet: c.projet, id: c.id, titre: c.titre, abonnes: c.abonnes, videos: c.videos.slice(0, 10).map((v) => ({ jour: v.jour, titre: v.titre })) }));
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({
         maj: business.sources?.youtube?.maj ?? null,
+        majFlux: business.sources?.youtube?.flux?.maj ?? null,
         cartes: t.cartes.map((c) => ({ id: c.id, couleur: c.couleur, titre: c.principal?.titre, total: c.principal?.total, silence: c.silence ?? null, aDecider: c.aDecider })),
         youtube,
       }));

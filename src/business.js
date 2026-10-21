@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { sauverEtat as sauverJson } from './etat.js';
 import { jourParis } from './questions.js';
 import { projetDuWorkflow } from './journal.js';
-import { gainsPeriode, revenusPeriode } from './youtube.js';
+import { gainsPeriode, revenusPeriode, chainesYoutube } from './youtube.js';
 import { encaissePeriode } from './stripe.js';
 import { datesDe } from './vegebudget.js';
 import { alertesNourPublic } from './nour-public.js';
@@ -347,13 +347,16 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
   }
 
   // L'extrait politique : vidéos, vues et abonnés viennent de YouTube quand c'est
-  // branché ; sinon on compte les automatisations de publication n8n.
+  // branché ; sinon on compte les automatisations de publication n8n. Les vidéos
+  // viennent de l'API et du flux public des chaînes (chainesYoutube).
   const yt = business.sources?.youtube;
-  const chainesEP = (yt?.chaines ?? []).filter((c) => c.projet === 'extrait-politique');
+  // Abonnés : null dès qu'une chaîne n'est connue que par le flux (« indisponible »).
+  const abonnesDe = (chaines) => (chaines.some((c) => c.abonnes == null) ? null : chaines.reduce((a, c) => a + c.abonnes, 0));
+  const chainesEP = chainesYoutube(business, 'extrait-politique');
   if (chainesEP.length) {
     const pubDates = [...chainesEP.flatMap((c) => c.videos.map((v) => v.jour).filter(Boolean)), ...evenements(journal, 'extrait-politique', ['video', 'publication'])];
     const gains = gainsPeriode(yt, chainesEP, periode);
-    const abonnes = chainesEP.reduce((a, c) => a + c.abonnes, 0);
+    const abonnes = abonnesDe(chainesEP);
     const enAttente = 'mesure en cours (il faut au moins deux jours de relevés)';
     // Revenus : seulement quand la connexion OAuth est faite. Absent = « indisponible », jamais 0.
     const rev = revenusPeriode(yt, chainesEP, periode);
@@ -364,8 +367,8 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
       unite: 'vidéo publiée',
       extra: [
         { titre: 'Vues gagnées', valeur: gains ? nombre(gains.vues) : '—', detail: gains ? `${nombre(chainesEP.reduce((a, c) => a + c.vues, 0))} vues en tout` : enAttente },
-        { titre: 'Abonnés', valeur: nombre(abonnes), detail: gains ? `${gains.abonnes >= 0 ? '+' : ''}${nombre(gains.abonnes)} sur la période` : enAttente },
-        ...(yt.revenus
+        { titre: 'Abonnés', valeur: abonnes === null ? 'indisponible' : nombre(abonnes), detail: gains ? `${gains.abonnes >= 0 ? '+' : ''}${nombre(gains.abonnes)} sur la période` : enAttente },
+        ...(yt?.revenus
           ? [{
               titre: `Revenus (${jours} j)`,
               valeur: rev ? `${rev.total.toLocaleString('fr-FR')} €` : 'indisponible',
@@ -373,7 +376,7 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
             }]
           : []),
       ],
-      manque: yt.revenus ? [] : ['revenus YouTube (connexion à faire depuis la page /oauth/youtube)'],
+      manque: yt?.revenus ? [] : ['revenus YouTube (connexion à faire depuis la page /oauth/youtube)'],
     });
   } else {
     const motifPub = reglages['extrait-politique']?.publication ?? 'publi';
@@ -382,10 +385,10 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     carte('extrait-politique', { titre: 'Vidéos publiées', dates: pubDates, unite: 'vidéo publiée', manque: ['vues', 'abonnés gagnés', 'revenus YouTube'] });
   }
 
-  // Petites histoires vraies : vidéos de la chaîne YouTube (publiées hors du programme, en pause
-  // du programme), du programme (Facebook, Instagram) et notées à la main. Une même vidéo
-  // peut sortir sur plusieurs réseaux le même jour : par jour, on garde le plus grand des deux comptes.
-  const chainesHV = (yt?.chaines ?? []).filter((c) => c.projet === 'histoires-vraies');
+  // Petites histoires vraies : vidéos de la chaîne YouTube (API et flux public, fabriquées par
+  // le projet « 3_PETITES HISTOIRES ») et notées à la main. Une même vidéo peut être notée
+  // en plus le même jour : par jour, on garde le plus grand des deux comptes.
+  const chainesHV = chainesYoutube(business, 'histoires-vraies');
   const parJourHV = (dates) => dates.reduce((m, j) => (j ? m.set(j, (m.get(j) ?? 0) + 1) : m), new Map());
   const ytHV = parJourHV(chainesHV.flatMap((c) => c.videos.map((v) => v.jour)));
   const autresHV = parJourHV(evenements(journal, 'histoires-vraies', ['video', 'publication']));
@@ -399,7 +402,7 @@ export function tableauDeBord({ business, journal, configJournal, pauses = { pro
     extra: chainesHV.length
       ? [
           { titre: 'Vues YouTube gagnées', valeur: gainsHV ? nombre(gainsHV.vues) : '—', detail: gainsHV ? `${nombre(chainesHV.reduce((a, c) => a + c.vues, 0))} vues en tout` : 'mesure en cours (il faut au moins deux jours de relevés)' },
-          { titre: 'Abonnés YouTube', valeur: nombre(chainesHV.reduce((a, c) => a + c.abonnes, 0)), detail: gainsHV ? `${gainsHV.abonnes >= 0 ? '+' : ''}${nombre(gainsHV.abonnes)} sur la période` : undefined },
+          { titre: 'Abonnés YouTube', valeur: abonnesDe(chainesHV) === null ? 'indisponible' : nombre(abonnesDe(chainesHV)), detail: gainsHV ? `${gainsHV.abonnes >= 0 ? '+' : ''}${nombre(gainsHV.abonnes)} sur la période` : undefined },
         ]
       : undefined,
     manque: chainesHV.length ? ['vues Facebook et Instagram'] : ['vues (Facebook, Instagram, YouTube)'],

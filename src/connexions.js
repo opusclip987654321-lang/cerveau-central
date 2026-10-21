@@ -14,6 +14,7 @@ export const CONNEXIONS = [
   { id: 'leviaro', nom: 'Agent Leviaro', projets: ['leviaro'], lit: 'La base leviaro.db de l’agent (entreprises, mails, réponses) et son diagnostic (budget, mode, erreurs), montés en lecture seule.', besoin: 'Le dossier data/ de l’agent monté dans le conteneur (LEVIARO_DOSSIER).' },
   { id: 'impacteur', nom: 'Sheet Impacteur', projets: ['impacteur'], lit: 'Les fiches du Google Sheet (auteurs, statut, envoi, ouverture, compte d’envoi), via le workflow n8n « CERVEAU - lecture Impacteur ».', besoin: 'Le n8n Nūr Meet branché et le jeton RELEVE_JETON.' },
   { id: 'youtube', nom: 'YouTube (chaînes)', projets: ['extrait-politique', 'histoires-vraies'], lit: 'Abonnés, vues et dernières vidéos (avec leur durée) des chaînes, par l’API publique.', besoin: 'YOUTUBE_API_KEY dans le .env et les chaînes dans config/youtube.json.' },
+  { id: 'youtube-flux', nom: 'YouTube (flux public des chaînes)', projets: ['extrait-politique', 'histoires-vraies', 'impacteur'], lit: 'Les 15 dernières vidéos de chaque chaîne (date de sortie, vues), par le flux RSS public, sans clé ni quota : les vidéos publiées restent justes même si l’API refuse.', besoin: 'Rien : les chaînes de config/youtube.json suffisent.' },
   { id: 'youtube-revenus', nom: 'Revenus YouTube', projets: ['extrait-politique', 'histoires-vraies'], lit: 'Les revenus estimés par chaîne (YouTube Analytics), avec 2 à 3 jours de retard.', besoin: 'L’autorisation Google donnée une fois (page /oauth/youtube) : YT_OAUTH_* dans le .env.' },
   { id: 'stripe', nom: 'Stripe', projets: ['nour-meet'], lit: 'Les encaissements et abonnements payants de Nūr Meet.', besoin: 'STRIPE_CLE dans le .env (clé de lecture seule).' },
   { id: 'cambodge', nom: 'Gmail Cambodge', projets: ['cambodge'], lit: 'Les mails étiquetés « Cambodge » (candidatures, réponses), via le workflow n8n « CERVEAU - lecture Cambodge ».', besoin: 'Le n8n Nūr Meet branché et le jeton RELEVE_JETON.' },
@@ -53,6 +54,8 @@ function derniereLecture(id, { business, journal, serveurs }) {
       return s.impacteur?.maj ?? null;
     case 'youtube':
       return s.youtube?.maj ?? null;
+    case 'youtube-flux':
+      return s.youtube?.flux?.maj ?? null;
     case 'youtube-revenus':
       return s.youtube?.revenus?.maj ?? null;
     case 'stripe':

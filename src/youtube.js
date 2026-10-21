@@ -84,6 +84,7 @@ export async function synchroniserYoutube(business, { cle, chaines = {}, delaiMs
     }
     lues.push({
       projet,
+      source: brut,
       id: c.id,
       titre: String(c.snippet?.title ?? '').slice(0, 80),
       abonnes: Number(c.statistics?.subscriberCount ?? 0),
@@ -101,6 +102,103 @@ export async function synchroniserYoutube(business, { cle, chaines = {}, delaiMs
   const garder = jourParis(new Date(maintenant - 120 * 86_400_000));
   for (const j of Object.keys(yt.historique)) if (j < garder) delete yt.historique[j];
   return { chaines: lues.length };
+}
+
+// --- Flux public des chaînes (sans clé, sans quota) ----------------------------
+// Chaque chaîne a un flux RSS public de ses 15 dernières vidéos. Le cerveau le lit
+// chaque heure à côté de l'API : si la clé est refusée ou le quota dépassé, les
+// vidéos publiées restent justes. Les vidéos du flux sont gardées 120 jours.
+
+const lireTexteParDefaut = (delaiMs) => (url) =>
+  // SOCS : passe la page de consentement que YouTube montre aux serveurs européens.
+  fetch(url, { headers: { cookie: 'SOCS=CAI' }, signal: AbortSignal.timeout(delaiMs) }).then(async (r) => {
+    if (!r.ok) throw new Error(`YouTube répond ${r.status} (${new URL(url).pathname})`);
+    return r.text();
+  });
+
+const texteXml = (s) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+
+// Les vidéos d'un flux RSS de chaîne. Le lien dit si c'est un Short (/shorts/…).
+export function lireFlux(xml) {
+  return [...String(xml ?? '').matchAll(/<entry>([\s\S]*?)<\/entry>/g)]
+    .map(([, e]) => {
+      const champ = (re) => e.match(re)?.[1] ?? null;
+      const lien = champ(/<link[^>]*href="([^"]+)"/) ?? '';
+      const vues = champ(/<media:statistics[^>]*views="(\d+)"/);
+      return {
+        id: champ(/<yt:videoId>([^<]+)</),
+        titre: texteXml(champ(/<title>([^<]*)</)).slice(0, 120),
+        jour: jourDe(champ(/<published>([^<]+)</)),
+        vues: vues === null ? null : Number(vues),
+        format: /\/shorts\//.test(lien) ? 'short' : /watch\?v=/.test(lien) ? 'longue' : null,
+      };
+    })
+    .filter((v) => v.id && v.jour);
+}
+
+// L'identifiant UC… d'une chaîne : écrit dans config/youtube.json, déjà trouvé par
+// l'API ou une lecture précédente, sinon lu une fois sur la page de la chaîne.
+async function idChaine(brut, yt, lire) {
+  const ref = referenceChaine(brut);
+  if (!ref) throw new Error(`chaîne illisible dans config/youtube.json : ${brut}`);
+  if (ref.id) return ref.id;
+  const connu = yt.flux.ids[ref.forHandle] ?? yt.chaines?.find((c) => c.source === brut)?.id;
+  if (connu) return (yt.flux.ids[ref.forHandle] = connu);
+  const page = await lire(`https://www.youtube.com/${ref.forHandle}`);
+  const id = page.match(/"(?:externalId|channelId)":"(UC[\w-]{22})"/)?.[1] ?? page.match(/youtube\.com\/channel\/(UC[\w-]{22})/)?.[1];
+  if (!id) throw new Error(`identifiant introuvable pour ${ref.forHandle}`);
+  return (yt.flux.ids[ref.forHandle] = id);
+}
+
+export async function synchroniserFluxYoutube(business, { chaines = {}, lire, delaiMs = 20_000, maintenant = new Date() } = {}) {
+  const entrees = Object.entries(chaines).flatMap(([projet, liste]) => (liste ?? []).map((brut) => ({ projet, brut })));
+  if (!entrees.length) return { ignore: true };
+  lire ??= lireTexteParDefaut(delaiMs);
+  const yt = (business.sources.youtube ??= { chaines: [], historique: {} });
+  yt.flux ??= {};
+  yt.flux.ids ??= {};
+  yt.flux.chaines ??= {};
+  const garder = jourParis(new Date(maintenant - 120 * 86_400_000));
+  const erreurs = [];
+  let lues = 0;
+  for (const { projet, brut } of entrees) {
+    try {
+      const id = await idChaine(brut, yt, lire);
+      const xml = await lire(`https://www.youtube.com/feeds/videos.xml?channel_id=${id}`);
+      const nouvelles = lireFlux(xml);
+      const avant = yt.flux.chaines[id]?.videos ?? [];
+      const ids = new Set(nouvelles.map((v) => v.id));
+      const videos = [...nouvelles, ...avant.filter((v) => !ids.has(v.id))].filter((v) => v.jour >= garder).sort((a, b) => b.jour.localeCompare(a.jour));
+      const titre = texteXml(String(xml).match(/<title>([^<]*)</)?.[1]).slice(0, 80);
+      yt.flux.chaines[id] = { projet, titre, videos };
+      lues++;
+    } catch (err) {
+      erreurs.push(`${brut} : ${err.message}`);
+    }
+  }
+  if (!lues) throw new Error(erreurs.join(' ; ').slice(0, 280));
+  yt.flux.maj = maintenant.toISOString();
+  yt.flux.erreurs = erreurs;
+  return { chaines: lues, erreurs: erreurs.length };
+}
+
+// Les chaînes d'un projet (ou toutes), vidéos de l'API complétées par celles du flux.
+// Une chaîne connue seulement par le flux n'a ni abonnés ni vues totales : null,
+// affiché « indisponible », jamais 0.
+export function chainesYoutube(business, projet = null) {
+  const yt = business?.sources?.youtube;
+  const flux = yt?.flux?.chaines ?? {};
+  const duProjet = (p) => !projet || p === projet;
+  const res = (yt?.chaines ?? []).filter((c) => duProjet(c.projet)).map((c) => {
+    const parId = new Map((flux[c.id]?.videos ?? []).map((v) => [v.id, v]));
+    const api = c.videos.map((v) => (parId.has(v.id) ? { ...v, vues: Math.max(v.vues ?? 0, parId.get(v.id).vues ?? 0) } : v));
+    const connues = new Set(api.map((v) => v.id));
+    const videos = [...api, ...[...parId.values()].filter((v) => !connues.has(v.id))].sort((a, b) => (b.jour ?? '').localeCompare(a.jour ?? ''));
+    return { ...c, videos };
+  });
+  for (const [id, f] of Object.entries(flux))
+    if (duProjet(f.projet) && !res.some((c) => c.id === id)) res.push({ projet: f.projet, id, titre: f.titre, abonnes: null, vues: null, nbVideos: null, videos: f.videos });
+  return res;
 }
 
 // --- Revenus (OAuth, à part de la clé publique) ---------------------------------
