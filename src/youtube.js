@@ -109,12 +109,17 @@ export async function synchroniserYoutube(business, { cle, chaines = {}, delaiMs
 // chaque heure à côté de l'API : si la clé est refusée ou le quota dépassé, les
 // vidéos publiées restent justes. Les vidéos du flux sont gardées 120 jours.
 
-const lireTexteParDefaut = (delaiMs) => (url) =>
-  // SOCS : passe la page de consentement que YouTube montre aux serveurs européens.
-  fetch(url, { headers: { cookie: 'SOCS=CAI' }, signal: AbortSignal.timeout(delaiMs) }).then(async (r) => {
-    if (!r.ok) throw new Error(`YouTube répond ${r.status} (${new URL(url).pathname})`);
-    return r.text();
-  });
+// Le flux répond souvent 500 un court moment (vu le 22/10 sur le VPS Nūr) : jusqu'à
+// trois essais espacés de quelques secondes avant de noter l'erreur.
+const lireTexteParDefaut = (delaiMs, attenteMs = 3000) => async (url) => {
+  for (let essai = 1; ; essai++) {
+    // SOCS : passe la page de consentement que YouTube montre aux serveurs européens.
+    const r = await fetch(url, { headers: { cookie: 'SOCS=CAI' }, signal: AbortSignal.timeout(delaiMs) });
+    if (r.ok) return r.text();
+    if (r.status < 500 || essai === 3) throw new Error(`YouTube répond ${r.status} (${new URL(url).pathname})`);
+    await new Promise((fin) => setTimeout(fin, attenteMs * essai));
+  }
+};
 
 const texteXml = (s) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
 
