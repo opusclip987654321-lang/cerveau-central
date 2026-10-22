@@ -9,7 +9,7 @@ import { toutVerifier } from './verifier.js';
 import { chargerEtat } from './etat.js';
 import { envoyerTelegram } from './telegram.js';
 import { pageEtat, definirCompteurActions, definirCompteurAColler } from './page.js';
-import { pageAujourdhui } from './page-aujourdhui.js';
+import { pageAujourdhui, pageFait } from './page-aujourdhui.js';
 import { lignesProjets, priorites, changementsDepuisHier, fraicheur } from './aujourdhui.js';
 import { resumeQuotidien } from './resume.js';
 import { creerAcces, lireCookie, pageConnexion } from './acces.js';
@@ -59,6 +59,7 @@ import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { lireAssocie, htmlAssocie } from './associe.js';
 import { chargerSeo, sauverSeo, seoAFaire, faireCompteRendu, decisionsSeo, envoyerSeoNotion, seoPourLoop, htmlSeo } from './seo.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
+import { chargerFaitNotion, sauverFaitNotion, lireFaitNotion, faitDuJour, htmlFait } from './fait.js';
 import { chiffresProjets, tenirTableauNotion } from './tableau-notion.js';
 import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
 import { chargerLoop, sauverLoop, trierReponses, alerteInteresse, POSITIFS, revueAFaire, revoirMethode, cheminMethode, methodePourN8n, piloter, htmlLoop, reponsesATrier, noterTri, noterRevue, donneesRevue, filetLoop, CONSIGNE_TRI, CONSIGNE_REVUE, TYPES_REPONSE } from './loop-nour-meet.js';
@@ -99,6 +100,7 @@ const plafondLoop = Number(env.PLAFOND_LOOP_NOUR_DOLLARS ?? 11);
 const loopNourParApi = env.LOOP_NOUR_IA === 'api';
 // L'historique daté des décisions de toutes les loops (20/10), recopié dans Notion.
 const fichierDecisions = path.join(path.dirname(fichierEtat), 'decisions-loops.json');
+const fichierFaitNotion = path.join(path.dirname(fichierEtat), 'fait-notion.json');
 // Les messages à coller dans les autres projets Claude (20/10) : coches et messages reçus par l'API.
 const fichierAColler = path.join(path.dirname(fichierEtat), 'a-coller.json');
 // Les sorties des commandes lancées par louis via scripts/envoyer.sh (20/10), relues par les fils Claude.
@@ -477,6 +479,11 @@ async function filetNourMeet() {
 // chaque loop a décidé (changé, gardé, appris, demandé), le garde pour toujours et le
 // recopie dans la table Notion « Décisions des loops » si NOTION_TOKEN est dans .env.
 let decisionsEnCours = null;
+// « J'ai fait aujourd'hui » : tout ce que le cerveau sait d'un jour, sans IA (src/fait.js).
+async function faitDe(business, journal, jour = jourParis()) {
+  return faitDuJour({ business, journal, configJournal, decisions: await chargerDecisions(fichierDecisions), faitNotion: await chargerFaitNotion(fichierFaitNotion), jour });
+}
+
 function tenirDecisions() {
   decisionsEnCours ??= (async () => {
     const [loopNour, business, loopHistoires] = [await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), await lireLoopHistoires(fichierLoopHistoires)];
@@ -496,6 +503,16 @@ function tenirDecisions() {
       await tenirTableauNotion(chiffresProjets({ business, loopNour, loopHistoires }), { jeton: env.NOTION_TOKEN, sourceProjets: env.NOTION_PROJETS_SOURCE || undefined, sourceDecisions: env.NOTION_DECISIONS_SOURCE || undefined });
     } catch (err) {
       console.error(`Tableau de bord Notion : ${err.message}`);
+    }
+    // Puis ce que les fils Claude ont déclaré dans « ✅ Fait pour Walid » (section « J'ai fait aujourd'hui »).
+    const fait = await chargerFaitNotion(fichierFaitNotion);
+    try {
+      const r = await lireFaitNotion(fait, { jeton: env.NOTION_TOKEN, source: env.NOTION_FAIT_SOURCE || undefined });
+      if (!r.ignore) await sauverFaitNotion(fichierFaitNotion, fait);
+    } catch (err) {
+      fait.erreur = err.message.slice(0, 200);
+      await sauverFaitNotion(fichierFaitNotion, fait);
+      console.error(`Fait pour Walid (Notion) : ${err.message}`);
     }
   })()
     .catch((err) => console.error(`Décisions des loops impossibles : ${err.message}`))
@@ -751,9 +768,22 @@ const serveur = http.createServer(async (req, res) => {
           changements: changementsDepuisHier({ business, journal, configJournal, pauses }),
           fraicheur: fraicheur(business),
           boites: htmlBoites(business.sources?.boites),
+          fait: await faitDe(business, journal),
           message: url.searchParams.get('message') ?? undefined,
         }),
       );
+    }
+    // « J'ai fait aujourd'hui » d'un autre jour (?jour=AAAA-MM-JJ), et sa version JSON.
+    if (req.method === 'GET' && (url.pathname === '/fait' || url.pathname === '/api/fait')) {
+      const demande = url.searchParams.get('jour');
+      const jourF = /^\d{4}-\d{2}-\d{2}$/.test(demande ?? '') ? demande : jourParis();
+      const fait = await faitDe(await chargerBusiness(fichierBusiness), await chargerJournal(fichierJournal), jourF);
+      if (url.pathname === '/api/fait') {
+        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify(fait));
+      }
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(pageFait(fait));
     }
     if (req.method === 'GET' && url.pathname === '/surveillance') {
       const aRepondre = await avecReponses((h) => enAttente(configQuestions, h));
