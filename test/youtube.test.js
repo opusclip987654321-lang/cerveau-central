@@ -186,7 +186,7 @@ test('synchroniserFluxYoutube : les vidéos publiées restent justes quand l’A
   const lire = async (url) => {
     lues.push(url);
     if (url.includes('@Impacteur')) return '<meta itemprop="identifier"><script>{"externalId":"UCimpacteurAfrique012345"}</script>';
-    if (url.includes('UCimpacteurAfrique')) return '<feed></feed>';
+    if (url.includes('UCimpacteurAfrique')) throw new Error('YouTube répond 404 (/feeds/videos.xml)');
     return FLUX;
   };
   const r = await synchroniserFluxYoutube(b, { lire, chaines: { 'histoires-vraies': ['UCoTR63ZFhLWw11ZMUYGTR3w'], impacteur: ['https://www.youtube.com/@ImpacteurAfrique'] }, maintenant: new Date('2026-10-21T20:00:00Z') });
@@ -221,6 +221,6 @@ test('chainesYoutube : une chaîne connue seulement par le flux a des abonnés �
 
 test('synchroniserFluxYoutube : erreur claire si aucune chaîne ne se lit', async () => {
   const b = { sources: {}, objectifs: {} };
-  await assert.rejects(synchroniserFluxYoutube(b, { lire: async () => { throw new Error('YouTube répond 404'); }, chaines: { 'histoires-vraies': ['UCoTR63ZFhLWw11ZMUYGTR3w'] } }), /UCoTR63ZFhLWw11ZMUYGTR3w : YouTube répond 404/);
+  await assert.rejects(synchroniserFluxYoutube(b, { lire: async () => { throw new Error('YouTube répond 500'); }, chaines: { 'histoires-vraies': ['UCoTR63ZFhLWw11ZMUYGTR3w'] } }), /UCoTR63ZFhLWw11ZMUYGTR3w : YouTube répond 500/);
   assert.deepEqual(await synchroniserFluxYoutube(b, { chaines: {} }), { ignore: true });
 });
