@@ -14,6 +14,7 @@ import { chainesYoutube } from './youtube.js';
 import { STATUTS_ACTION } from './actions.js';
 import { joursJusqua } from './business.js';
 import { visitesDe, htmlVisites, CSS_VISITES } from './visites.js';
+import { CSS_SEO } from './seo.js';
 import { htmlNourPublic } from './nour-public.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -578,6 +579,7 @@ ${corps}
 .bds.une { display:grid; margin-bottom:14px; }
 ${CSS_CARTE}
 ${CSS_VISITES}
+${CSS_SEO}
 .une .pied { display:none; }
 .graphe { max-width:460px; }
 .bloc { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:12px 14px; margin-bottom:14px; overflow-x:auto; }

@@ -16,6 +16,10 @@ export const LOOPS = {
   vege: { nom: 'VégéBudget', projet: 'vegebudget' },
   phv: { nom: 'Petites histoires vraies', projet: 'histoires-vraies' },
   leviaro: { nom: 'Leviaro', projet: 'leviaro' },
+  // Le compte rendu SEO du dimanche (23/10) : une ligne par projet et par semaine.
+  'seo-nour-meet': { nom: 'SEO', projet: 'nour-meet' },
+  'seo-vegebudget': { nom: 'SEO', projet: 'vegebudget' },
+  'seo-leviaro': { nom: 'SEO', projet: 'leviaro' },
 };
 export const TYPES = ['Changé', 'Gardé', 'Leçon', 'Question à louis', 'Geste de louis'];
 // La table Notion « 📜 Décisions des loops », sous la page « Loops des projets » (créée le 20/10).
@@ -38,7 +42,7 @@ export function typeDe(brut) {
 }
 
 // Toutes les décisions visibles aujourd'hui dans les loops ; `date` vide = « vue ce jour ».
-export function collecterDecisions({ loopNour, business, loopHistoires, loopLeviaro } = {}) {
+export function collecterDecisions({ loopNour, business, loopHistoires, loopLeviaro, seo } = {}) {
   const d = [];
   const ajouter = (loop, cle, date, type, quoi, pourquoi = '') => {
     if (txt(quoi)) d.push({ cle: `${loop}:${cle}`, loop, date: jour(date), type, quoi: txt(quoi), pourquoi: txt(pourquoi) });
@@ -80,6 +84,9 @@ export function collecterDecisions({ loopNour, business, loopHistoires, loopLevi
       ajouter(loop, `lecon:${empreinte(texte)}`, typeof l === 'string' ? null : l?.date, 'Leçon', texte);
     }
   }
+
+  // Le compte rendu SEO du dimanche : la note, l'écart et les actions possibles de chaque site.
+  for (const x of seo ?? []) if (LOOPS[`seo-${x.projet}`]) ajouter(`seo-${x.projet}`, `semaine:${x.jour}`, x.jour, 'Leçon', x.quoi, x.pourquoi);
   return d;
 }
 

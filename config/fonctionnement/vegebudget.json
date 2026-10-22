@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20",
+  "maj": "2026-10-23",
   "source": "Lu dans le code de VégéBudget (dépôt v-g-budget, branche main) le 20/10/2026, après l'ajout du volet acquisition de la loop (PR v-g-budget 41)",
   "intro": "VégéBudget compose les dîners sans viande de la semaine selon ton budget et donne la liste de courses exacte (vegebudget.fr, en ligne depuis le 07/10). Depuis le 19/10, une loop pilote le projet : chaque lundi, Claude lit les chiffres et les avis des visiteurs, décide seul et modifie le site. Objectif : des inscriptions, puis 100 abonnés payants (environ 500 €/mois).",
   "journee": [
@@ -57,6 +57,11 @@
       "quand": "Toutes les 10 minutes",
       "quoi": "Le cerveau rassemble les décisions datées de la loop (ce qu'elle change, ce qu'elle garde et pourquoi, ses leçons, ses questions) dans un historique jamais effacé, affiché sur cette page et recopié dans la table Notion « Décisions des loops » (sans IA).",
       "toi": "Rien : le lire pour voir comment la loop raisonne et se remet en question"
+    },
+    {
+      "quand": "Dimanche 8 h",
+      "quoi": "Compte rendu SEO, sans IA : le cerveau contrôle le site comme Google (titre, description, vitesse, robots.txt, sitemap, pages, accès des robots d’IA), compte les visites venues des moteurs et des IA, donne une note sur 100 et les actions possibles. Bloc « 🔎 SEO » de cette page, ligne dans Notion « Décisions des loops » et mise à jour de la table « Actions SEO à mettre en place » du projet.",
+      "toi": "Rien, sauf les actions marquées « 👤 toi » (Search Console, stores)"
     }
   ],
   "circuits": [

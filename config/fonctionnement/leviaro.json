@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-07",
+  "maj": "2026-10-23",
   "source": "Lu dans la base leviaro.db le 05/10/2026, puis dans le README de l'agent (~/leviaro-agent) le 06/10/2026",
   "intro": "L'agent Leviaro prospecte des entreprises pour leviaro.fr : il les découvre dans l'annuaire public, Claude analyse leur site et rédige un mail adapté, l'agent l'envoie seul si le dossier est assez bon (mode automatique depuis le 07/10/2026), avec deux relances au maximum, et s'arrête dès qu'une réponse arrive.",
   "journee": [
@@ -42,6 +42,11 @@
       "quand": "Lundi 8 h",
       "quoi": "Récap des 7 jours sur Telegram et apprentissage : au plus 3 règles de rédaction et 3 recommandations pour l'agence.",
       "toi": "Accepter, reporter ou refuser sur la page « Apprentissage »"
+    },
+    {
+      "quand": "Dimanche 8 h",
+      "quoi": "Compte rendu SEO, sans IA : le cerveau contrôle le site comme Google (titre, description, vitesse, robots.txt, sitemap, pages, accès des robots d’IA), compte les visites venues des moteurs et des IA, donne une note sur 100 et les actions possibles. Bloc « 🔎 SEO » de cette page, ligne dans Notion « Décisions des loops » et mise à jour de la table « Actions SEO à mettre en place » du projet.",
+      "toi": "Rien, sauf les actions marquées « 👤 toi » (Search Console, stores)"
     }
   ],
   "circuits": [
