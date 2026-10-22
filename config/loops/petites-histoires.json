@@ -18,7 +18,7 @@
       "cible": 500
     }
   },
-  "rythme": "Vidéos longues lundi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30. Shorts publiés automatiquement sur YouTube, Instagram et Facebook ; TikTok à la main.",
+  "rythme": "Vidéos longues lundi, mercredi (dès le 28 octobre) et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30. Shorts publiés automatiquement sur YouTube, Instagram et Facebook ; TikTok à la main.",
   "hypothese": "Plus de Shorts = plus d'abonnés : les Shorts ont apporté les 24 abonnés gagnés en 28 jours, les vidéos longues aucun.",
   "chiffres": {
     "shorts7j": 2588,
@@ -28,6 +28,12 @@
     "meilleurShort": "Un bébé de 3 mois se souvient de ça : 1 942 vues"
   },
   "decisions": [
+    {
+      "date": "2026-10-22",
+      "type": "changé",
+      "quoi": "Une vidéo longue de plus par semaine : le mercredi à 18 h, dès le 28 octobre. Soit 3 longues par semaine (lundi, mercredi, vendredi) + le 1er samedi du mois ; les 2e teasers Shorts continuent.",
+      "pourquoi": "Demande de Walid du 22/10, liée à la baisse de coût attendue (contexte relu ≈ 3 $ sur 5 $ par vidéo). Coût mesuré après le test de fabrication par une session neuve du lundi 26 octobre."
+    },
     {
       "date": "2026-10-22",
       "type": "changé",
