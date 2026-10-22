@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-21",
+  "maj": "2026-10-22",
   "source": "Revue du système du 20/10/2026, proposition n°1 acceptée par louis (« tout »)",
   "intro": "Le cerveau lui-même. Ce guide décrit pour l'instant la page « À coller » : un seul endroit pour tous les messages que tu dois coller dans tes autres projets Claude (3_PETITES HISTOIRES, Leviaro, VégéBudget, 12_Prospection sponsors), que les fils de ce projet ne peuvent pas atteindre.",
   "journee": [
@@ -35,6 +35,29 @@
           "texte": "Tu le copies, tu le colles une seule fois dans le projet indiqué, et tu cliques « Fait »",
           "outil": "Bouton « Copier le message »",
           "technique": "La coche est gardée sur le serveur ; « Remettre à faire » l'annule. Les messages faits restent visibles, repliés."
+        }
+      ]
+    },
+    {
+      "titre": "Ton associé business",
+      "etapes": [
+        {
+          "type": "auto",
+          "texte": "Chaque jour à 10h48, la routine des idées cherche sur le web et écrit 10 idées : projets neufs, développement de tes projets, économies, connaissances",
+          "outil": "Claude (abonnement, routine « Idées du cerveau »)",
+          "technique": "PR fusionnée dans config/idees-jour.json, 14 jours gardés ; la page /associe se met à jour en 10 min."
+        },
+        {
+          "type": "auto",
+          "texte": "Chaque lundi, la revue « fortune » relit les chiffres de tous les projets, les classe par délai avant le 1er € × montant, propose des actions et des économies, avec un avis franc",
+          "outil": "Claude (abonnement, fil « Associé business »)",
+          "technique": "Lit le tableau Notion « Mes projets » et config/argent.json ; écrit config/loops/fortune.json par PR et ses décisions dans Notion « Décisions des loops »."
+        },
+        {
+          "type": "toi",
+          "texte": "Tu lis la page Associé ; tu réponds à sa question quand il t'en pose une (une seule à la fois, en QCM)",
+          "outil": "Page /associe",
+          "technique": "Aucune dépense engagée ni abonnement coupé sans ton accord."
         }
       ]
     }

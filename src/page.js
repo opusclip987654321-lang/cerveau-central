@@ -135,7 +135,7 @@ export function gabarit({ onglet, aRepondre = 0, aFaire = compteurActions, aColl
   void aRepondre;
   const badge = aFaire ? ` <span class="badge">${aFaire}</span>` : '';
   const badgeColler = aColler ? ` <span class="badge">${aColler}</span>` : '';
-  const TITRES = { 'a-coller': 'À coller dans tes autres projets Claude', aujourdhui: 'Aujourd’hui', etat: 'Surveillance', journal: 'Projets', actions: 'Actions', activite: 'Journal', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', serveurs: 'Serveurs', connexions: 'Connexions' };
+  const TITRES = { 'a-coller': 'À coller dans tes autres projets Claude', aujourdhui: 'Aujourd’hui', etat: 'Surveillance', journal: 'Projets', actions: 'Actions', activite: 'Journal', analyses: 'Analyses', questions: 'Questions du jour', argent: 'Argent', associe: 'Ton associé business', serveurs: 'Serveurs', connexions: 'Connexions' };
   const lien = (id, href, symbole, texte) => `<a href="${href}" class="${onglet === id ? 'actif' : ''}" data-s="${symbole}">${texte}</a>`;
   return `<!doctype html>
 <html lang="fr">
@@ -228,7 +228,7 @@ time { color:var(--doux); font-variant-numeric:tabular-nums; margin-right:4px; }
 <div class="coquille">
 <aside class="menu">
 <a class="logo" href="/"><span class="mono">🧠</span><span class="marque">Cerveau central<small>le pilotage de tes projets</small></span></a>
-<nav>${lien('aujourdhui', '/', '☀', 'Aujourd’hui')}${lien('journal', '/journal', '◆', 'Projets')}${lien('actions', '/actions', '✓', 'Actions' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('connexions', '/connexions', '⚡', 'Connexions')}</nav>
+<nav>${lien('aujourdhui', '/', '☀', 'Aujourd’hui')}${lien('journal', '/journal', '◆', 'Projets')}${lien('actions', '/actions', '✓', 'Actions' + badge)}${lien('argent', '/argent', '€', 'Argent')}${lien('associe', '/associe', '★', 'Associé')}${lien('connexions', '/connexions', '⚡', 'Connexions')}</nav>
 <nav class="secondaire">${lien('etat', '/surveillance', '●', 'Surveillance')}${lien('activite', '/journal?vue=activite', '☰', 'Journal')}${lien('analyses', '/analyses', '◈', 'Analyses')}${lien('serveurs', '/serveurs', '▤', 'Serveurs')}${lien('a-coller', '/a-coller', '⧉', 'À coller' + badgeColler)}</nav>
 <div class="menu-pied"><a href="/deconnexion">Se déconnecter</a></div>
 </aside>

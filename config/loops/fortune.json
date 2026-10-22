@@ -1,0 +1,58 @@
+{
+  "maj": "2026-10-22T01:00:00Z",
+  "cycle": 2,
+  "semaine": "2026-10-19",
+  "avis": "0 € encaissé sur tous les projets à ce jour. Le chemin le plus court vers le premier euro, ce sont les 3 restaurateurs déjà intéressés par Nūr Meet et les marques à démarcher pour les chaînes Impacteur. Leviaro vaut le plus cher par vente, mais 85 mails n'ont encore donné aucune réponse : sa loop doit changer de cible ou de message avant d'en envoyer plus. Le reste tourne à coût presque nul : on le garde, sans y mettre un euro de plus tant que rien n'est encaissé.",
+  "objectifCycle": "Un premier paiement reçu : un restaurateur parmi les 3 intéressés, ou un premier sponsor.",
+  "propositions": [
+    {
+      "quoi": "Transformer les 3 restaurateurs intéressés en abonnés : prix de lancement et lien de paiement direct dans la prochaine réponse.",
+      "qui": "loop Nūr Meet restaurateurs",
+      "pourquoi": "Ils ont déjà dit oui à l'idée ; 624 contactés pour 3 intéressés, chaque intéressé perdu coûte 200 mails."
+    },
+    {
+      "quoi": "Valider les 48 prospects sponsors en attente.",
+      "qui": "Walid, admin sponsors.leviaro.fr",
+      "pourquoi": "C'est ton choix de valider toi-même ; aucun mail ne part depuis le 20/10 tant que ce n'est pas fait, et c'est le seul projet où un rendez-vous peut payer vite."
+    },
+    {
+      "quoi": "Leviaro : revoir la cible et le premier mail avant d'augmenter le volume.",
+      "qui": "loop Leviaro",
+      "pourquoi": "85 mails, 0 réponse : le problème n'est pas le volume. 20 analyses par jour ne servent que si le message accroche."
+    }
+  ],
+  "classement": [
+    { "rang": 1, "projet": "Nūr Meet restaurateurs", "decision": "Pousser", "delai": "quelques semaines", "montant": "~70 €/mois", "preuve": "3 intéressés sur 624 contactés, 0 payant", "pourquoi": "Ta priorité n°1 pour l'argent sous 3 mois ; des intéressés existent déjà." },
+    { "rang": 2, "projet": "Impacteur Sponsors", "decision": "Pousser", "delai": "dès qu'un rendez-vous a lieu", "montant": "indisponible", "preuve": "130 prospects, 40 mails sur 7 j, 0 rendez-vous", "pourquoi": "Bloqué par les 48 prospects à valider ; montant d'un sponsor à mesurer au premier devis." },
+    { "rang": 3, "projet": "Leviaro", "decision": "Pousser", "delai": "inconnu tant qu'aucune réponse", "montant": "590 à 890 € par site", "preuve": "85 mails envoyés, 0 réponse", "pourquoi": "Une seule vente rembourse 4 mois de dépenses, mais le message doit changer." },
+    { "rang": 4, "projet": "Nūr Meet grand public", "decision": "Maintenir", "delai": "plus de 3 mois", "montant": "places payées, à définir", "preuve": "11 comptes particuliers, 50 visites sur 7 j", "pourquoi": "Sa loop est libre (ton choix) ; elle sert aussi à rendre le site crédible auprès des restaurateurs." },
+    { "rang": 5, "projet": "VégéBudget", "decision": "Maintenir", "delai": "plus de 3 mois", "montant": "~5 €/mois par abonné", "preuve": "0 payant, 2 inscrits, 99 visiteurs sur 30 j", "pourquoi": "Loop autonome à coût presque nul ; on regarde le trafic organique avant tout euro de plus." },
+    { "rang": 6, "projet": "Petites histoires vraies", "decision": "Maintenir", "delai": "plus de 6 mois", "montant": "500 €/mois visés", "preuve": "26 abonnés, 7,7 h de vues", "pourquoi": "La monétisation YouTube demande 1 000 abonnés et 4 000 h ; coût fixe, aucune dépense en plus." },
+    { "rang": 7, "projet": "Agent Cambodge emploi", "decision": "À clarifier", "delai": "indisponible", "montant": "un salaire", "preuve": "prospection à la main", "pourquoi": "Un emploi peut rapporter plus que tout le reste : à savoir s'il reste prioritaire." },
+    { "rang": 8, "projet": "Impacteur invitations", "decision": "Outil", "delai": "—", "montant": "pas d'objectif argent", "preuve": "9 invitations sur 7 j", "pourquoi": "Les interviews font vivre les chaînes que les sponsors paient." },
+    { "rang": 9, "projet": "Vente ebook, Trader", "decision": "À clarifier", "delai": "indisponible", "montant": "indisponible", "preuve": "aucune donnée dans le cerveau", "pourquoi": "Projets vus dans ta liste, jamais branchés : à confirmer avant de les classer." },
+    { "rang": 10, "projet": "L'extrait politique", "decision": "En pause", "delai": "—", "montant": "—", "preuve": "en pause depuis le 19/10", "pourquoi": "Ses dépenses qui tournent encore sont des pistes d'économie." },
+    { "rang": 11, "projet": "Cerveau central", "decision": "Outil", "delai": "—", "montant": "—", "preuve": "IA sur l'abonnement", "pourquoi": "Il pilote les loops ; il ne rapporte pas seul." }
+  ],
+  "depenses": {
+    "fixeMois": 155,
+    "encaisse": 0,
+    "note": "Claude 100, ChatGPT 20, VPS Nūr 14, VPS YouTube 12, ElevenLabs 7 (config/argent.json), plus les recharges ponctuelles.",
+    "pistes": [
+      { "quoi": "ChatGPT", "gain": "20 €/mois", "etat": "à te demander", "pourquoi": "Claude couvre déjà l'IA de tous les projets ; à couper seulement s'il ne te sert plus." },
+      { "quoi": "ElevenLabs", "gain": "7 €/mois", "etat": "à te demander", "pourquoi": "Rangé sur L'extrait politique, en pause : à vérifier qu'aucun autre projet ne s'en sert." },
+      { "quoi": "Plus de recharge IPRoyal tant que L'extrait est en pause", "gain": "~50 $ par recharge", "etat": "à te demander", "pourquoi": "Proxy YouTube de L'extrait." }
+    ]
+  },
+  "lecons": [
+    { "date": "2026-10-20", "texte": "Le goulot, c'est la conclusion des ventes, pas l'automatisation." },
+    { "date": "2026-10-22", "texte": "Le premier classement (projet 13) a été fait sans lire le cerveau et proposait de geler VégéBudget, le grand public et le cerveau, contre les choix de Walid. Toujours partir des chiffres du cerveau et des décisions de Walid ; l'associé recommande, il ne gèle rien seul." },
+    { "date": "2026-10-22", "texte": "Walid veut un associé autonome et force de proposition : chaque revue propose des actions avec un avis tranché, pas seulement un classement." }
+  ],
+  "decisions": [
+    { "date": "2026-10-22", "type": "Changé", "quoi": "Le cerveau reprend le rôle d'associé business (projet 13 fermé, choix A de Walid) : revue « fortune » chaque semaine et 10 idées par jour.", "pourquoi": "Un seul endroit qui voit tous les projets et leurs chiffres." },
+    { "date": "2026-10-22", "type": "Changé", "quoi": "Classement repris avec les chiffres du cerveau : Nūr Meet restaurateurs, Impacteur Sponsors et Leviaro à pousser ; plus aucun projet gelé.", "pourquoi": "Les loops libres et la priorité Nūr Meet sont des choix de Walid ; un projet à coût presque nul n'a rien à geler." }
+  ],
+  "question": null,
+  "prochaine": "Revue du lundi 27/10 : un premier paiement est-il arrivé ? Sinon, chercher pourquoi les intéressés ne signent pas."
+}

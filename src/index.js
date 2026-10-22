@@ -56,6 +56,7 @@ import { lireNourPublic, enregistrerNourPublic, alertesTelegramReseaux } from '.
 import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
+import { lireAssocie, htmlAssocie } from './associe.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
 import { chiffresProjets, tenirTableauNotion } from './tableau-notion.js';
 import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
@@ -1101,6 +1102,11 @@ const serveur = http.createServer(async (req, res) => {
       const r = await avecIdees((d) => changerStatutIdee(d, id, statut));
       res.writeHead(303, { location: `/projet?projet=${encodeURIComponent(projet ?? '')}&message=${encodeURIComponent(r.erreur ?? 'Suivi mis à jour')}` });
       return res.end();
+    }
+    if (req.method === 'GET' && url.pathname === '/associe') {
+      const [fortune, idees] = await Promise.all([lireAssocie(path.join(racine, 'config/loops/fortune.json')), lireAssocie(path.join(racine, 'config/idees-jour.json'))]);
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return res.end(gabarit({ onglet: 'associe', contenu: htmlAssocie(fortune, idees) }));
     }
     if (req.method === 'GET' && url.pathname === '/a-coller') {
       const messages = tousLesMessages(configAColler, await chargerAColler(fichierAColler));
