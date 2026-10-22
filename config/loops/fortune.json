@@ -147,7 +147,7 @@
       }
     ],
     "enveloppe": {
-      "montantMois": null,
+      "montantMois": 100,
       "mois": "2026-10",
       "engage": 0,
       "lignes": []
@@ -189,6 +189,12 @@
       "type": "Geste de louis",
       "quoi": "Autonomie de l'associé : actions gratuites et réversibles sans demander, dépenses dans une enveloppe mensuelle (montant à fixer), au-delà QCM à Walid ; couper un abonnement toujours soumis à son accord.",
       "pourquoi": "Walid veut un cerveau plus autonome et force de proposition."
+    },
+    {
+      "date": "2026-10-22",
+      "type": "Geste de louis",
+      "quoi": "Enveloppe de l'associé fixée à 100 €/mois (choix B de Walid).",
+      "pourquoi": "Assez pour tester un levier payant sans lui demander à chaque fois ; au-delà, il décide."
     }
   ],
   "question": null,
