@@ -86,8 +86,9 @@ export function chiffresProjets({ business, loopNour, loopHistoires, maintenant 
   };
 
   // Impacteur Sponsors vit sur son propre serveur (projet « 12_Prospection sponsors ») :
-  // le cerveau n'en lit aucun chiffre, il ne connaît que ses décisions.
-  r['impacteur-sponsors'] = { principal: INDISPO, secondaire: INDISPO, donnees: false };
+  // le cerveau n'en lit aucun chiffre. Depuis le 22/10, sa loop écrit elle-même ses deux
+  // chiffres dans sa ligne à chaque tour : le cerveau n'y touche plus (état, décision, heure).
+  r['impacteur-sponsors'] = { principal: INDISPO, secondaire: INDISPO, donnees: false, chiffresParLeProjet: true };
 
   const lv = s.leviaro;
   r.leviaro = {
@@ -123,9 +124,8 @@ export function etatProjet({ donnees, alerte, decision }, maintenant = new Date(
 const texte = (t) => [{ type: 'text', text: { content: String(t).slice(0, 1990) } }];
 const lireTexte = (p, nom) => (p?.[nom]?.rich_text ?? p?.[nom]?.title ?? []).map((t) => t.plain_text ?? t.text?.content ?? '').join('');
 
-export const proprietesLigne = ({ principal, secondaire, etat, decision }, maintenant = new Date()) => ({
-  'Chiffre principal': { rich_text: texte(principal) },
-  'Chiffre secondaire': { rich_text: texte(secondaire) },
+export const proprietesLigne = ({ principal, secondaire, etat, decision, chiffresParLeProjet }, maintenant = new Date()) => ({
+  ...(chiffresParLeProjet ? {} : { 'Chiffre principal': { rich_text: texte(principal) }, 'Chiffre secondaire': { rich_text: texte(secondaire) } }),
   'Dernière décision': { rich_text: texte(texteDecision(decision)) },
   État: { select: { name: etat } },
   'Mis à jour': { date: { start: maintenant.toISOString() } },

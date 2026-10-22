@@ -99,3 +99,21 @@ test('tenirTableauNotion : lit les deux tables et réécrit les lignes connues',
   assert.equal(p['État'].select.name, 'Tourne');
   assert.equal(p['Mis à jour'].date.start, maintenant.toISOString());
 });
+
+test('tenirTableauNotion : la loop Sponsors écrit ses chiffres elle-même, le cerveau n’y touche pas', async () => {
+  const patchs = [];
+  const fakeFetch = async (url, { method, body }) => {
+    if (method === 'PATCH') patchs.push(JSON.parse(body));
+    const ok = (json) => ({ ok: true, json: async () => json });
+    if (url.includes('data_sources/DEC/query'))
+      return ok({ results: [{ properties: { Loop: { select: { name: 'Impacteur Sponsors' } }, Date: { date: { start: '2026-10-21' } }, Décision: { title: [{ plain_text: 'Tour 4' }] } } }], has_more: false });
+    if (url.includes('data_sources/PRO/query')) return ok({ results: [{ id: 's1', properties: { Clé: { rich_text: [{ plain_text: 'impacteur-sponsors' }] } } }], has_more: false });
+    return ok({});
+  };
+  await tenirTableauNotion(chiffresProjets({ business: { sources: {} }, maintenant }), { jeton: 'j', sourceProjets: 'PRO', sourceDecisions: 'DEC', fetch: fakeFetch, maintenant });
+  const p = patchs[0].properties;
+  assert.equal(p['Chiffre principal'], undefined);
+  assert.equal(p['Chiffre secondaire'], undefined);
+  assert.equal(p['Dernière décision'].rich_text[0].text.content, '21/10 : Tour 4');
+  assert.equal(p['État'].select.name, 'Tourne');
+});
