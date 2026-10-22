@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-21",
+  "maj": "2026-10-23",
   "source": "Lu dans les automatisations n8n « Nour Meet 1 à 7 » le 05/10/2026 ; recherche élargie et repêchage ajoutés et vérifiés le 06/10/2026 ; loop restaurateurs ajoutée le 19/10/2026 (src/loop-nour-meet.js, scripts/nour-meet-loop-n8n.py) ; son IA passée sur l'abonnement Claude le 20/10/2026 (tâches programmées, /api/loop/nour-meet/*) ; filet anti-casse ajouté le 21/10/2026",
   "intro": "La prospection tourne seule : elle trouve des restaurants d'Île-de-France, leur écrit au nom de Walid, les relance, et s'arrête dès qu'ils répondent. Depuis le 19/10, une loop pilotée par le cerveau trie les réponses, te prévient pour chaque restaurant intéressé et réécrit elle-même la méthode (textes, cibles, relances, volume) chaque lundi. Toi, tu réponds aux intéressés et tu les transformes en abonnés.",
   "journee": [
@@ -52,6 +52,11 @@
       "quand": "Toutes les 10 minutes",
       "quoi": "Le cerveau rassemble les décisions datées de la loop (ce qu'elle change, ce qu'elle garde et pourquoi, ses leçons, ses questions) dans un historique jamais effacé, affiché sur cette page et recopié dans la table Notion « Décisions des loops » (sans IA).",
       "toi": "Rien : le lire pour voir comment la loop raisonne et se remet en question"
+    },
+    {
+      "quand": "Dimanche 8 h",
+      "quoi": "Compte rendu SEO, sans IA : le cerveau contrôle le site comme Google (titre, description, vitesse, robots.txt, sitemap, pages, accès des robots d’IA) et de la fiche de l’app mobile dans les stores (indisponible tant qu’elle n’est pas publiée), compte les visites venues des moteurs et des IA, donne une note sur 100 et les actions possibles. Bloc « 🔎 SEO » de cette page, ligne dans Notion « Décisions des loops » et mise à jour de la table « Actions SEO à mettre en place » du projet.",
+      "toi": "Rien, sauf les actions marquées « 👤 toi » (Search Console, stores)"
     }
   ],
   "circuits": [

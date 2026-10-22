@@ -1,0 +1,23 @@
+{
+  "_": "Le compte rendu SEO hebdomadaire (demande de louis du 23/10) : chaque semaine le jour (0 = dimanche) et l'heure de Paris ci-dessous, le cerveau contrôle sans IA le site de chaque projet et la fiche de son app. « app » : liens App Store (ios) et Google Play (android), null tant que l'app n'est pas publiée. « notion » : data_source_id de la table « Actions SEO à mettre en place » du projet (vide = pas encore créée) ; NOTION_SEO_<PROJET> dans .env la remplace. sponsors.leviaro.fr n'est pas suivi : c'est une page d'administration, pas un site public.",
+  "jour": 0,
+  "heure": 8,
+  "projets": {
+    "nour-meet": {
+      "nom": "Nūr Meet",
+      "site": "https://nourmeet.com",
+      "app": { "nom": "App mobile Nūr Meet", "ios": null, "android": null },
+      "notion": ""
+    },
+    "vegebudget": {
+      "nom": "VégéBudget",
+      "site": "https://vegebudget.fr",
+      "notion": ""
+    },
+    "leviaro": {
+      "nom": "Leviaro",
+      "site": "https://leviaro.fr",
+      "notion": ""
+    }
+  }
+}

@@ -57,6 +57,7 @@ import { pageConnexions } from './page-connexions.js';
 import { cheminDossierVege, dossierVege, htmlLoopVege } from './loop-vegebudget.js';
 import { lireLoopHistoires, htmlLoopHistoires } from './loop-histoires.js';
 import { lireAssocie, htmlAssocie } from './associe.js';
+import { chargerSeo, sauverSeo, seoAFaire, faireCompteRendu, decisionsSeo, envoyerSeoNotion, seoPourLoop, htmlSeo } from './seo.js';
 import { chargerDecisions, sauverDecisions, collecterDecisions, fusionnerDecisions, envoyerNotion, htmlDecisions } from './decisions.js';
 import { chiffresProjets, tenirTableauNotion } from './tableau-notion.js';
 import { chargerSorties, sauverSorties, lireEnvoi, enregistrerSortie, listerSorties } from './sorties.js';
@@ -102,6 +103,8 @@ const fichierDecisions = path.join(path.dirname(fichierEtat), 'decisions-loops.j
 const fichierAColler = path.join(path.dirname(fichierEtat), 'a-coller.json');
 // Les sorties des commandes lancées par louis via scripts/envoyer.sh (20/10), relues par les fils Claude.
 const fichierSorties = path.join(path.dirname(fichierEtat), 'sorties.json');
+// Le compte rendu SEO de chaque semaine (23/10), 26 semaines gardées.
+const fichierSeo = path.join(path.dirname(fichierEtat), 'seo.json');
 
 const config = JSON.parse(await readFile(fichierConfig, 'utf8'));
 config.intervalleMinutes = intervalleMinutes;
@@ -111,6 +114,9 @@ const configServeurs = JSON.parse(await readFile(path.join(racine, 'config/serve
 const configJournal = JSON.parse(await readFile(path.join(racine, 'config/journal.json'), 'utf8'));
 const configYoutube = JSON.parse(await readFile(path.join(racine, 'config/youtube.json'), 'utf8'));
 const configVisites = JSON.parse(await readFile(path.join(racine, 'config/visites.json'), 'utf8'));
+const configSeo = JSON.parse(await readFile(path.join(racine, 'config/seo.json'), 'utf8'));
+// La table Notion « Actions SEO » de chaque projet : config/seo.json, ou NOTION_SEO_NOUR_MEET (etc.) dans .env.
+const sourcesSeoNotion = Object.fromEntries(Object.entries(configSeo.projets).map(([id, p]) => [id, env[`NOTION_SEO_${id.toUpperCase().replace(/-/g, '_')}`] || p.notion || '']));
 const configAColler = await chargerACollerConfig(path.join(racine, 'config/a-coller.json'));
 const guidesFonctionnement = await chargerFonctionnement(path.join(racine, 'config/fonctionnement'));
 
@@ -474,7 +480,7 @@ let decisionsEnCours = null;
 function tenirDecisions() {
   decisionsEnCours ??= (async () => {
     const [loopNour, business, loopHistoires] = [await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), await lireLoopHistoires(fichierLoopHistoires)];
-    const trouvees = collecterDecisions({ loopNour, business, loopHistoires, loopLeviaro: await lireLoopHistoires(path.join(dossierLeviaro, 'loop/decisions.json')) });
+    const trouvees = collecterDecisions({ loopNour, business, loopHistoires, loopLeviaro: await lireLoopHistoires(path.join(dossierLeviaro, 'loop/decisions.json')), seo: decisionsSeo(await chargerSeo(fichierSeo)) });
     const archive = await chargerDecisions(fichierDecisions);
     const neuves = fusionnerDecisions(archive, trouvees);
     let notion = null;
@@ -494,6 +500,36 @@ function tenirDecisions() {
   })()
     .catch((err) => console.error(`Décisions des loops impossibles : ${err.message}`))
     .finally(() => (decisionsEnCours = null));
+}
+
+// Le compte rendu SEO (louis, 23/10) : vérifié toutes les 10 minutes, fait une fois par semaine
+// (config/seo.json), sans IA. Puis la table Notion « Actions SEO » de chaque projet est tenue à
+// jour ; un envoi raté (table pas encore créée ou partagée) est retenté au tour suivant.
+let seoEnCours = null;
+function compteRenduSeo() {
+  seoEnCours ??= (async () => {
+    const donnees = await chargerSeo(fichierSeo);
+    const jour = seoAFaire(donnees, { jour: configSeo.jour, heure: configSeo.heure });
+    if (jour) {
+      const r = await faireCompteRendu(donnees, { projets: configSeo.projets, business: await chargerBusiness(fichierBusiness), jour });
+      console.log(`${new Date().toISOString()} compte rendu SEO ${jour} : ${Object.entries(r.projets).map(([id, p]) => `${id} ${p.note ?? '?'}/100`).join(', ')}`);
+      await sauverSeo(fichierSeo, donnees);
+    }
+    const dernier = donnees.rapports.at(-1);
+    if (!dernier || dernier.notion || !env.NOTION_TOKEN) return;
+    const sources = Object.fromEntries(Object.entries(sourcesSeoNotion).filter(([, v]) => v));
+    if (!Object.keys(sources).length) return;
+    try {
+      const n = await envoyerSeoNotion(dernier, { jeton: env.NOTION_TOKEN, sources });
+      dernier.notion = true;
+      await sauverSeo(fichierSeo, donnees);
+      console.log(`${new Date().toISOString()} actions SEO vers Notion : ${n.creees ?? 0} créée(s), ${n.majs ?? 0} mise(s) à jour`);
+    } catch (err) {
+      console.error(`Actions SEO vers Notion : ${err.message}`);
+    }
+  })()
+    .catch((err) => console.error(`Compte rendu SEO impossible : ${err.message}`))
+    .finally(() => (seoEnCours = null));
 }
 
 // Le bilan du lundi : vérifié toutes les 10 minutes, écrit une fois par semaine.
@@ -580,7 +616,7 @@ const serveur = http.createServer(async (req, res) => {
     // Le dossier de la loop VégéBudget, lu chaque lundi par la revue (adresse secrète tirée du jeton).
     if (req.method === 'GET' && env.RELEVE_JETON && url.pathname === cheminDossierVege(env.RELEVE_JETON)) {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
-      return res.end(JSON.stringify(dossierVege(await chargerBusiness(fichierBusiness))));
+      return res.end(JSON.stringify({ ...dossierVege(await chargerBusiness(fichierBusiness)), seo: seoPourLoop(await chargerSeo(fichierSeo), 'vegebudget') }));
     }
     // Les logos des chaînes, publics (pas de mot de passe) : ils doivent être
     // visibles dans les mails reçus par les invités, donc lisibles par n'importe qui.
@@ -1024,6 +1060,7 @@ const serveur = http.createServer(async (req, res) => {
           tri: id === 'nour-meet' ? await chargerTri(fichierTri) : undefined,
           loop:
             (id === 'nour-meet' ? htmlLoop(await chargerLoop(fichierLoop), await chargerBusiness(fichierBusiness), { plafondDollars: plafondLoop, abonnement: !loopNourParApi }) : id === 'vegebudget' ? htmlLoopVege(await chargerBusiness(fichierBusiness)) : id === 'histoires-vraies' ? htmlLoopHistoires(await lireLoopHistoires(fichierLoopHistoires)) : '') +
+            htmlSeo(await chargerSeo(fichierSeo), id, { jourSemaine: configSeo.jour, heure: configSeo.heure }) +
             htmlDecisions(await chargerDecisions(fichierDecisions), id),
           verifs: id === 'impacteur' ? await chargerVerifs(fichierVerifs) : undefined,
           verifDirect: Boolean(env.IMPACTEUR_VALIDATION_URL),
@@ -1158,6 +1195,13 @@ const serveur = http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({ messages: tousLesMessages(configAColler, await chargerAColler(fichierAColler)) }));
     }
+    // Le dernier compte rendu SEO (ou celui d'un projet : ?projet=…), lu par les loops et les fils Claude.
+    if (req.method === 'GET' && url.pathname === '/api/seo') {
+      const donnees = await chargerSeo(fichierSeo);
+      const projet = url.searchParams.get('projet');
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(projet ? seoPourLoop(donnees, projet) : donnees.rapports.at(-1) ?? null));
+    }
     if (req.method === 'GET' && url.pathname === '/api/decisions') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify(await chargerDecisions(fichierDecisions)));
@@ -1288,3 +1332,5 @@ filetNourMeet();
 setInterval(filetNourMeet, 10 * 60_000);
 tenirDecisions();
 setInterval(tenirDecisions, 10 * 60_000);
+compteRenduSeo();
+setInterval(compteRenduSeo, 10 * 60_000);
