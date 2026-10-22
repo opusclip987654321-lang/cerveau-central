@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-22T21:45:00Z",
+  "maj": "2026-10-22T23:59:00Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -43,6 +43,12 @@
       "type": "changé",
       "quoi": "Nouvelle source d'idées de sujets : les 167 titres de la chaîne anglaise Neon Rush (« comment l'humanité a inventé ou découvert… »), relevés avec leurs vues. Chaque dimanche, 1 ou 2 des questions candidates en viennent, traduites et mesurées en français avant d'être choisies.",
       "pourquoi": "Demande de Walid. Neon Rush a 44 500 abonnés et 28 vidéos à plus de 100 000 vues sur ce thème, proche de nos sujets « histoire de l'humanité ». On garde nos propres textes et on ne choisit que ce que la mesure en français confirme."
+    },
+    {
+      "date": "2026-10-22",
+      "type": "changé",
+      "quoi": "Deuxième source d'idées de sujets : les 26 titres de la chaîne anglaise Lore Explained (vie quotidienne des premiers humains, découvertes), relevés avec leurs vues et traduits. Pesés le dimanche avec ceux de Neon Rush, mesurés en français avant d'être choisis.",
+      "pourquoi": "Demande de Walid. Petite chaîne (3 220 abonnés) mais une vidéo à 1,4 million de vues en 4 jours sur « que faisaient les hommes préhistoriques pour se faire plaisir », un angle proche de nos questions. Le reste fait moins de 15 000 vues, donc c'est surtout cet angle qu'on retient."
     }
   ],
   "question": null,
