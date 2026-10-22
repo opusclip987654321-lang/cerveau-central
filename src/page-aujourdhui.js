@@ -3,15 +3,19 @@
 import { gabarit } from './page.js';
 import { PASTILLES } from './page-journal.js';
 import { jourParis } from './questions.js';
+import { htmlFait } from './fait.js';
 
 const e = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const STATUTS = { vert: 'avance', orange: 'à surveiller', rouge: 'à débloquer', pause: 'en pause', gris: 'pas branché' };
 const TYPES_PRIO = { panne: '⛔ Panne', arret: '🔴 À l’arrêt', fiche: '✋ Ta décision', souci: '🟠 À surveiller' };
 const ICONES = { video: '🎬', publication: '📣', mail: '✉️', rdv: '📅', client: '💶', note: '📝', autre: '•' };
 
+const veilleDe = (jour) => jourParis(new Date(new Date(`${jour}T12:00:00Z`) - 86_400_000));
+const lendemainDe = (jour) => jourParis(new Date(new Date(`${jour}T12:00:00Z`) + 86_400_000));
+
 const nombre = (v) => (typeof v === 'number' ? v.toLocaleString('fr-FR') : String(v));
 
-export function pageAujourdhui({ lignes, priorites, autres = 0, boites = '', changements = [], fraicheur = {}, jour = jourParis(), aFaire = 0, message }) {
+export function pageAujourdhui({ lignes, priorites, autres = 0, boites = '', fait = null, changements = [], fraicheur = {}, jour = jourParis(), aFaire = 0, message }) {
   const dateLongue = new Date(`${jour}T12:00:00Z`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
   const maj = fraicheur.derniere
     ? `Données relues ${fraicheur.retard ? `il y a ${fraicheur.retard} jour(s)` : `aujourd’hui à ${new Date(fraicheur.derniere).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}`}`
@@ -64,6 +68,7 @@ ${p.preuve ? `<p class="preuve">${e(p.preuve)}</p>` : ''}
 <p class="entete"><span class="date">${dateLongue.charAt(0).toUpperCase() + dateLongue.slice(1)}</span><span class="maj">${maj} · <a href="/surveillance">surveillance</a></span></p>
 <section class="section"><h2>Priorités du jour</h2>${blocPriorites}</section>
 ${boites ? `<section class="section"><h2>Mails à traiter</h2>${boites}</section>` : ''}
+${fait ? `<section class="section"><h2>J’ai fait aujourd’hui${fait.total ? ` · ${fait.total}` : ''}</h2>${htmlFait(fait)}<p class="fait-nav"><a href="/fait?jour=${veilleDe(jour)}">‹ Ce que j’ai fait hier</a></p></section>` : ''}
 <section class="section"><h2>Tes projets</h2><div class="lignes">${lignes.map(ligne).join('')}</div>
 <p class="legende">Chiffres du jour comparés à hier (▲ ▼) ; « 7 jours » quand le jour n’a rien ; « indisponible » quand la donnée n’est pas branchée, jamais 0.</p></section>
 <section class="section"><details class="hier-bloc"><summary>Ce qui a changé depuis hier</summary>${blocChangements}</details></section>
@@ -107,6 +112,7 @@ ${boites ? `<section class="section"><h2>Mails à traiter</h2>${boites}</section
 .hier { margin:8px 0 0; padding-left:18px; font-size:14px; }
 .hier ul { padding-left:16px; margin:2px 0 6px; color:var(--doux); }
 .vide { color:var(--doux); font-size:14px; margin:8px 0 0; }
+.fait-nav { font-size:13px; margin:6px 0 0; }
 .message { background:var(--carte); border:1px solid var(--bord); border-left:4px solid var(--ok); border-radius:8px; padding:10px 12px; }
 @media (max-width:760px) {
   .ligne { grid-template-columns:1fr; }
@@ -115,4 +121,13 @@ ${boites ? `<section class="section"><h2>Mails à traiter</h2>${boites}</section
 }
 </style>`;
   return gabarit({ onglet: 'aujourdhui', aFaire, contenu, titre: 'Aujourd’hui' });
+}
+
+// Page /fait?jour=… : « J'ai fait » d'un autre jour, avec la veille et le lendemain.
+export function pageFait(fait, aujourdhui = jourParis()) {
+  const dateLongue = new Date(`${fait.jour}T12:00:00Z`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
+  const nav = `<p class="fait-nav"><a href="/fait?jour=${veilleDe(fait.jour)}">‹ Veille</a>${fait.jour < aujourdhui ? ` · <a href="/fait?jour=${lendemainDe(fait.jour)}">Lendemain ›</a> · <a href="/">Aujourd’hui</a>` : ''}</p>`;
+  const contenu = `${nav}<section class="section"><h2>${fait.jour === aujourdhui ? 'J’ai fait aujourd’hui' : `J’ai fait le ${e(dateLongue)}`}${fait.total ? ` · ${fait.total}` : ''}</h2>${htmlFait(fait)}</section>
+<style>.section h2 { font-size:15px; margin:0 0 10px; color:var(--doux); font-weight:600; text-transform:uppercase; letter-spacing:.05em; } .fait-nav { font-size:13px; } .vide { color:var(--doux); font-size:14px; }</style>`;
+  return gabarit({ onglet: 'aujourdhui', contenu, titre: 'J’ai fait' });
 }

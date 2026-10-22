@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-22",
+  "maj": "2026-10-23",
   "source": "Revue du système du 20/10/2026, proposition n°1 acceptée par louis (« tout »)",
   "intro": "Le cerveau lui-même. Ce guide décrit pour l'instant la page « À coller » : un seul endroit pour tous les messages que tu dois coller dans tes autres projets Claude (3_PETITES HISTOIRES, Leviaro, VégéBudget, 12_Prospection sponsors), que les fils de ce projet ne peuvent pas atteindre.",
   "journee": [
@@ -12,6 +12,11 @@
       "quand": "Quand tu as un moment",
       "quoi": "Tu ouvres « À coller » (le menu affiche combien il en reste), tu copies chaque message, tu le colles une fois dans le projet indiqué, puis tu cliques « Fait ».",
       "toi": "Copier, coller, cocher"
+    },
+    {
+      "quand": "Toute la journée, toutes les 10 min",
+      "quoi": "Le cerveau rassemble dans « J'ai fait aujourd'hui » (page Aujourd'hui) tout ce que les automatisations et les fils Claude ont fait pour toi : prospects trouvés, mails et MP envoyés, réponses rangées, vidéos publiées, boîtes mail relues, décisions des loops. Les fils Claude le déclarent dans la table Notion « ✅ Fait pour Walid ».",
+      "toi": "Rien : tu regardes quand tu veux (hier : lien en bas de la section)"
     }
   ],
   "circuits": [
@@ -82,6 +87,13 @@
         "La page « Loops des projets » est un tableau de bord : une ligne par loop, tenue à jour par le cerveau toutes les 10 min (chiffres, état, dernière décision), un clic ouvre la page complète du projet.",
         "Chaque page projet suit le même modèle : Objectif, Où on en est, Pistes, Leçons, Décisions ; l'ancien texte est gardé replié en bas, rien n'est effacé."
       ]
+    },
+    {
+      "titre": "J'ai fait aujourd'hui",
+      "points": [
+        "Chaque fil Claude, tâche programmée ou loop qui travaille pour toi écrit UNE ligne par tour dans la table Notion « ✅ Fait pour Walid » (Quoi, Date, Projet, Nombre, Lien, Par).",
+        "Le reste vient de ce que le cerveau lit déjà, sans IA ; une source qui ne remonte rien n'invente rien."
+      ]
     }
   ],
   "role": {
@@ -105,6 +117,10 @@
     {
       "nom": "Notion « 🧠 Mes projets » (src/tableau-notion.js)",
       "role": "Tableau de bord des loops sur la page « Loops des projets », écrit toutes les 10 min avec NOTION_TOKEN"
+    },
+    {
+      "nom": "Notion « ✅ Fait pour Walid » (src/fait.js)",
+      "role": "Ce que les fils Claude déclarent avoir fait ; relu toutes les 10 min avec NOTION_TOKEN pour la section « J'ai fait aujourd'hui »"
     }
   ]
 }
