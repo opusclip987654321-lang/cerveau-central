@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-20T14:56:39Z",
+  "maj": "2026-10-22T21:45:00Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -37,6 +37,12 @@
       "date": "2026-10-19",
       "quoi": "Cycle 1 tranché : choix B. Le mercredi, la vidéo longue est remplacée par un 2e teaser Short ; teasers mardi, mercredi et jeudi.",
       "pourquoi": "Sur 28 jours, les Shorts font 3 495 vues et 24 abonnés, les vidéos longues 458 vues et 0 abonné ; l'objectif en cours est 1 000 abonnés. Les vidéos longues restent 2 fois par semaine pour les heures de visionnage, sans coût en plus."
+    },
+    {
+      "date": "2026-10-22",
+      "type": "changé",
+      "quoi": "Nouvelle source d'idées de sujets : les 167 titres de la chaîne anglaise Neon Rush (« comment l'humanité a inventé ou découvert… »), relevés avec leurs vues. Chaque dimanche, 1 ou 2 des questions candidates en viennent, traduites et mesurées en français avant d'être choisies.",
+      "pourquoi": "Demande de Walid. Neon Rush a 44 500 abonnés et 28 vidéos à plus de 100 000 vues sur ce thème, proche de nos sujets « histoire de l'humanité ». On garde nos propres textes et on ne choisit que ce que la mesure en français confirme."
     }
   ],
   "question": null,
