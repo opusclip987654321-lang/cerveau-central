@@ -91,7 +91,7 @@ La page **Associé** (`/associe`) reprend le projet Claude « 13_AIde pour const
 
 - `config/loops/fortune.json` : la **revue « fortune »** du lundi (fil « Associé business ») : avis franc de la semaine, propositions d'actions, classement des projets par « délai avant le 1er € × montant d'une vente » (Pousser, Maintenir, Geler, À clarifier, Outil, En pause), dépenses et pistes d'économie, carnet de leçons, décisions datées, question à louis. Les décisions sont aussi écrites par le fil dans Notion « Décisions des loops » (loop « Associé business »). Une revue de plus de 9 jours est marquée ancienne.
 - `config/idees-jour.json` : les **10 idées du jour** (projets neufs, développement, économies, connaissances), livrées à 10h48 par la routine « Idées du cerveau », 14 jours gardés : `{"jours": [{"date": "AAAA-MM-JJ", "idees": [{"categorie": "projet-neuf|developpement|economie|connaissance", "projet": "…", "titre": "…", "detail": "…", "source": "https://…"}]}]}`.
-- Règles : l'associé recommande, il ne gèle rien seul (les choix de louis, loops libres et Nūr Meet n°1, passent avant) ; jamais de dépense engagée ni d'abonnement coupé sans l'accord de louis (question posée) ; dépôt public, donc aucune donnée de prospect ni clé dans ces fichiers.
+- Règles : l'associé recommande, il ne gèle rien seul (les choix de louis, loops libres et Nūr Meet n°1, passent avant) ; il agit seul sur ce qui est gratuit et réversible, dépense seulement dans une enveloppe mensuelle (`depenses.enveloppe` : montant, engagé, lignes datées, chaque dépense aussi dans Notion), au-delà ou pour couper un abonnement il demande à louis ; dépôt public, donc aucune donnée de prospect ni clé dans ces fichiers.
 
 ## Notion : tableau de bord des loops (21/10)
 

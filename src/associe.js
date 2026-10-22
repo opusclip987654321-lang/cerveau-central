@@ -71,8 +71,9 @@ function blocDepenses(d) {
     .join('');
   return `<section class="bloc"><h3>💶 Dépenses</h3>
 <p>Coût fixe : <b>${n(d.fixeMois)} €/mois</b>${d.encaisse !== undefined ? ` · encaissé : <b>${n(d.encaisse)} €</b>` : ''}${d.note ? `<br><small>${e(d.note)}</small>` : ''}</p>
+${d.enveloppe ? `<p>Enveloppe de l’associé : <b>${d.enveloppe.montantMois === null || d.enveloppe.montantMois === undefined ? 'montant à fixer' : `${n(d.enveloppe.engage ?? 0)} € engagés sur ${n(d.enveloppe.montantMois)} €`}</b> ce mois-ci${(d.enveloppe.lignes ?? []).length ? `</p><ul>${d.enveloppe.lignes.map((l) => `<li><b>${e(l.date)}</b> : ${n(l.montant)} € · ${e(l.quoi)}${l.pourquoi ? `<br><small>${e(l.pourquoi)}</small>` : ''}</li>`).join('')}</ul>` : '</p>'}` : ''}
 ${pistes ? `<h4>Pistes d’économie</h4><ul>${pistes}</ul>` : ''}
-<p class="vide petit-texte">L’associé ne coupe aucun abonnement et n’engage aucune dépense sans ton accord : chaque piste te sera posée en question.</p></section>`;
+<p class="vide petit-texte">L’associé agit seul sur ce qui est gratuit et se défait, et dépense seulement dans son enveloppe du mois ; au-delà, ou pour couper un abonnement, il te pose la question.</p></section>`;
 }
 
 // La page « Associé » : avis de la semaine, classement, dépenses, idées du jour, décisions, leçons.
