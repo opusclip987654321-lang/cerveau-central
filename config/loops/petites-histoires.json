@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-21T23:55:00Z",
+  "maj": "2026-10-22T00:35:00Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -28,6 +28,12 @@
     "meilleurShort": "Un bébé de 3 mois se souvient de ça : 1 942 vues"
   },
   "decisions": [
+    {
+      "date": "2026-10-22",
+      "type": "changé",
+      "quoi": "Règle de Walid (21/10) écrite dans la consigne de la loop : pas de seuil d'arrêt ni de retour arrière sur les résultats (une version qui rapporte moins reste, la loop en juge). Seul filet : après chaque changement (code, réglage, texte, tâche programmée), vérifier aussitôt que l'épisode est produit et programmé sur YouTube, que les Shorts partent sur Facebook et Instagram et que le compte rendu du dimanche arrive au cerveau ; si c'est cassé, annuler ce changement tout de suite sans attendre Walid, le noter ici (type « arrêté ») avec la cause et ajouter une ligne au carnet de leçons. Pas de message à Walid pour une annulation.",
+      "pourquoi": "Demande de Walid du 21/10 ; aucun chiffre en jeu : c'est une règle de fonctionnement, appliquée dès maintenant par les tâches programmées (épisode, teaser, dimanche)."
+    },
     {
       "date": "2026-10-21",
       "type": "changé",
