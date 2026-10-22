@@ -85,6 +85,14 @@ L'IA des loops tourne dans des tâches programmées Claude (abonnement de louis)
 - `GET /api/loop/nour-meet/revue` : `{semaine, consigne, donnees}` ; `semaine` vaut `null` s'il n'y a pas de revue due (lundi après 9 h, version de 6 jours au moins). `POST` : `{"semaine": "AAAA-MM-JJ", "revue": {…le JSON de la consigne…}}`, appliqué avec les mêmes garde-fous (méthode vérifiée, radical en attente de louis, leçons notées).
 - `LOOP_NOUR_IA=api` dans `.env` remet l'ancien fonctionnement (Haiku toutes les 10 min, Opus le lundi, plafond `PLAFOND_LOOP_NOUR_DOLLARS`).
 
+## Ton associé business (22/10)
+
+La page **Associé** (`/associe`) reprend le projet Claude « 13_AIde pour construire une fortune » : un associé qui aide louis à gagner le plus d'argent possible et à en économiser. Le cerveau ne fabrique rien, il affiche deux fichiers poussés par PR depuis les fils Claude (abonnement, pas l'API) :
+
+- `config/loops/fortune.json` : la **revue « fortune »** du lundi (fil « Associé business ») : avis franc de la semaine, propositions d'actions, classement des projets par « délai avant le 1er € × montant d'une vente » (Pousser, Maintenir, Geler, À clarifier, Outil, En pause), dépenses et pistes d'économie, carnet de leçons, décisions datées, question à louis. Les décisions sont aussi écrites par le fil dans Notion « Décisions des loops » (loop « Associé business »). Une revue de plus de 9 jours est marquée ancienne.
+- `config/idees-jour.json` : les **10 idées du jour** (projets neufs, développement, économies, connaissances), livrées à 10h48 par la routine « Idées du cerveau », 14 jours gardés : `{"jours": [{"date": "AAAA-MM-JJ", "idees": [{"categorie": "projet-neuf|developpement|economie|connaissance", "projet": "…", "titre": "…", "detail": "…", "source": "https://…"}]}]}`.
+- Règles : l'associé recommande, il ne gèle rien seul (les choix de louis, loops libres et Nūr Meet n°1, passent avant) ; jamais de dépense engagée ni d'abonnement coupé sans l'accord de louis (question posée) ; dépôt public, donc aucune donnée de prospect ni clé dans ces fichiers.
+
 ## Notion : tableau de bord des loops (21/10)
 
 La page Notion « Loops des projets » est un tableau de bord : la table « 🧠 Mes projets » (une ligne par loop, `src/tableau-notion.js`) ouvre la page complète de chaque projet (objectif, où on en est, pistes, leçons, décisions filtrées, ancien contenu replié). Les règles communes sont sur la page « Règles des loops ».
