@@ -16,7 +16,6 @@
     { "libelle": "VPS YouTube automatisation (OVH)", "projet": "extrait-politique", "montant": 12, "devise": "€", "frequence": "mois" },
     { "libelle": "Claude (abonnement)", "projet": "commun", "montant": 100, "devise": "€", "frequence": "mois" },
     { "libelle": "ChatGPT (abonnement)", "projet": "commun", "montant": 20, "devise": "€", "frequence": "mois" },
-    { "libelle": "ElevenLabs", "projet": "extrait-politique", "montant": 7, "devise": "€", "frequence": "mois" },
     { "libelle": "Domaine nourmeet.com", "projet": "nour-meet", "montant": 13, "devise": "€", "frequence": "an" },
     { "libelle": "Domaine actualitevideo.fr", "projet": "extrait-politique", "montant": 7, "devise": "€", "frequence": "an" },
     { "libelle": "Domaine leviaro.fr", "projet": "leviaro", "montant": 9, "devise": "€", "frequence": "an" },
