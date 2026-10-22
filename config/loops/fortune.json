@@ -125,12 +125,12 @@
   "depenses": {
     "fixeMois": 148,
     "encaisse": 0,
-    "note": "Claude 100, ChatGPT 20, VPS Nūr 14, VPS YouTube 12 (config/argent.json), plus les recharges ponctuelles. ElevenLabs (7 €) coupé le 22/10.",
+    "note": "Claude 100, ChatGPT 20, VPS Nūr 14, VPS YouTube 12 (config/argent.json), plus les recharges ponctuelles. ElevenLabs (Starter 6 $/mois) coupé le 22/10, fin le 25/10.",
     "pistes": [
       {
         "quoi": "ElevenLabs",
-        "gain": "7 €/mois",
-        "etat": "accepté par Walid le 22/10 : à résilier sur elevenlabs.io",
+        "gain": "6 $/mois (forfait Starter, vu sur la capture de Walid)",
+        "etat": "accepté par Walid le 22/10 : résiliation via Facturation, forfait actif jusqu'au 25/10",
         "pourquoi": "Vérifié dans tous les dépôts le 22/10 : il ne sert qu'à L'extrait politique (en pause, ses 2 workflows n8n de voix sont éteints) et à l'agent vidéo Nūr Meet (aucune publication depuis fin septembre). Petites histoires vraies utilise des voix Gemini. Se réabonner prend 2 minutes si une loop en a besoin."
       },
       {
@@ -203,7 +203,7 @@
     {
       "date": "2026-10-22",
       "type": "Geste de louis",
-      "quoi": "ElevenLabs coupé (7 €/mois, 84 €/an) : Walid résilie sur elevenlabs.io, retiré des dépenses du cerveau.",
+      "quoi": "ElevenLabs coupé (forfait Starter, 6 $/mois, et non 7 € comme noté) : Walid résilie via Facturation, fin le 25/10 ; retiré des dépenses du cerveau.",
       "pourquoi": "Vérifié : il ne servait qu'à L'extrait (pause) et à l'agent vidéo Nūr Meet (rien depuis fin septembre). Les vidéos longues Impacteur Afrique l'utilisaient aussi pour la voix off ; leurs workflows sont éteints (sauvegarde n8n du 20/10). S'ils reprennent, la vidéo sort sans voix tant qu'on ne se réabonne pas."
     }
   ],
