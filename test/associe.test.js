@@ -31,6 +31,7 @@ test('page : vide, puis avec la revue du dépôt et des idées, texte échappé'
   const html = htmlAssocie(fortune, { jours: [{ date: '2026-10-22', idees: [{ categorie: 'economie', titre: 'Couper <X>', detail: 'gain 7 €' }] }] }, { maintenant: new Date('2026-10-23T10:00:00Z') });
   assert.match(html, /Nūr Meet restaurateurs/);
   assert.match(html, /Ce que ton associé propose/);
+  assert.match(html, /Enveloppe de l’associé/);
   assert.match(html, /Couper &lt;X&gt;/);
   assert.doesNotMatch(html, /ancienne/);
   assert.match(htmlAssocie(fortune, null, { maintenant: new Date('2026-11-10T10:00:00Z') }), /ancienne/);
