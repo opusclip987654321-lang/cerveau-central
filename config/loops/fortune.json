@@ -128,22 +128,22 @@
     "note": "Claude 100, ChatGPT 20, VPS Nūr 14, VPS YouTube 12, ElevenLabs 7 (config/argent.json), plus les recharges ponctuelles.",
     "pistes": [
       {
+        "quoi": "ElevenLabs",
+        "gain": "7 €/mois",
+        "etat": "vérifié, je propose de couper : ton oui attendu",
+        "pourquoi": "Vérifié dans tous les dépôts le 22/10 : il ne sert qu'à L'extrait politique (en pause, ses 2 workflows n8n de voix sont éteints) et à l'agent vidéo Nūr Meet (aucune publication depuis fin septembre). Petites histoires vraies utilise des voix Gemini. Se réabonner prend 2 minutes si une loop en a besoin."
+      },
+      {
+        "quoi": "IPRoyal (proxy YouTube)",
+        "gain": "~50 $ par recharge",
+        "etat": "appliqué : plus de recharge",
+        "pourquoi": "Vérifié le 22/10 : seul L'extrait politique s'en sert, et il est en pause. Rien à couper, aucune recharge prévue ; à refaire seulement si L'extrait reprend."
+      },
+      {
         "quoi": "ChatGPT",
         "gain": "20 €/mois",
         "etat": "à te demander",
-        "pourquoi": "Claude couvre déjà l'IA de tous les projets ; à couper seulement s'il ne te sert plus."
-      },
-      {
-        "quoi": "ElevenLabs",
-        "gain": "7 €/mois",
-        "etat": "à te demander",
-        "pourquoi": "Rangé sur L'extrait politique, en pause : à vérifier qu'aucun autre projet ne s'en sert."
-      },
-      {
-        "quoi": "Plus de recharge IPRoyal tant que L'extrait est en pause",
-        "gain": "~50 $ par recharge",
-        "etat": "à te demander",
-        "pourquoi": "Proxy YouTube de L'extrait."
+        "pourquoi": "Vérifié le 22/10 : aucun dépôt ni workflow ne passe par ton abonnement ChatGPT (l'API OpenAI des images est à part). Seul toi sais si tu t'en sers encore."
       }
     ],
     "enveloppe": {
@@ -169,6 +169,10 @@
     {
       "date": "2026-10-22",
       "texte": "Autonomie (choix C de Walid) : l'associé agit seul sur ce qui ne coûte rien et se défait, et peut engager de l'argent dans une enveloppe mensuelle fixe ; au-delà, ou pour couper un abonnement, il demande."
+    },
+    {
+      "date": "2026-10-22",
+      "texte": "Correction de Walid : vérifier soi-même AVANT de lui poser une question (dépôts, sauvegarde n8n, mémoire, guides, sinon UNE commande envoyer.sh). Une question seulement quand il reste une décision à prendre, avec la conclusion déjà écrite."
     }
   ],
   "decisions": [
