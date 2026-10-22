@@ -169,7 +169,12 @@ export async function synchroniserFluxYoutube(business, { chaines = {}, lire, de
   for (const { projet, brut } of entrees) {
     try {
       const id = await idChaine(brut, yt, lire);
-      const xml = await lire(`https://www.youtube.com/feeds/videos.xml?channel_id=${id}`);
+      // 404 sur le flux d'une chaîne existante = aucune vidéo publique (cas d'Impacteur
+      // Frexit le 22/10, chaîne lue sans erreur par l'API) : liste vide, pas une panne.
+      const xml = await lire(`https://www.youtube.com/feeds/videos.xml?channel_id=${id}`).catch((err) => {
+        if (/répond 404/.test(err.message)) return '';
+        throw err;
+      });
       const nouvelles = lireFlux(xml);
       const avant = yt.flux.chaines[id]?.videos ?? [];
       const ids = new Set(nouvelles.map((v) => v.id));
