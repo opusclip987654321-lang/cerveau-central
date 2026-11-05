@@ -1,107 +1,107 @@
 {
-  "maj": "2026-10-22T01:00:00Z",
-  "cycle": 2,
-  "semaine": "2026-10-19",
-  "avis": "0 € encaissé sur tous les projets à ce jour. Le chemin le plus court vers le premier euro, ce sont les 3 restaurateurs déjà intéressés par Nūr Meet et les marques à démarcher pour les chaînes Impacteur. Leviaro vaut le plus cher par vente, mais 85 mails n'ont encore donné aucune réponse : sa loop doit changer de cible ou de message avant d'en envoyer plus. Le reste tourne à coût presque nul : on le garde, sans y mettre un euro de plus tant que rien n'est encaissé.",
-  "objectifCycle": "Un premier paiement reçu : un restaurateur parmi les 3 intéressés, ou un premier sponsor.",
+  "maj": "2026-11-05T18:30:00Z",
+  "cycle": 3,
+  "semaine": "2026-11-02",
+  "avis": "Revues du 26/10 et du 2/11 rattrapées le 5/11 : mes tâches, comme d'autres loops, n'ont pas tourné pendant deux semaines (limite d'usage). Toujours 0 € encaissé, mais deux vrais signaux : un premier rendez-vous sponsor (L'Harmattan, 3/11) et 2 discussions Leviaro. C'est là que le premier euro est le plus proche : il faut une offre chiffrée, vite. Nūr Meet restaurateurs stagne (3 intéressés, 0 payant) et sa loop sur l'abonnement ne trie plus les réponses depuis le 21/10.",
+  "objectifCycle": "Envoyer un devis chiffré à L'Harmattan et faire avancer les 2 discussions Leviaro jusqu'à une proposition ; remettre en marche le tri des réponses Nūr Meet.",
   "propositions": [
     {
-      "quoi": "Transformer les 3 restaurateurs intéressés en abonnés : prix de lancement et lien de paiement direct dans la prochaine réponse.",
-      "qui": "loop Nūr Meet restaurateurs",
-      "pourquoi": "Ils ont déjà dit oui à l'idée ; 624 contactés pour 3 intéressés, chaque intéressé perdu coûte 200 mails."
+      "quoi": "Envoyer à L'Harmattan, sous 48 h, un devis en 3 formats chiffrés séparément : mention dans une vidéo, interview de l'auteur, vidéo dédiée.",
+      "qui": "loop Sponsors (elle prépare, le serveur envoie)",
+      "pourquoi": "Premier rendez-vous obtenu après 189 prospects. Un devis clair avec 3 prix évite la négociation dans le vide."
     },
     {
-      "quoi": "Valider les 48 prospects sponsors en attente.",
-      "qui": "Walid, admin sponsors.leviaro.fr",
-      "pourquoi": "C'est ton choix de valider toi-même ; aucun mail ne part depuis le 20/10 tant que ce n'est pas fait, et c'est le seul projet où un rendez-vous peut payer vite."
+      "quoi": "Remettre en marche la loop Nūr Meet restaurateurs sur l'abonnement.",
+      "qui": "coordinateur (fil Nūr Meet)",
+      "pourquoi": "Vérifié le 5/11 : ses tâches de tri (12h37, 18h52) n'ont plus tourné depuis le 21/10 et sa revue du lundi jamais. 768 contactés, les réponses arrivées depuis ne sont pas triées, donc aucun intéressé n'est signalé."
     },
     {
-      "quoi": "Leviaro : revoir la cible et le premier mail avant d'augmenter le volume.",
-      "qui": "loop Leviaro",
-      "pourquoi": "85 mails, 0 réponse : le problème n'est pas le volume. 20 analyses par jour ne servent que si le message accroche."
+      "quoi": "Que le cerveau signale une loop dont la tâche n'a pas tourné depuis 2 jours.",
+      "qui": "revue hebdo du système (proposition à Walid)",
+      "pourquoi": "Leviaro : 0 analyse pendant 13 jours sans que personne ne le voie ; idem pour l'associé et Nūr Meet. Une panne silencieuse coûte plus cher qu'une panne visible."
     }
   ],
   "classement": [
     {
       "rang": 1,
-      "projet": "Nūr Meet restaurateurs",
+      "projet": "Impacteur Sponsors",
       "decision": "Pousser",
-      "delai": "quelques semaines",
-      "montant": "~70 €/mois",
-      "preuve": "3 intéressés sur 624 contactés, 0 payant",
-      "pourquoi": "Ta priorité n°1 pour l'argent sous 3 mois ; des intéressés existent déjà."
+      "delai": "quelques semaines si le devis part",
+      "montant": "indisponible (premier devis à faire)",
+      "preuve": "1 RDV (L'Harmattan, 3/11), 189 prospects, 47 mails sur 7 j, 1 livre accepté côté Impacteur",
+      "pourquoi": "Le seul projet avec un rendez-vous réel : passe devant."
     },
     {
       "rang": 2,
-      "projet": "Impacteur Sponsors",
+      "projet": "Leviaro",
       "decision": "Pousser",
-      "delai": "dès qu'un rendez-vous a lieu",
-      "montant": "indisponible",
-      "preuve": "130 prospects, 40 mails sur 7 j, 0 rendez-vous",
-      "pourquoi": "Bloqué par les 48 prospects à valider ; montant d'un sponsor à mesurer au premier devis."
+      "delai": "quelques semaines",
+      "montant": "590 à 890 € par site",
+      "preuve": "195 mails, 2 réponses, 2 en discussion",
+      "pourquoi": "Les premières vraies discussions ; une vente rembourse 4 mois de dépenses. Tours manqués du 23/10 au 5/11."
     },
     {
       "rang": 3,
-      "projet": "Leviaro",
+      "projet": "Nūr Meet restaurateurs",
       "decision": "Pousser",
-      "delai": "inconnu tant qu'aucune réponse",
-      "montant": "590 à 890 € par site",
-      "preuve": "85 mails envoyés, 0 réponse",
-      "pourquoi": "Une seule vente rembourse 4 mois de dépenses, mais le message doit changer."
+      "delai": "inconnu tant que le tri est arrêté",
+      "montant": "~70 €/mois",
+      "preuve": "3 intéressés sur 768 contactés, 0 payant",
+      "pourquoi": "Toujours ta priorité n°1 sur 3 mois, mais aucun progrès en deux semaines : la loop doit d'abord retrier."
     },
     {
       "rang": 4,
+      "projet": "Patreon Impacteur Afrique",
+      "decision": "À clarifier",
+      "delai": "dès que les paliers payants existent",
+      "montant": "indisponible",
+      "preuve": "loop de messages Instagram lancée le 22/10 ; chiffres non lus ici",
+      "pourquoi": "Argent direct possible ; je lirai ses chiffres à la prochaine revue."
+    },
+    {
+      "rang": 5,
       "projet": "Nūr Meet grand public",
       "decision": "Maintenir",
       "delai": "plus de 3 mois",
       "montant": "places payées, à définir",
-      "preuve": "11 comptes particuliers, 50 visites sur 7 j",
-      "pourquoi": "Sa loop est libre (ton choix) ; elle sert aussi à rendre le site crédible auprès des restaurateurs."
+      "preuve": "11 comptes, 33 visites sur 7 j, Instagram bloqué",
+      "pourquoi": "Loop libre ; elle rend le site crédible pour les restaurateurs."
     },
     {
-      "rang": 5,
+      "rang": 6,
       "projet": "VégéBudget",
       "decision": "Maintenir",
       "delai": "plus de 3 mois",
       "montant": "~5 €/mois par abonné",
-      "preuve": "0 payant, 2 inscrits, 99 visiteurs sur 30 j",
-      "pourquoi": "Loop autonome à coût presque nul ; on regarde le trafic organique avant tout euro de plus."
+      "preuve": "0 payant, 2 inscrits, 134 visiteurs sur 30 j (+35 %)",
+      "pourquoi": "Le trafic monte à coût nul ; rien de plus à y mettre."
     },
     {
-      "rang": 6,
+      "rang": 7,
       "projet": "Petites histoires vraies",
       "decision": "Maintenir",
       "delai": "plus de 6 mois",
       "montant": "500 €/mois visés",
-      "preuve": "26 abonnés, 7,7 h de vues",
-      "pourquoi": "La monétisation YouTube demande 1 000 abonnés et 4 000 h ; coût fixe, aucune dépense en plus."
+      "preuve": "26 abonnés, compte rendu de la loop en retard",
+      "pourquoi": "Monétisation lointaine ; à coût fixe."
     },
     {
-      "rang": 7,
+      "rang": 8,
       "projet": "Agent Cambodge emploi",
       "decision": "À clarifier",
       "delai": "indisponible",
       "montant": "un salaire",
       "preuve": "prospection à la main",
-      "pourquoi": "Un emploi peut rapporter plus que tout le reste : à savoir s'il reste prioritaire."
+      "pourquoi": "Pas de donnée nouvelle."
     },
     {
-      "rang": 8,
+      "rang": 9,
       "projet": "Impacteur invitations",
       "decision": "Outil",
       "delai": "—",
       "montant": "pas d'objectif argent",
-      "preuve": "9 invitations sur 7 j",
-      "pourquoi": "Les interviews font vivre les chaînes que les sponsors paient."
-    },
-    {
-      "rang": 9,
-      "projet": "Vente ebook, Trader",
-      "decision": "À clarifier",
-      "delai": "indisponible",
-      "montant": "indisponible",
-      "preuve": "aucune donnée dans le cerveau",
-      "pourquoi": "Projets vus dans ta liste, jamais branchés : à confirmer avant de les classer."
+      "preuve": "0 invitation sur 7 j, 1 livre accepté",
+      "pourquoi": "Les invitations se sont arrêtées : à surveiller, elles nourrissent les chaînes que les sponsors paient."
     },
     {
       "rang": 10,
@@ -109,8 +109,8 @@
       "decision": "En pause",
       "delai": "—",
       "montant": "—",
-      "preuve": "en pause depuis le 19/10",
-      "pourquoi": "Ses dépenses qui tournent encore sont des pistes d'économie."
+      "preuve": "en pause",
+      "pourquoi": "VPS YouTube 12 €/mois encore payé."
     },
     {
       "rang": 11,
@@ -119,7 +119,7 @@
       "delai": "—",
       "montant": "—",
       "preuve": "IA sur l'abonnement",
-      "pourquoi": "Il pilote les loops ; il ne rapporte pas seul."
+      "pourquoi": "Il pilote ; il doit voir les tâches qui ne tournent plus."
     }
   ],
   "depenses": {
@@ -130,7 +130,7 @@
       {
         "quoi": "ElevenLabs",
         "gain": "6 $/mois (forfait Starter, vu sur la capture de Walid)",
-        "etat": "accepté par Walid le 22/10 : résiliation via Facturation, forfait actif jusqu'au 25/10",
+        "etat": "fait : annulé par Walid le 22/10, fin le 25/10",
         "pourquoi": "Vérifié dans tous les dépôts le 22/10 : il ne sert qu'à L'extrait politique (en pause, ses 2 workflows n8n de voix sont éteints) et à l'agent vidéo Nūr Meet (aucune publication depuis fin septembre). Petites histoires vraies utilise des voix Gemini. Se réabonner prend 2 minutes si une loop en a besoin."
       },
       {
@@ -148,7 +148,7 @@
     ],
     "enveloppe": {
       "montantMois": 100,
-      "mois": "2026-10",
+      "mois": "2026-11",
       "engage": 0,
       "lignes": []
     }
@@ -173,6 +173,10 @@
     {
       "date": "2026-10-22",
       "texte": "Correction de Walid : vérifier soi-même AVANT de lui poser une question (dépôts, sauvegarde n8n, mémoire, guides, sinon UNE commande envoyer.sh). Une question seulement quand il reste une décision à prendre, avec la conclusion déjà écrite."
+    },
+    {
+      "date": "2026-11-05",
+      "texte": "Du 23/10 au 5/11, les tâches sur l'abonnement (associé, Nūr Meet, Leviaro, idées du matin) n'ont pas tourné ou n'ont rien produit, sans alerte. Toujours vérifier au début d'une revue que les tâches des loops ont tourné (dernier passage), et le dire."
     }
   ],
   "decisions": [
@@ -205,8 +209,20 @@
       "type": "Geste de louis",
       "quoi": "ElevenLabs coupé (forfait Starter, 6 $/mois, et non 7 € comme noté) : Walid résilie via Facturation, fin le 25/10 ; retiré des dépenses du cerveau.",
       "pourquoi": "Vérifié : il ne servait qu'à L'extrait (pause) et à l'agent vidéo Nūr Meet (rien depuis fin septembre). Les vidéos longues Impacteur Afrique l'utilisaient aussi pour la voix off ; leurs workflows sont éteints (sauvegarde n8n du 20/10). S'ils reprennent, la vidéo sort sans voix tant qu'on ne se réabonne pas."
+    },
+    {
+      "date": "2026-11-05",
+      "type": "Changé",
+      "quoi": "Revues du 26/10 et du 2/11 rattrapées : Impacteur Sponsors passe n°1 (premier RDV), Leviaro n°2 (2 discussions), Nūr Meet restaurateurs n°3 tant que son tri est arrêté.",
+      "pourquoi": "Un rendez-vous réel et des discussions valent plus qu'une liste d'intéressés qui ne bouge plus depuis deux semaines."
+    },
+    {
+      "date": "2026-11-05",
+      "type": "Gardé",
+      "quoi": "Enveloppe de 100 € : rien dépensé en octobre ni en novembre.",
+      "pourquoi": "Aucun test payant ne valait plus qu'un devis ou une relance gratuite."
     }
   ],
   "question": null,
-  "prochaine": "Revue du lundi 27/10 : un premier paiement est-il arrivé ? Sinon, chercher pourquoi les intéressés ne signent pas."
+  "prochaine": "Revue du lundi 9/11 : devis L'Harmattan parti ? Discussions Leviaro ? Tri Nūr Meet relancé ? Lire les chiffres du Patreon."
 }
