@@ -1,5 +1,5 @@
 {
-  "maj": "2026-10-22T23:59:00Z",
+  "maj": "2026-11-05T20:40:00Z",
   "objectifs": {
     "abonnes": {
       "actuel": 26,
@@ -28,6 +28,12 @@
     "meilleurShort": "Un bébé de 3 mois se souvient de ça : 1 942 vues"
   },
   "decisions": [
+    {
+      "date": "2026-11-05",
+      "type": "changé",
+      "quoi": "Nouveau thème des vidéos longues : événements réels de l'histoire africaine depuis les indépendances (vers 1956 à aujourd'hui). Rien d'autre ne change (style, rythme, voix, Shorts, tests en cours). Prochains sujets : Mobutu, Idi Amin, indépendance de l'Algérie.",
+      "pourquoi": "Pivot demandé et validé par Walid après lecture de 3 textes d'essai (Lumumba, Sankara, Mandela). Demande mesurée sur YouTube (médiane des vues des vidéos françaises) : Mobutu 278 797, Idi Amin 153 905, Algérie 148 025."
+    },
     {
       "date": "2026-10-20",
       "quoi": "Test : sur les 4 prochaines vidéos longues (dès le 23 octobre), une question posée aux spectateurs juste après l'accroche pour les faire commenter. Si ça marche, plusieurs questions par vidéo.",
