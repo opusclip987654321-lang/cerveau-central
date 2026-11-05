@@ -1,18 +1,153 @@
 {
   "jours": [
     {
+      "date": "2026-11-05",
+      "idees": [
+        {
+          "categorie": "developpement",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Un appel aux 3 restaurants intéressés",
+          "detail": "Les cadences qui convertissent alternent 8 à 12 contacts sur 3 semaines, téléphone compris, alors que les restos n'ont reçu que des mails. Un appel de 5 minutes aux 3 intéressés, avec le lien d'essai prêt, est le chemin le plus court vers le 1er abonnement.",
+          "source": "https://scrap.io/fr/guide-prospection-telephonique-script-cold-calling-techniques-2025"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Afrique",
+          "titre": "Patreon : viser 2 à 4 payants sur les 85 gratuits",
+          "detail": "Les créateurs convertissent en général 2 à 5 % de leurs membres gratuits, soit 2 à 4 payants aujourd'hui. Le palier « tu votes pour le prochain invité », qui a fait réagir en MP, doit être le palier à 5 € mis en avant.",
+          "source": "https://creatorrevenuecalculator.com/blog/how-a-patreon-tier-ladder-converts-free-fans-to-paid-subscribers/"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Sponsors",
+          "titre": "Cibler les marques de la diaspora, pas les grands annonceurs",
+          "detail": "Les grands annonceurs français restent presque absents des vidéos de créateurs francophones. Transfert d'argent, télécoms africaines et cosmétiques pour peaux noires ont l'audience d'Impacteur comme cible exacte : à mettre en tête des 48 prospects.",
+          "source": "https://ecran-total.fr/wp-content/uploads/2026/06/Barometre-Vertical-S1-2026_Ecran-total.pdf"
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Des Shorts clés en main pour les créateurs africains",
+          "detail": "YouTube ne paie toujours pas les créateurs de Côte d'Ivoire, du Sénégal ou du Cameroun, qui vivent donc des sponsors et ont besoin de volume. L'agent vidéo existant peut découper leurs vidéos en Shorts contre un forfait mensuel (prix à tester, par exemple 150 € pour 20 Shorts).",
+          "source": "https://capmad.com/article/en-afrique-francophone-les-createurs-youtube-restent-hors-jeu-de-la-monetisation-officielle"
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "Impacteur",
+          "titre": "Une lettre hebdo sponsorisée « business Afrique »",
+          "detail": "Chaque interview Impacteur donne déjà de quoi écrire une lettre courte par semaine, gratuite pour le lecteur. Un seul sponsor par numéro suffit à la rentabiliser, et la liste d'abonnés vaut ensuite de l'argent auprès des mêmes marques que les sponsors YouTube.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Un guide payant : « gagner sur YouTube sans le programme partenaire »",
+          "detail": "Des milliers de créateurs africains francophones cherchent comment vivre de YouTube sans la monétisation officielle. Un guide de 19 € (sponsors, Patreon, affiliation), écrit à partir de ce qu'Impacteur fait déjà, se vend seul une fois en ligne.",
+          "source": "https://capmad.com/article/en-afrique-francophone-les-createurs-youtube-restent-hors-jeu-de-la-monetisation-officielle"
+        },
+        {
+          "categorie": "economie",
+          "projet": "Impacteur Afrique",
+          "titre": "Un palier Patreon à 5 € rapporte environ 4 € net",
+          "detail": "Patreon prend 10 %, plus les frais de paiement et de change, soit près de 20 % sur les petits montants. Mieux vaut un palier à 5 € qu'à 2 € : à 2 €, il reste environ 1,50 €.",
+          "source": "https://quasa.io/fr/media/patreon-ne-prend-pas-seulement-10-le-change-et-le-versement-s-ajoutent"
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "Vérifier qu'ElevenLabs n'a rien prélevé en novembre",
+          "detail": "L'abonnement a été annulé le 22/10 et devait s'arrêter le 25/10. Un coup d'œil au relevé de début novembre confirme l'économie ; un prélèvement passé se réclame tout de suite.",
+          "source": ""
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Démarchage téléphonique : la règle change le 11 août 2026",
+          "detail": "La loi de juin 2025 impose l'accord préalable pour démarcher les particuliers par téléphone. Les restaurants sont des professionnels et ne seraient pas concernés, mais c'est à confirmer avant de lancer des appels en série.",
+          "source": "https://scrap.io/fr/guide-prospection-telephonique-script-cold-calling-techniques-2025"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Impacteur Afrique",
+          "titre": "Un spectateur en France vaut 5 fois plus qu'en Afrique",
+          "detail": "La publicité YouTube paie environ 0,50 à 2 $ pour 1 000 vues en Afrique francophone, contre 3 à 12 $ en France. Les vidéos qui parlent aussi à la diaspora en France augmentent la valeur de chaque vue pour les sponsors.",
+          "source": "https://kolonell.com/fr/blog/youtube-monetisation-diaspora-afrique-2026"
+        }
+      ]
+    },
+    {
       "date": "2026-10-22",
       "idees": [
-        { "categorie": "developpement", "projet": "Nūr Meet restaurateurs", "titre": "Un lien de paiement direct pour les 3 intéressés", "detail": "Stripe crée un lien d'abonnement avec essai gratuit, sans code, depuis le tableau de bord. Envoyer ce lien avec un 1er mois offert dans la prochaine réponse supprime une étape entre « intéressé » et « payant ».", "source": "https://stripe.com/fr-ca/newsroom/news/stripe-launches-payment-links" },
-        { "categorie": "developpement", "projet": "Impacteur Sponsors", "titre": "Un prix prêt avant le premier rendez-vous", "detail": "La méthode courante : vues moyennes par vidéo × un CPM de 20 à 40 $, ajusté selon la niche. Avoir ce chiffre par chaîne évite de brader le premier contrat.", "source": "https://tubeanalytics.net/fr/blog/youtube-brand-deals-pricing-calculator" },
-        { "categorie": "developpement", "projet": "Leviaro", "titre": "Les restaurants sans site trouvés par Nūr Meet = prospects Leviaro", "detail": "La prospection Nūr Meet repère déjà des restaurants ; ceux qui n'ont pas de site sont la cible exacte de Leviaro. Une seule recherche sert deux ventes.", "source": "" },
-        { "categorie": "developpement", "projet": "Impacteur", "titre": "Des Shorts tirés de chaque interview", "detail": "Aucune loop ne porte encore les Shorts des interviews Impacteur. Plus de vues sur les chaînes = un prix de sponsoring plus élevé, avec la chaîne Remotion déjà prévue sur le VPS.", "source": "" },
-        { "categorie": "projet-neuf", "projet": "", "titre": "Vendre l'automatisation n8n aux PME", "detail": "Tu fais déjà tourner une dizaine de workflows (prospection, relances, Telegram). Les intégrateurs facturent 700 à 1 500 €/jour selon un blog spécialisé ; l'offre qui marche : audit, workflow clé en main, puis maintenance mensuelle.", "source": "https://www.studeria.fr/articles-de-blog/vendre-automatisation-ia-offre-freelance" },
-        { "categorie": "projet-neuf", "projet": "", "titre": "Des modèles n8n prêts à l'emploi", "detail": "Ta prospection mail avec relances et validation Telegram peut se vendre comme modèle (estimation : 29 à 79 € l'unité, à vérifier sur les places de marché). Zéro client à gérer, et une vitrine pour l'offre d'automatisation.", "source": "" },
-        { "categorie": "projet-neuf", "projet": "Nūr Meet restaurateurs", "titre": "Fiche Google des restaurants, en petit service payant", "detail": "Les restaurants démarchés ont souvent une fiche Google incomplète (menu, photos, horaires). Une mise en ordre à prix fixe se vend plus facilement qu'un abonnement et ouvre la porte à Nūr Meet.", "source": "" },
-        { "categorie": "economie", "projet": "Commun", "titre": "ChatGPT : 240 € par an si tu ne t'en sers plus", "detail": "Claude couvre déjà l'IA de tous les projets. Si ChatGPT ne sert plus chaque semaine, le couper économise 20 €/mois ; je te poserai la question à part.", "source": "" },
-        { "categorie": "economie", "projet": "L'extrait politique", "titre": "Le VPS YouTube : 144 € par an à vérifier", "detail": "L'extrait est en pause ; si les vidéos Impacteur Afrique peuvent passer sur le VPS Nūr (place disque à vérifier), un serveur à 12 €/mois disparaît.", "source": "" },
-        { "categorie": "connaissance", "projet": "Tous", "titre": "Vendre le résultat, pas la technique", "detail": "Les offres d'automatisation et de site qui marchent parlent de clients gagnés ou d'heures économisées, pas d'outils. À appliquer aux mails Leviaro, qui n'ont eu aucune réponse sur 85.", "source": "https://www.studeria.fr/articles-de-blog/vendre-automatisation-ia-offre-freelance" }
+        {
+          "categorie": "developpement",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Un lien de paiement direct pour les 3 intéressés",
+          "detail": "Stripe crée un lien d'abonnement avec essai gratuit, sans code, depuis le tableau de bord. Envoyer ce lien avec un 1er mois offert dans la prochaine réponse supprime une étape entre « intéressé » et « payant ».",
+          "source": "https://stripe.com/fr-ca/newsroom/news/stripe-launches-payment-links"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Sponsors",
+          "titre": "Un prix prêt avant le premier rendez-vous",
+          "detail": "La méthode courante : vues moyennes par vidéo × un CPM de 20 à 40 $, ajusté selon la niche. Avoir ce chiffre par chaîne évite de brader le premier contrat.",
+          "source": "https://tubeanalytics.net/fr/blog/youtube-brand-deals-pricing-calculator"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Leviaro",
+          "titre": "Les restaurants sans site trouvés par Nūr Meet = prospects Leviaro",
+          "detail": "La prospection Nūr Meet repère déjà des restaurants ; ceux qui n'ont pas de site sont la cible exacte de Leviaro. Une seule recherche sert deux ventes.",
+          "source": ""
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur",
+          "titre": "Des Shorts tirés de chaque interview",
+          "detail": "Aucune loop ne porte encore les Shorts des interviews Impacteur. Plus de vues sur les chaînes = un prix de sponsoring plus élevé, avec la chaîne Remotion déjà prévue sur le VPS.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Vendre l'automatisation n8n aux PME",
+          "detail": "Tu fais déjà tourner une dizaine de workflows (prospection, relances, Telegram). Les intégrateurs facturent 700 à 1 500 €/jour selon un blog spécialisé ; l'offre qui marche : audit, workflow clé en main, puis maintenance mensuelle.",
+          "source": "https://www.studeria.fr/articles-de-blog/vendre-automatisation-ia-offre-freelance"
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Des modèles n8n prêts à l'emploi",
+          "detail": "Ta prospection mail avec relances et validation Telegram peut se vendre comme modèle (estimation : 29 à 79 € l'unité, à vérifier sur les places de marché). Zéro client à gérer, et une vitrine pour l'offre d'automatisation.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Fiche Google des restaurants, en petit service payant",
+          "detail": "Les restaurants démarchés ont souvent une fiche Google incomplète (menu, photos, horaires). Une mise en ordre à prix fixe se vend plus facilement qu'un abonnement et ouvre la porte à Nūr Meet.",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "ChatGPT : 240 € par an si tu ne t'en sers plus",
+          "detail": "Claude couvre déjà l'IA de tous les projets. Si ChatGPT ne sert plus chaque semaine, le couper économise 20 €/mois ; je te poserai la question à part.",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "L'extrait politique",
+          "titre": "Le VPS YouTube : 144 € par an à vérifier",
+          "detail": "L'extrait est en pause ; si les vidéos Impacteur Afrique peuvent passer sur le VPS Nūr (place disque à vérifier), un serveur à 12 €/mois disparaît.",
+          "source": ""
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Tous",
+          "titre": "Vendre le résultat, pas la technique",
+          "detail": "Les offres d'automatisation et de site qui marchent parlent de clients gagnés ou d'heures économisées, pas d'outils. À appliquer aux mails Leviaro, qui n'ont eu aucune réponse sur 85.",
+          "source": "https://www.studeria.fr/articles-de-blog/vendre-automatisation-ia-offre-freelance"
+        }
       ]
     }
   ]
