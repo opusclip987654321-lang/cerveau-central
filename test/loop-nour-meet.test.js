@@ -89,7 +89,8 @@ test('revue : un changement sûr est appliqué et noté ; un pivot radical atten
   const l = loopDeDepart(maintenant);
   const lundi = new Date('2026-10-26T09:30:00+01:00');
   assert.equal(revueAFaire(l, { maintenant: lundi }), '2026-10-26');
-  assert.equal(revueAFaire(l, { maintenant: new Date('2026-10-27T10:00:00+01:00') }), null);
+  assert.equal(revueAFaire(l, { maintenant: new Date('2026-10-26T08:00:00+01:00') }), null); // lundi avant 9 h
+  assert.equal(revueAFaire(l, { maintenant: new Date('2026-10-29T10:00:00+01:00') }), '2026-10-26'); // lundi manqué : rattrapé le jeudi
   const e1 = await revoirMethode(l, business(), { client: clientRevue({ changer: true, methode: { parJour: 60 }, changements: ['Plus de mails'], pourquoi: 'Paris répond.', radical: false }), semaine: '2026-10-26', maintenant: lundi });
   assert.equal(e1.version, 3);
   assert.equal(l.methode.parJour, 60);

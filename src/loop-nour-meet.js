@@ -258,12 +258,13 @@ export function statsLoop(business, loop) {
   };
 }
 
-// La revue de la méthode : une fois par semaine, le lundi après 9 h.
+// La revue de la méthode : une fois par semaine, le lundi après 9 h ; un lundi manqué
+// (tâche Claude bloquée, serveur arrêté) est rattrapé les jours suivants de la même semaine.
 export function revueAFaire(loop, { heure = 9, maintenant = new Date() } = {}) {
   if (loop.pause) return null;
   const jour = jourParis(maintenant);
   const h = Number(new Date(maintenant).toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'Europe/Paris' }));
-  if (new Date(`${jour}T12:00:00Z`).getUTCDay() !== 1 || h < heure) return null;
+  if (new Date(`${jour}T12:00:00Z`).getUTCDay() === 1 && h < heure) return null;
   // Une version doit avoir tourné ~une semaine avant d'être jugée.
   const derniere = loop.historique.at(-1);
   if (derniere && new Date(maintenant) - new Date(derniere.quand) < 6 * 86_400_000) return null;
