@@ -39,7 +39,7 @@
       "toi": "Répondre ou appeler le restaurant"
     },
     {
-      "quand": "Lundi à 9h23",
+      "quand": "Lundi à 9h23 (un lundi manqué est rattrapé les jours suivants de la semaine)",
       "quoi": "Revue de la méthode par une tâche programmée Claude (abonnement) : relit d'abord son carnet de leçons, garde ce qui marche, change le reste, note quoi et pourquoi sur la page Nūr Meet, et ajoute à son carnet ce que la semaine lui a appris (essai, chiffre, gardé ou arrêté). Un pivot radical (offre, prix, cible hors restaurants) attend ton accord.",
       "toi": "Lire ce qui a changé ; Appliquer ou Refuser si la loop demande"
     },
