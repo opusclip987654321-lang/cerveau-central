@@ -1,6 +1,81 @@
 {
   "jours": [
     {
+      "date": "2026-11-06",
+      "idees": [
+        {
+          "categorie": "developpement",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Comparer l'abonnement au coût d'Uber Eats dans le mail",
+          "detail": "Uber Eats et Deliveroo prennent 25 à 35 % de chaque commande, et plus avec les frais cachés. Une phrase du type « un abonnement fixe coûte moins que quelques commandes Uber Eats » donne au restaurateur un calcul qu'il comprend tout de suite.",
+          "source": "https://www.fooderise.com/en/blog/commission-uber-eats-restaurant-france-pourcentage-2026"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Leviaro",
+          "titre": "Vendre le site en abonnement, pas en une fois",
+          "detail": "Les offres de site vitrine en abonnement vont de 50 à 300 € par mois, avec l'hébergement et la maintenance. Un abonnement à petit prix rapporte chaque mois et rassure le commerçant, qui n'a pas de grosse somme à sortir.",
+          "source": "https://conseils.hellopro.fr/combien-coute-la-creation-d-un-site-internet-3823.html"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Sponsors",
+          "titre": "Vendre un pack trois réseaux plutôt qu'une vidéo",
+          "detail": "Impacteur Afrique, c'est environ 13 000 abonnés Instagram, 60 000 sur TikTok et 40 000 sur Facebook, soit plus de 110 000 personnes. Un pack « une vidéo + un post sur chaque réseau » se vend plus cher qu'une seule mention YouTube.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Répondre aux avis Google des restaurants, au forfait",
+          "detail": "Beaucoup de restaurants laissent leurs avis sans réponse, ce qui pèse sur leur fiche. Une réponse rédigée par l'IA et validée par le patron, pour un forfait mensuel (par exemple 29 €, à tester), coûte presque rien à produire.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Ramener les clients Uber Eats vers la commande directe",
+          "detail": "Les spécialistes visent à faire passer 15 à 20 % des clients des plateformes sur la commande directe du restaurant, grâce à une carte de fidélité ou un code promo glissé dans le sac. Un service clé en main (flyer, page de commande, relance SMS) se vend sur l'économie de commission.",
+          "source": "https://www.fooderise.com/en/blog/fideliser-clients-livraison-recuperer-donnee-2026"
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Des photos de plats retouchées par l'IA pour les menus en ligne",
+          "detail": "Les fiches Uber Eats et Google avec de belles photos vendent mieux, mais un photographe coûte cher. Retoucher les photos prises au téléphone, à prix fixe par menu (prix à tester), se fait en une heure avec des outils déjà disponibles.",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "Cerveau",
+          "titre": "Moitié prix sur les appels IA qui ne sont pas urgents",
+          "detail": "L'API Anthropic facture 50 % de moins les demandes envoyées en lot, avec une réponse sous 24 heures. Les bilans du soir et les analyses qui peuvent attendre le matin peuvent passer par ce lot.",
+          "source": "https://docs.anthropic.com/en/docs/build-with-claude/batch-processing"
+        },
+        {
+          "categorie": "economie",
+          "projet": "Cerveau",
+          "titre": "Garder en cache le carnet de leçons des loops",
+          "detail": "Le carnet de leçons des loops est relu à chaque décision, et une partie relue depuis le cache se facture à 10 % du prix normal. Pour les appels qui passent encore par l'API, c'est une grosse partie de la facture en moins sans rien changer au résultat.",
+          "source": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Une relance tous les 10 jours, sur un mois et demi",
+          "detail": "HubSpot conseille de relancer environ tous les dix jours, sur un mois à un mois et demi. Avec deux relances seulement, la prospection s'arrête peut-être avant que le restaurateur ait eu le temps de lire.",
+          "source": "https://blog.hubspot.fr/sales/relance-telephonique-prospect"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Leviaro",
+          "titre": "Le vrai concurrent de Leviaro, c'est Wix",
+          "detail": "Un commerçant peut faire son site lui-même pour 150 à 500 € par an avec Wix ou Squarespace. Leviaro gagne s'il vend ce que Wix ne fait pas : le site fait à sa place et mis en ligne sans effort.",
+          "source": ""
+        }
+      ]
+    },
+    {
       "date": "2026-11-05",
       "idees": [
         {
