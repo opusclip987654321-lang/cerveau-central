@@ -1,5 +1,5 @@
 {
-  "maj": "2026-11-06T03:05:00Z",
+  "maj": "2026-11-06T17:50:00Z",
   "objectifs": {
     "abonnes": {
       "actuel": 36,
@@ -67,8 +67,14 @@
       "type": "changé",
       "quoi": "Deuxième source d'idées de sujets : les 26 titres de la chaîne anglaise Lore Explained (vie quotidienne des premiers humains, découvertes), relevés avec leurs vues et traduits. Pesés le dimanche avec ceux de Neon Rush, mesurés en français avant d'être choisis.",
       "pourquoi": "Demande de Walid. Petite chaîne (3 220 abonnés) mais une vidéo à 1,4 million de vues en 4 jours sur « que faisaient les hommes préhistoriques pour se faire plaisir », un angle proche de nos questions. Le reste fait moins de 15 000 vues, donc c'est surtout cet angle qu'on retient."
+    },
+    {
+      "date": "2026-11-06",
+      "type": "changé",
+      "quoi": "Chaque vidéo longue raconte UN seul événement de l'histoire africaine (un jour, une décision, une crise courte), avec une idée à retenir redite à la fin, au plus 5 dates et 5 noms ; plus jamais la biographie d'un dirigeant. Nouvelle file de sujets : pieds-noirs quittant l'Algérie en 1962 (samedi 7/11), prise de pouvoir d'Idi Amin en 1971 (lundi 9/11), mort de Kadhafi en 2011 (mercredi 11/11).",
+      "pourquoi": "Remarque de Walid sur l'épisode 12 (Mobutu, 32 ans de règne racontés en 6 minutes) : « trop d'infos et on n'arrive pas à suivre ou à se dire qu'on a appris quelque chose ». Les sujets resserrés se cherchent autant : médiane des vidéos françaises 473 623 vues (pieds-noirs 1962), 98 993 (prise de pouvoir d'Idi Amin), 46 624 (mort de Kadhafi)."
     }
   ],
   "question": null,
-  "prochaine": "Lundi 9 novembre 18 h : Idi Amin Dada (titre en affirmation, test de titres) ; bilan du cycle 3 après les vidéos 11 à 13."
+  "prochaine": "Samedi 7 novembre 18 h : « Pourquoi les pieds-noirs ont quitté l'Algérie en 1962 ? », 1re vidéo à un seul événement ; lundi 9 : prise de pouvoir d'Idi Amin (titre en affirmation, test de titres) ; mercredi 11 : mort de Kadhafi. Bilan du cycle 3 après les vidéos 11 à 13."
 }
