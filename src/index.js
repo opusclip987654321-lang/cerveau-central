@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { toutVerifier } from './verifier.js';
 import { chargerEtat } from './etat.js';
-import { envoyerTelegram } from './telegram.js';
+import { envoyerTelegram, telegramNour } from './telegram.js';
 import { pageEtat, definirCompteurActions, definirCompteurAColler } from './page.js';
 import { pageAujourdhui, pageFait } from './page-aujourdhui.js';
 import { lignesProjets, priorites, changementsDepuisHier, fraicheur } from './aujourdhui.js';
@@ -331,6 +331,11 @@ async function rappelDuMatin() {
 }
 
 const envoyer = (texte) => envoyerTelegram(texte, { token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID });
+// Les alertes de la loop Nūr Meet restaurateurs (un restaurant répond, une question de la
+// revue) partent par le bot Nūr Meet quand TELEGRAM_NOUR_BOT_TOKEN est rempli (Walid, 06/11).
+// Sinon, elles restent sur le bot du cerveau, comme avant.
+const envoyerNour = (texte) =>
+  envoyerTelegram(texte, telegramNour(env));
 
 // Les fiches d'action où c'est à louis de jouer (même règle que la page Actions).
 const compterAFaire = (actions = []) => actions.filter((a) => A_TOI.has(a.statut)).length;
@@ -450,12 +455,12 @@ function loopNourMeet() {
   loopEnCours ??= (async () => {
     const business = await chargerBusiness(fichierBusiness);
     const tri = await avecLoop((d) => trierReponses(d, business, { client: clientClaude, plafondDollars: plafondLoop }));
-    for (const r of tri.nouvelles.filter((x) => POSITIFS.has(x.type) && x.jour >= jourParis(new Date(Date.now() - 7 * 86_400_000)))) await envoyer(alerteInteresse(r));
+    for (const r of tri.nouvelles.filter((x) => POSITIFS.has(x.type) && x.jour >= jourParis(new Date(Date.now() - 7 * 86_400_000)))) await envoyerNour(alerteInteresse(r));
     if (tri.erreur && tri.erreur !== 'plafond') console.error(`Loop Nūr Meet, tri des réponses : ${tri.erreur}`);
     const semaine = revueAFaire(await chargerLoop(fichierLoop), { heure: Number(env.LOOP_HEURE ?? 9) });
     if (!semaine) return;
     const entree = await avecLoop((d) => revoirMethode(d, business, { client: clientClaude, semaine, plafondDollars: plafondLoop }));
-    if (entree.question) await envoyer(`🔁 <b>Loop Nūr Meet</b> : ${entree.question}
+    if (entree.question) await envoyerNour(`🔁 <b>Loop Nūr Meet</b> : ${entree.question}
 → Réponds sur la page Nūr Meet du cerveau (Appliquer ou Refuser).`);
     console.log(`${new Date().toISOString()} loop Nūr Meet ${semaine} : ${entree.changer ? `version ${entree.version}` : 'rien changé'}${entree.erreur ? ` · ${entree.erreur}` : ''}`);
   })()
@@ -1203,7 +1208,7 @@ const serveur = http.createServer(async (req, res) => {
       if (url.pathname.endsWith('/tri') && req.method === 'POST') {
         const { reponses } = await lireJson(req, 200_000);
         const nouvelles = await avecLoop((d) => noterTri(d, reponsesATrier(d, business, 500), reponses));
-        for (const r of nouvelles.filter((x) => POSITIFS.has(x.type) && x.jour >= jourParis(new Date(Date.now() - 7 * 86_400_000)))) await envoyer(alerteInteresse(r));
+        for (const r of nouvelles.filter((x) => POSITIFS.has(x.type) && x.jour >= jourParis(new Date(Date.now() - 7 * 86_400_000)))) await envoyerNour(alerteInteresse(r));
         return json(200, { notees: nouvelles.length, positives: nouvelles.filter((x) => POSITIFS.has(x.type)).length });
       }
       if (req.method === 'GET') {
@@ -1215,7 +1220,7 @@ const serveur = http.createServer(async (req, res) => {
         const { semaine, revue } = await lireJson(req, 200_000);
         if (!semaine || semaine !== revueAFaire(await chargerLoop(fichierLoop), { heure })) return json(409, { erreur: 'Pas de revue attendue pour cette semaine.' });
         const entree = await avecLoop((d) => noterRevue(d, revue, { semaine }));
-        if (entree.question) await envoyer(`🔁 <b>Loop Nūr Meet</b> : ${entree.question}
+        if (entree.question) await envoyerNour(`🔁 <b>Loop Nūr Meet</b> : ${entree.question}
 → Réponds sur la page Nūr Meet du cerveau (Appliquer ou Refuser).`);
         console.log(`${new Date().toISOString()} loop Nūr Meet ${semaine} (abonnement) : ${entree.changer ? `version ${entree.version}` : 'rien changé'}${entree.erreur ? ` · ${entree.erreur}` : ''}`);
         return json(200, entree);

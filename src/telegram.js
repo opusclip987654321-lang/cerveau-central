@@ -17,3 +17,11 @@ export async function envoyerTelegram(texte, { token, chatId, api = 'https://api
   }
   return true;
 }
+
+// Le bot et la conversation des alertes Nūr Meet : le bot Nūr Meet s'il est configuré,
+// sinon le bot du cerveau. La conversation par défaut reste celle du cerveau.
+export function telegramNour(env = {}) {
+  const token = env.TELEGRAM_NOUR_BOT_TOKEN || env.TELEGRAM_BOT_TOKEN;
+  const chatId = env.TELEGRAM_NOUR_CHAT_ID || env.TELEGRAM_CHAT_ID;
+  return { token, chatId };
+}
