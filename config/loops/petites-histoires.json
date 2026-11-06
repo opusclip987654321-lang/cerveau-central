@@ -1,12 +1,12 @@
 {
-  "maj": "2026-11-05T20:40:00Z",
+  "maj": "2026-11-06T03:05:00Z",
   "objectifs": {
     "abonnes": {
-      "actuel": 26,
+      "actuel": 36,
       "cible": 1000
     },
     "heures": {
-      "actuel": 7.7,
+      "actuel": 19.3,
       "cible": 4000
     },
     "coutsCouverts": {
@@ -19,15 +19,27 @@
     }
   },
   "rythme": "Vidéos longues lundi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30. Shorts publiés automatiquement sur YouTube, Instagram et Facebook ; TikTok à la main.",
-  "hypothese": "Plus de Shorts = plus d'abonnés : les Shorts ont apporté les 24 abonnés gagnés en 28 jours, les vidéos longues aucun.",
+  "hypothese": "Le thème histoire africaine depuis les indépendances fait au moins aussi bien que les questions façon Zenn (taux de clic, vues à 7 jours, vues des Shorts), sur les longues 12 à 14.",
   "chiffres": {
-    "shorts7j": 2588,
-    "longues7j": 90,
-    "shorts28j": 3495,
-    "longues28j": 458,
-    "meilleurShort": "Un bébé de 3 mois se souvient de ça : 1 942 vues"
+    "shorts7j": 1,
+    "longues7j": 98,
+    "shorts28j": 5443,
+    "longues28j": 600,
+    "meilleurShort": "Un bébé de 3 mois se souvient de ça : 2 349 vues (total)"
   },
   "decisions": [
+    {
+      "date": "2026-11-06",
+      "type": "gardé",
+      "quoi": "Bilan des vidéos 8 à 10 : on garde le format qui fait cliquer (titre = la question que les gens tapent, sujet mesuré sur YouTube, Short d'accroche), appliqué au thème africain ; les 2e teasers « milieu » continuent.",
+      "pourquoi": "Taux de clic 3,8 / 5,4 / 9,5 % contre 0,7 à 1,6 % pour les vidéos 1 à 7 ; 2e teasers : 409 contre 65 vues (ép. 9) mais 393 contre 2 349 (ép. 10), trop peu pour trancher."
+    },
+    {
+      "date": "2026-11-06",
+      "type": "changé",
+      "quoi": "Première vidéo du thème africain publiée ce soir : « Comment Mobutu a ruiné l'un des pays les plus riches d'Afrique ? », avec des personnages dessinés à la peau foncée (nouveau dans le moteur de dessin).",
+      "pourquoi": "Thème validé par Walid le 05/11 ; sujet mesuré : médiane 278 797 vues par vidéo sur Mobutu, la plus haute des 11 sujets africains mesurés. Jugé sur le taux de clic et les vues à 7 jours contre la médiane des vidéos 8 à 11 (taux de clic 4,6 %, ≈ 130 vues)."
+    },
     {
       "date": "2026-11-05",
       "type": "changé",
@@ -58,5 +70,5 @@
     }
   ],
   "question": null,
-  "prochaine": "Bilan du cycle 2 (épisodes 8, 9, 10) au prochain passage. Vidéo longue vendredi 23 octobre : 1re du test « question au début ». Toujours à peser : accroche des 3 premières secondes des Shorts, titres en A/B, bio et couvertures pour les visiteurs du profil."
+  "prochaine": "Lundi 9 novembre 18 h : Idi Amin Dada (titre en affirmation, test de titres) ; bilan du cycle 3 après les vidéos 11 à 13."
 }
