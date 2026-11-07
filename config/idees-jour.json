@@ -1,6 +1,81 @@
 {
   "jours": [
     {
+      "date": "2026-11-07",
+      "idees": [
+        {
+          "categorie": "developpement",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Un parrainage prêt pour le premier abonné",
+          "detail": "Les logiciels pour restaurants récompensent souvent la recommandation, par exemple 100 € chez L'Addition ou 2 mois offerts au filleul ailleurs. Un restaurateur abonné qui en amène un autre contre un mois gratuit coûte moins cher que 200 mails de prospection.",
+          "source": "https://www.laddition.com/sites/default/files/imce/mentions-legales-parrainage-laddition-2025.pdf"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Afrique",
+          "titre": "Faire payer les vues TikTok",
+          "detail": "Le programme de récompenses TikTok demande 10 000 abonnés et 100 000 vues sur 30 jours, avec des vidéos d'au moins une minute, et paie environ 0,40 à 1 $ pour 1 000 vues. Avec 60 000 abonnés, il reste à vérifier dans TikTok Studio si le compte y a droit selon son pays.",
+          "source": "https://metricool.com/fr/tiktok-creativity-program/"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Sponsors",
+          "titre": "Relancer les prospects avec le chiffre de la dernière vidéo",
+          "detail": "Un mail de relance qui dit « notre dernière interview a fait X vues en une semaine » donne une vraie raison de répondre. Cela se fait à chaque vidéo qui marche, sans rien dépenser.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Des sous-titres traduits pour les créateurs YouTube",
+          "detail": "Traduire et sous-titrer une vidéo en anglais ouvre une audience plus large, et l'IA le fait presque gratuitement. Un forfait à la vidéo (prix à tester, par exemple 30 €) se vend aux créateurs francophones qui veulent grandir.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Un guide « prospecter par mail sans être bloqué »",
+          "detail": "Avec plus de 600 restaurants contactés en automatique, tu as appris ce qui passe et ce qui finit en spam. Un guide court vendu 19 à 29 € (prix à tester) transforme cette expérience en revenu, sans aucune donnée de prospect.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Écrire les posts LinkedIn des dirigeants de PME",
+          "detail": "Beaucoup de dirigeants savent qu'ils devraient publier mais n'ont pas le temps. Trois posts par semaine écrits par l'IA, relus par toi et validés par le client, se vendent au mois (prix à tester).",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Un intéressé pour environ 200 mails : le chiffre à faire baisser",
+          "detail": "624 restaurants contactés pour 3 intéressés, cela fait un intéressé pour environ 200 mails. Suivre ce ratio chaque semaine montre tout de suite si un nouveau texte ou une nouvelle cible rapporte plus pour le même coût.",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "Passer à l'année les abonnements qu'on garde",
+          "detail": "Beaucoup d'outils font environ 15 à 20 % de remise sur le paiement annuel, soit à peu près deux mois offerts. À faire seulement pour ceux dont on est sûr de se servir toute l'année ; vérifier le prix abonnement par abonnement.",
+          "source": ""
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Le bouton « Réserver » de Google passe par des partenaires",
+          "detail": "Le bouton de réservation sur la fiche Google d'un restaurant ne vient que d'un site de réservation partenaire de Google, comme Zenchef ou Guestonline. Savoir ce que le restaurateur utilise déjà aide à présenter Nūr Meet comme un plus, pas comme un remplaçant.",
+          "source": "https://resos.com/blog/restaurant-reservations-with-google"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Impacteur Afrique",
+          "titre": "Sur TikTok, les vidéos d'avant l'inscription ne rapportent rien",
+          "detail": "Seules les vidéos publiées après l'acceptation dans le programme de récompenses comptent. Mieux vaut s'inscrire avant de publier les meilleures interviews.",
+          "source": "https://www.shortsync.app/resources/tiktok-creator-rewards-program-2026"
+        }
+      ]
+    },
+    {
       "date": "2026-11-06",
       "idees": [
         {
