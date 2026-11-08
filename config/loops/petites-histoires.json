@@ -1,12 +1,12 @@
 {
-  "maj": "2026-11-06T17:50:00Z",
+  "maj": "2026-11-08T19:30:00Z",
   "objectifs": {
     "abonnes": {
-      "actuel": 36,
+      "actuel": 40,
       "cible": 1000
     },
     "heures": {
-      "actuel": 19.3,
+      "actuel": 19.4,
       "cible": 4000
     },
     "coutsCouverts": {
@@ -18,16 +18,52 @@
       "cible": 500
     }
   },
-  "rythme": "Vidéos longues lundi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30. Shorts publiés automatiquement sur YouTube, Instagram et Facebook ; TikTok à la main.",
-  "hypothese": "Le thème histoire africaine depuis les indépendances fait au moins aussi bien que les questions façon Zenn (taux de clic, vues à 7 jours, vues des Shorts), sur les longues 12 à 14.",
+  "rythme": "Vidéos longues lundi, mercredi et vendredi à 18 h (+ 1er samedi du mois) ; Shorts : un avec chaque vidéo longue + un 2e teaser mardi, mercredi et jeudi à 12 h 30. Shorts publiés automatiquement sur YouTube, Instagram et Facebook ; TikTok à la main.",
+  "hypothese": "Une vidéo = un seul événement de l'histoire africaine depuis les indépendances : au moins aussi bien que les questions façon Zenn (taux de clic, vues à 7 jours, vues des Shorts), jugé sur les longues 13 à 15.",
   "chiffres": {
-    "shorts7j": 1,
-    "longues7j": 98,
-    "shorts28j": 5443,
-    "longues28j": 600,
+    "shorts7j": null,
+    "longues7j": null,
+    "shorts28j": 5441,
+    "longues28j": 561,
     "meilleurShort": "Un bébé de 3 mois se souvient de ça : 2 349 vues (total)"
   },
   "decisions": [
+    {
+      "date": "2026-11-08",
+      "type": "changé",
+      "quoi": "Sujets des 3 prochaines vidéos longues (un seul événement chacune) : lundi 9 « Comment Idi Amin a pris le pouvoir ? », mercredi 11 « Pourquoi l'armée française a quitté le Mali ? » (sujet d'actualité), vendredi 13 « Comment a commencé le génocide au Rwanda ? ». La mort de Kadhafi passe en réserve.",
+      "pourquoi": "Médiane des vues des vidéos françaises sur chaque question : Rwanda 163 689 (7 vidéos à plus de 100 000), Idi Amin 98 993, Mali 84 671 (656 vues par jour, la plus forte des 14 mesurées), contre 46 624 pour la mort de Kadhafi."
+    },
+    {
+      "date": "2026-11-08",
+      "type": "gardé",
+      "quoi": "Thème africain et titres actuels gardés jusqu'au bilan des vidéos 11 à 13 (possible le 10 novembre) ; miniatures toujours gelées jusqu'au 15 novembre.",
+      "pourquoi": "Vidéo Mobutu : taux de clic 0,6 % (336 affichages) et 24 vues à 2,6 jours, contre 4,6 % pour les vidéos 8 à 11 ; mais c'était une biographie (jugée ratée) et trop tôt pour conclure. Vidéo pieds-noirs : 22 vues à 1,6 jour, pas encore de taux de clic."
+    },
+    {
+      "date": "2026-11-08",
+      "type": "gardé",
+      "quoi": "Tests interrompus par la panne du 19 octobre au 5 novembre (longue du mercredi, carte de fin des Shorts vers la vidéo longue, question aux spectateurs au début) : prolongés sur les vidéos de novembre.",
+      "pourquoi": "Aucune vidéo produite pendant 17 jours : 0 vidéo testée, rien à juger."
+    },
+    {
+      "date": "2026-11-08",
+      "type": "gardé",
+      "quoi": "Rythme gardé (3 longues + Shorts) ; abonnés suivis chaque dimanche contre l'objectif de Walid de +50 par semaine.",
+      "pourquoi": "40 abonnés le 8 novembre contre 36 le 6 (+4, objectif +50). Sur 28 jours (jusqu'au 4 novembre) : Shorts 5 441 vues et 29 abonnés, longues 561 vues et 0 abonné."
+    },
+    {
+      "date": "2026-11-08",
+      "type": "arrêté",
+      "quoi": "Idée de Walid : le cerveau central est arrêté et remplacé par Loop Agent. Ce compte rendu est le dernier ; ensuite décisions, chiffres et leçons seulement dans Loop Agent.",
+      "pourquoi": "Décision de Walid du 8 novembre ; retrait des écritures vers le cerveau prévu après cette analyse, textes montrés à Walid avant."
+    },
+    {
+      "date": "2026-11-07",
+      "type": "changé",
+      "quoi": "Idée de Walid : brancher la chaîne sur Loop Agent ; objectif de l'analyse du dimanche : +50 abonnés par semaine (départ 36 le 6 novembre).",
+      "pourquoi": "Demande de Walid du 7 novembre, validée par lui dans Loop Agent le 8 ; 1er jugement ce dimanche : +4."
+    },
     {
       "date": "2026-11-06",
       "type": "gardé",
@@ -76,5 +112,5 @@
     }
   ],
   "question": null,
-  "prochaine": "Samedi 7 novembre 18 h : « Pourquoi les pieds-noirs ont quitté l'Algérie en 1962 ? », 1re vidéo à un seul événement ; lundi 9 : prise de pouvoir d'Idi Amin (titre en affirmation, test de titres) ; mercredi 11 : mort de Kadhafi. Bilan du cycle 3 après les vidéos 11 à 13."
+  "prochaine": "Lundi 9 novembre 18 h : « Comment Idi Amin a pris le pouvoir ? » ; mercredi 11 : retrait de l'armée française du Mali ; vendredi 13 : début du génocide au Rwanda. Bilan des vidéos 11 à 13 à partir du 10 novembre."
 }
