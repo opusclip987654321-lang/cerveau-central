@@ -1,6 +1,81 @@
 {
   "jours": [
     {
+      "date": "2026-11-08",
+      "idees": [
+        {
+          "categorie": "developpement",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Préparer dès maintenant l'argument « janvier creux »",
+          "detail": "Après les fêtes, beaucoup de restaurants voient leurs habitués s'espacer, et les faire revenir coûte moins cher que trouver de nouveaux clients. Un mail de décembre qui présente Nūr Meet comme le moyen de remplir les tables de janvier tombe au bon moment.",
+          "source": "https://www.fiducial.fr/Pointex-logiciel-caisse/Blog-pour-les-professionnels-de-la-restauration/Restaurant-Comment-transformer-vos-clients-occasionnels-en-habitues"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur",
+          "titre": "Gagner une commission sur les livres cités par les invités",
+          "detail": "YouTube Shopping est ouvert en France depuis le 13 octobre, dès 500 abonnés : on peut étiqueter un produit dans une vidéo et toucher une part de la vente. Les livres et outils que citent les invités d'Impacteur sont des produits tout trouvés.",
+          "source": "https://www.blogdumoderateur.com/youtube-shopping-france-fonctionnement-criteres-eligibilite/"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Leviaro",
+          "titre": "Montrer une maquette du site dès le premier message",
+          "detail": "Un commerçant dit plus facilement oui quand il voit déjà son futur site. Une maquette faite par l'IA à partir de sa fiche Google, jointe au premier contact, rend l'offre concrète sans rendez-vous.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "VégéBudget",
+          "titre": "Des Shorts « courses pas chères » avec liens d'achat",
+          "detail": "YouTube Shopping permet maintenant de toucher une commission en France sur les produits montrés, Amazon compris. Des Shorts de bons plans courses, dans l'esprit de VégéBudget, peuvent rapporter dès 500 abonnés.",
+          "source": "https://siecledigital.fr/2026/10/13/youtube-shopping-arrive-en-france-et-ouvre-un-nouveau-marche-aux-createurs-de-contenu/"
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Le mois de posts Instagram des restaurants, prêt à publier",
+          "detail": "Les restaurateurs savent qu'ils devraient publier mais n'ont pas le temps. Douze posts par mois, rédigés par l'IA à partir de leur carte et de leurs photos, se vendent au forfait (prix à tester, par exemple 49 € par mois).",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Un assistant WhatsApp pour les petits commerces",
+          "detail": "Horaires, prix, disponibilités : les commerçants répondent aux mêmes questions toute la journée. Un assistant qui répond seul et passe la main pour le reste se vend à l'abonnement mensuel (prix à tester).",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "Garder un euro sur quatre pour l'Urssaf",
+          "detail": "En micro-entreprise, les cotisations sur les prestations de services tournent autour de 21 à 25 % du chiffre d'affaires selon l'activité. Mettre ce montant de côté dès le premier euro encaissé évite une mauvaise surprise à la déclaration.",
+          "source": "https://www.legalstart.fr/fiches-pratiques/autoentrepreneur/plafond-auto-entrepreneur"
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "Le seuil de 37 500 € de TVA à surveiller",
+          "detail": "En prestations de services, la franchise de TVA s'arrête à 37 500 € de chiffre d'affaires sur l'année précédente (41 250 € en seuil majoré). Au-delà, il faut ajouter 20 % de TVA à ses prix ou les absorber : à anticiper dans les tarifs des nouveaux services.",
+          "source": "https://copeps.fr/actualites/nouveaux-plafonds-auto-entrepreneur/"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Commun",
+          "titre": "Le plafond de la micro-entreprise est passé à 83 600 €",
+          "detail": "Plusieurs sources donnent 83 600 € pour les services et 203 100 € pour la vente en 2026, contre 77 700 € et 188 700 € avant. C'est à confirmer sur le site de l'Urssaf avant d'en tenir compte.",
+          "source": "https://salerya.fr/statuts/auto-entrepreneur/plafonds/"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Impacteur",
+          "titre": "YouTube Shopping : c'est le marchand qui fixe la commission",
+          "detail": "Aucun taux n'est fixé par YouTube : chaque marchand choisit sa commission et ne paie que si une vidéo déclenche un achat. Amazon fait partie des partenaires depuis septembre.",
+          "source": "https://siecledigital.fr/2026/09/02/youtube-sallie-a-amazon-pour-permettre-aux-createurs-de-vendre-des-produits-dans-leurs-videos/"
+        }
+      ]
+    },
+    {
       "date": "2026-11-07",
       "idees": [
         {
