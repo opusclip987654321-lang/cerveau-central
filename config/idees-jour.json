@@ -1,6 +1,81 @@
 {
   "jours": [
     {
+      "date": "2026-11-09",
+      "idees": [
+        {
+          "categorie": "developpement",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Le nom du restaurant et du quartier dans l'objet du mail",
+          "detail": "Selon un éditeur d'outils de prospection, changer seulement l'objet peut faire lire le message 2 à 3 fois plus souvent. Un objet avec le nom du restaurant et de sa rue est facile à générer pour chaque envoi.",
+          "source": "https://www.zeliq.com/fr/blog/mail-objet"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Afrique",
+          "titre": "Une offre Black Friday sur Patreon",
+          "detail": "La semaine du Black Friday va du 23 au 30 novembre, avec le vendredi 27. Un premier mois à prix réduit sur le palier à 5 € donne aux 85 membres gratuits une raison de passer payants maintenant.",
+          "source": "https://tpeactu.fr/2026/05/03/black-friday-2026-date/"
+        },
+        {
+          "categorie": "developpement",
+          "projet": "Impacteur Sponsors",
+          "titre": "Proposer un placement pour les campagnes de fin d'année",
+          "detail": "Entre le Black Friday et Noël, les marques cherchent où dépenser leur budget de fin d'année. Une relance courte avant le 23 novembre, avec une date de publication précise, tombe au bon moment.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Des cartes cadeaux en ligne pour les restaurants avant Noël",
+          "detail": "Beaucoup de petits restaurants ne vendent pas de bons cadeaux en ligne alors que c'est un cadeau de fin d'année courant. Mettre en place une page de vente au forfait (prix à tester), avant début décembre, est rapide et utile tout de suite.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Relancer les devis non signés des artisans",
+          "detail": "Les artisans envoient des devis et oublient souvent de relancer. Un service qui relance automatiquement par mail et SMS, payé au mois ou au devis signé (à tester), se vend sur l'argent récupéré.",
+          "source": ""
+        },
+        {
+          "categorie": "projet-neuf",
+          "projet": "",
+          "titre": "Traduire les menus des restaurants parisiens pour les touristes",
+          "detail": "Paris reçoit des touristes toute l'année, et beaucoup de menus restent seulement en français. Une traduction anglais et espagnol relue, vendue au menu à prix fixe (prix à tester), coûte presque rien à produire avec l'IA.",
+          "source": ""
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "ACRE : l'aide à la création n'est plus que de 25 %",
+          "detail": "Depuis le 1er juillet 2026, l'exonération de cotisations pour un nouveau micro-entrepreneur est passée de 50 % à 25 %, pendant environ un an. Si une nouvelle activité est créée, la demande se fait à l'Urssaf dans les 60 jours, sinon elle est perdue ; à vérifier sur urssaf.fr.",
+          "source": "https://espace-autoentrepreneur.com/blog/acre-2026-lexoneration-passe-a-25-quel-impact-sur-vos-cotisations"
+        },
+        {
+          "categorie": "economie",
+          "projet": "Commun",
+          "titre": "Attendre la semaine du Black Friday pour un abonnement annuel",
+          "detail": "Si un outil doit être payé à l'année, beaucoup de logiciels font leurs plus grosses remises entre le 23 et le 30 novembre. Rien à acheter si l'outil ne sert pas : c'est seulement une question de moment.",
+          "source": "https://tpeactu.fr/2026/05/03/black-friday-2026-date/"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Nūr Meet restaurateurs",
+          "titre": "Mails de prospection : environ 5 % de réponses en France",
+          "detail": "Un éditeur d'outils donne une médiane de 4,9 % de réponses pour une campagne B2B propre en France. Avec 3 intéressés sur 624 restaurants, Nūr Meet est loin en dessous, ce qui montre une vraie marge de progrès sur les textes et les cibles.",
+          "source": "https://overloop.com/fr/blog/statistiques-cold-email"
+        },
+        {
+          "categorie": "connaissance",
+          "projet": "Commun",
+          "titre": "Le taux d'ouverture des mails ne veut plus dire grand-chose",
+          "detail": "Depuis 2021, la messagerie d'Apple ouvre les mails automatiquement, ce qui gonfle le taux d'ouverture. Le seul chiffre fiable pour juger une prospection, c'est le nombre de réponses.",
+          "source": "https://overloop.com/fr/blog/statistiques-cold-email"
+        }
+      ]
+    },
+    {
       "date": "2026-11-08",
       "idees": [
         {
