@@ -1,24 +1,24 @@
 {
-  "maj": "2026-11-05T18:30:00Z",
-  "cycle": 3,
-  "semaine": "2026-11-02",
-  "avis": "Revues du 26/10 et du 2/11 rattrapées le 5/11 : mes tâches, comme d'autres loops, n'ont pas tourné pendant deux semaines (limite d'usage). Toujours 0 € encaissé, mais deux vrais signaux : un premier rendez-vous sponsor (L'Harmattan, 3/11) et 2 discussions Leviaro. C'est là que le premier euro est le plus proche : il faut une offre chiffrée, vite. Nūr Meet restaurateurs stagne (3 intéressés, 0 payant) et sa loop sur l'abonnement ne trie plus les réponses depuis le 21/10.",
-  "objectifCycle": "Envoyer un devis chiffré à L'Harmattan et faire avancer les 2 discussions Leviaro jusqu'à une proposition ; remettre en marche le tri des réponses Nūr Meet.",
+  "maj": "2026-11-09T10:30:00Z",
+  "cycle": 4,
+  "semaine": "2026-11-09",
+  "avis": "Semaine du 2 au 8 novembre : toujours 0 € encaissé. Objectif à moitié atteint : le tri Nūr Meet tourne de nouveau (dans Loop Agent depuis ce matin) et un 4e restaurant intéressé est arrivé, mais je ne trouve aucune trace d'un devis envoyé à L'Harmattan, et les 2 discussions Leviaro n'ont pas bougé. Bon signal côté Sponsors : Kolonell demande le kit et une visio, obtenus par une relance. Le premier euro reste le plus proche chez les sponsors : 2 contacts chauds, aucun prix posé.",
+  "objectifCycle": "Poser un prix devant les 2 contacts sponsors chauds (L'Harmattan, Kolonell) et rappeler les 4 restaurants intéressés de Paris.",
   "propositions": [
     {
-      "quoi": "Envoyer à L'Harmattan, sous 48 h, un devis en 3 formats chiffrés séparément : mention dans une vidéo, interview de l'auteur, vidéo dédiée.",
-      "qui": "loop Sponsors (elle prépare, le serveur envoie)",
-      "pourquoi": "Premier rendez-vous obtenu après 189 prospects. Un devis clair avec 3 prix évite la négociation dans le vide."
+      "quoi": "Envoyer cette semaine une offre chiffrée à L'Harmattan et à Kolonell : 3 formats avec un prix chacun (mention, interview, vidéo dédiée).",
+      "qui": "loop Sponsors prépare le texte, Walid envoie et propose la visio",
+      "pourquoi": "Deux contacts chauds, aucun prix posé depuis le 3/11. Sans prix, un rendez-vous ne devient pas une vente."
     },
     {
-      "quoi": "Remettre en marche la loop Nūr Meet restaurateurs sur l'abonnement.",
-      "qui": "coordinateur (fil Nūr Meet)",
-      "pourquoi": "Vérifié le 5/11 : ses tâches de tri (12h37, 18h52) n'ont plus tourné depuis le 21/10 et sa revue du lundi jamais. 768 contactés, les réponses arrivées depuis ne sont pas triées, donc aucun intéressé n'est signalé."
+      "quoi": "Que Walid appelle les 4 restaurants intéressés de Paris (15 minutes chacun).",
+      "qui": "Walid",
+      "pourquoi": "826 contactés pour 4 intéressés et 0 payant : la conclusion bloque, pas la prospection. Les intéressés demandent des preuves que seul Walid peut donner (leçon Nūr Meet du 2/11)."
     },
     {
-      "quoi": "Que le cerveau signale une loop dont la tâche n'a pas tourné depuis 2 jours.",
-      "qui": "revue hebdo du système (proposition à Walid)",
-      "pourquoi": "Leviaro : 0 analyse pendant 13 jours sans que personne ne le voie ; idem pour l'associé et Nūr Meet. Une panne silencieuse coûte plus cher qu'une panne visible."
+      "quoi": "Leviaro : proposer aux 2 discussions un appel de 15 minutes puis un acompte.",
+      "qui": "loop Leviaro",
+      "pourquoi": "2 en discussion depuis plus de 2 semaines sans avancée ; 217 mails pour 0 vraie réponse en e-commerce et formation."
     }
   ],
   "classement": [
@@ -28,8 +28,8 @@
       "decision": "Pousser",
       "delai": "quelques semaines si le devis part",
       "montant": "indisponible (premier devis à faire)",
-      "preuve": "1 RDV (L'Harmattan, 3/11), 189 prospects, 47 mails sur 7 j, 1 livre accepté côté Impacteur",
-      "pourquoi": "Le seul projet avec un rendez-vous réel : passe devant."
+      "preuve": "1 RDV (L'Harmattan), Kolonell demande kit et visio, 258 prospects, 74 mails cette semaine",
+      "pourquoi": "Deux contacts chauds : reste n°1. Il manque un prix."
     },
     {
       "rang": 2,
@@ -37,17 +37,17 @@
       "decision": "Pousser",
       "delai": "quelques semaines",
       "montant": "590 à 890 € par site",
-      "preuve": "195 mails, 2 réponses, 2 en discussion",
-      "pourquoi": "Les premières vraies discussions ; une vente rembourse 4 mois de dépenses. Tours manqués du 23/10 au 5/11."
+      "preuve": "217 mails, 2 réponses, 2 en discussion (inchangé)",
+      "pourquoi": "Secteur passé en maintenance B2B le 5/11 ; rien de nouveau dans les discussions."
     },
     {
       "rang": 3,
       "projet": "Nūr Meet restaurateurs",
       "decision": "Pousser",
-      "delai": "inconnu tant que le tri est arrêté",
+      "delai": "quelques semaines si Walid rappelle",
       "montant": "~70 €/mois",
-      "preuve": "3 intéressés sur 768 contactés, 0 payant",
-      "pourquoi": "Toujours ta priorité n°1 sur 3 mois, mais aucun progrès en deux semaines : la loop doit d'abord retrier."
+      "preuve": "4 intéressés sur 826 contactés, 0 payant ; recherches Paris seulement depuis le 5/11",
+      "pourquoi": "Tri relancé le 9/11 dans Loop Agent. Paris répond (4/413), la banlieue non (0/355)."
     },
     {
       "rang": 4,
@@ -55,8 +55,8 @@
       "decision": "À clarifier",
       "delai": "dès que les paliers payants existent",
       "montant": "indisponible",
-      "preuve": "loop de messages Instagram lancée le 22/10 ; chiffres non lus ici",
-      "pourquoi": "Argent direct possible ; je lirai ses chiffres à la prochaine revue."
+      "preuve": "MP mis en pause le 7/11 puis relancés dans Loop Agent ; payants indisponibles ici",
+      "pourquoi": "Chiffres dans Loop Agent, illisibles d'ici."
     },
     {
       "rang": 5,
@@ -64,7 +64,7 @@
       "decision": "Maintenir",
       "delai": "plus de 3 mois",
       "montant": "places payées, à définir",
-      "preuve": "11 comptes, 33 visites sur 7 j, Instagram bloqué",
+      "preuve": "11 comptes, 41 visites sur 7 j, Instagram bloqué",
       "pourquoi": "Loop libre ; elle rend le site crédible pour les restaurateurs."
     },
     {
@@ -73,7 +73,7 @@
       "decision": "Maintenir",
       "delai": "plus de 3 mois",
       "montant": "~5 €/mois par abonné",
-      "preuve": "0 payant, 2 inscrits, 134 visiteurs sur 30 j (+35 %)",
+      "preuve": "0 payant, 2 inscrits, 126 visiteurs sur 30 j ; pages menu de la semaine publiées le 9/11",
       "pourquoi": "Le trafic monte à coût nul ; rien de plus à y mettre."
     },
     {
@@ -82,8 +82,8 @@
       "decision": "Maintenir",
       "delai": "plus de 6 mois",
       "montant": "500 €/mois visés",
-      "preuve": "26 abonnés, compte rendu de la loop en retard",
-      "pourquoi": "Monétisation lointaine ; à coût fixe."
+      "preuve": "40 abonnés (26 il y a 2 semaines), thème africain depuis le 5/11",
+      "pourquoi": "Les Shorts amènent les abonnés (29 sur 28 j), les longues aucun. Monétisation lointaine."
     },
     {
       "rang": 8,
@@ -177,6 +177,10 @@
     {
       "date": "2026-11-05",
       "texte": "Du 23/10 au 5/11, les tâches sur l'abonnement (associé, Nūr Meet, Leviaro, idées du matin) n'ont pas tourné ou n'ont rien produit, sans alerte. Toujours vérifier au début d'une revue que les tâches des loops ont tourné (dernier passage), et le dire."
+    },
+    {
+      "date": "2026-11-09",
+      "texte": "Une proposition sans « qui agit » précis n'avance pas : le devis L'Harmattan, confié à la loop Sponsors le 5/11, n'a laissé aucune trace. Nommer Walid quand c'est lui qui doit envoyer ou appeler."
     }
   ],
   "decisions": [
@@ -221,8 +225,20 @@
       "type": "Gardé",
       "quoi": "Enveloppe de 100 € : rien dépensé en octobre ni en novembre.",
       "pourquoi": "Aucun test payant ne valait plus qu'un devis ou une relance gratuite."
+    },
+    {
+      "date": "2026-11-09",
+      "type": "Gardé",
+      "quoi": "Classement inchangé : Sponsors n°1, Leviaro n°2, Nūr Meet restaurateurs n°3.",
+      "pourquoi": "Sponsors : 2 contacts chauds (L'Harmattan, Kolonell). Leviaro et Nūr Meet n'ont pas de nouveau signal d'achat."
+    },
+    {
+      "date": "2026-11-09",
+      "type": "Gardé",
+      "quoi": "Enveloppe de 100 € : 0 € engagé en novembre.",
+      "pourquoi": "Le blocage est la conclusion des ventes, pas un manque d'outil payant."
     }
   ],
-  "question": null,
-  "prochaine": "Revue du lundi 9/11 : devis L'Harmattan parti ? Discussions Leviaro ? Tri Nūr Meet relancé ? Lire les chiffres du Patreon."
+  "question": "Le 8/11 tu as dit que le cerveau central est remplacé par Loop Agent. Je déplace ton associé (revue du lundi et idées) dans Loop Agent ? Réponds dans le fil « Associé business ».",
+  "prochaine": "Revue du lundi 16/11 : offres chiffrées parties ? appels aux restaurants ? Selon ta réponse, la revue se fait dans Loop Agent."
 }
